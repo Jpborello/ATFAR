@@ -255,7 +255,7 @@ export default function HomePage() {
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-items-center">
             {/* Logo OSPF */}
             <a href="https://www.ospf.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0F4C81]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
               <span>OSPF OBRA SOCIAL</span>
             </a>
             {/* Logo OSECAC */}
@@ -270,7 +270,7 @@ export default function HomePage() {
             </div>
             {/* Logo FATFA */}
             <a href="https://fatfa.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#0F4C81]" />
+              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
               <span>FATFA NACIONAL</span>
             </a>
           </div>

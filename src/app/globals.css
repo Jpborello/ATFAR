@@ -4,13 +4,13 @@
   --background: #f8fafc;
   --foreground: #1e293b;
   
-  --primary: #0f4c81; /* Azul Institucional */
+  --primary: #0d5c3e; /* Verde Institucional Farmacéutico */
   --primary-foreground: #ffffff;
   
-  --secondary: #1e3a8a; /* Azul Oscuro Complementario */
+  --secondary: #064e3b; /* Verde Pino Oscuro Complementario */
   --secondary-foreground: #ffffff;
   
-  --accent: #0f4c81;
+  --accent: #0d5c3e;
   
   --muted: #f1f5f9;
   --muted-foreground: #64748b;

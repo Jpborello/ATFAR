@@ -27,7 +27,7 @@ export default function ContactMap() {
 
     // Custom Icon
     const officeIcon = L.divIcon({
-      html: `<div style="background-color: #0f4c81; width: 26px; height: 26px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">A</div>`,
+      html: `<div style="background-color: #0d5c3e; width: 26px; height: 26px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.35); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">A</div>`,
       className: 'custom-contact-icon',
       iconSize: [26, 26],
       iconAnchor: [13, 13],
@@ -38,7 +38,7 @@ export default function ContactMap() {
     
     marker.bindPopup(`
       <div style="font-family: sans-serif; font-size: 12px; line-height: 1.4;">
-        <strong style="font-size: 13px; color: #0f4c81; display: block;">ATFAR Sede Central</strong>
+        <strong style="font-size: 13px; color: #0d5c3e; display: block;">ATFAR Sede Central</strong>
         <span style="display: block; color: #64748b;">Calle Corrientes 1572, Rosario</span>
         <span style="display: block; color: #64748b; font-weight: 500; margin-top: 4px;">Atención: Lun a Vie 08 - 16 hs</span>
       </div>
