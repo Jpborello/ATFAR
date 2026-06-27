@@ -108,17 +108,17 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-16">
           {/* Logo Brand */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center gap-3 group">
+            <Link href="/" className="flex items-center gap-3.5 group">
               <img 
                 src="/images/logo.jpg" 
                 alt="Logo ATFAR" 
-                className="h-10 w-auto object-contain bg-white p-0.5 rounded-lg shadow-sm border border-border"
+                className="h-14 w-auto object-contain bg-white p-1 rounded-xl shadow-sm border border-border"
               />
               <div className="hidden sm:block">
-                <span className="text-sm font-extrabold tracking-wider text-primary uppercase block leading-none">
+                <span className="text-lg font-black tracking-wider text-primary uppercase block leading-none">
                   ATFAR
                 </span>
-                <span className="text-[9px] text-muted-foreground block font-medium">
+                <span className="text-xs text-slate-700 block font-bold mt-1">
                   Federación de Trabajadores de Farmacia
                 </span>
               </div>
@@ -134,8 +134,8 @@ export default function Navbar() {
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`text-xs font-semibold uppercase tracking-wider transition-colors hover:text-secondary ${
-                      isActive ? 'text-primary' : 'text-muted-foreground'
+                    className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary ${
+                      isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
                     }`}
                   >
                     {link.label}
@@ -150,25 +150,25 @@ export default function Navbar() {
                 <div className="flex items-center gap-4">
                   <Link
                     href={getDashboardHref()}
-                    className="flex items-center gap-2 text-xs font-semibold px-5 py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium"
+                    className="flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium"
                   >
-                    {profile.role === 'admin' && <Shield className="w-3.5 h-3.5 text-secondary" />}
-                    {profile.role === 'pharmacy_owner' && <MapPin className="w-3.5 h-3.5 text-secondary" />}
-                    {profile.role === 'employee' && <ClipboardList className="w-3.5 h-3.5 text-secondary" />}
+                    {profile.role === 'admin' && <Shield className="w-4 h-4 text-secondary" />}
+                    {profile.role === 'pharmacy_owner' && <MapPin className="w-4 h-4 text-secondary" />}
+                    {profile.role === 'employee' && <ClipboardList className="w-4 h-4 text-secondary" />}
                     <span>Panel ({profile.role === 'admin' ? 'Sindicato' : profile.role === 'pharmacy_owner' ? 'Farmacia' : 'Empleado'})</span>
                   </Link>
                   <button
                     onClick={handleLogout}
                     title="Cerrar sesión"
-                    className="p-2.5 rounded-xl border border-border text-muted-foreground hover:text-red-500 hover:border-red-200 transition-colors"
+                    className="p-3 rounded-xl border border-border text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer"
                   >
-                    <LogOut className="w-4 h-4" />
+                    <LogOut className="w-4.5 h-4.5" />
                   </button>
                 </div>
               ) : (
                 <Link
                   href="/login"
-                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5"
+                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5"
                 >
                   Ingresar al Sistema
                 </Link>
@@ -180,9 +180,9 @@ export default function Navbar() {
           <div className="md:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 focus:outline-none transition-colors"
+              className="inline-flex items-center justify-center p-2.5 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 focus:outline-none transition-colors"
             >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {isOpen ? <X className="h-6.5 w-6.5" /> : <Menu className="h-6.5 w-6.5" />}
             </button>
           </div>
         </div>
@@ -190,7 +190,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-card border-b border-border shadow-premium-lg transition-all duration-300">
+        <div className="md:hidden bg-card border-b border-border shadow-premium-lg transition-all duration-300 animate-fadeIn">
           <div className="px-3 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
@@ -199,8 +199,8 @@ export default function Navbar() {
                   key={link.label}
                   href={link.href}
                   onClick={() => setIsOpen(false)}
-                  className={`block px-4 py-3 rounded-xl text-sm font-semibold uppercase tracking-wider hover:bg-muted ${
-                    isActive ? 'text-primary bg-muted' : 'text-muted-foreground'
+                  className={`block px-4 py-3.5 rounded-xl text-base font-bold uppercase tracking-wider hover:bg-slate-50 ${
+                    isActive ? 'text-primary bg-slate-50 font-black' : 'text-slate-800'
                   }`}
                 >
                   {link.label}
@@ -212,15 +212,15 @@ export default function Navbar() {
               {profile ? (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <User className="w-4 h-4 text-secondary" />
-                    <span className="text-xs font-bold text-muted-foreground truncate">
+                    <User className="w-4.5 h-4.5 text-secondary" />
+                    <span className="text-xs font-bold text-slate-700 truncate">
                       {profile.full_name || profile.email}
                     </span>
                   </div>
                   <Link
                     href={getDashboardHref()}
                     onClick={() => setIsOpen(false)}
-                    className="flex w-full items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider text-center"
+                    className="flex w-full items-center justify-center gap-2 px-4 py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold uppercase tracking-wider text-center"
                   >
                     Ir a Panel ({profile.role === 'admin' ? 'Sindicato' : profile.role === 'pharmacy_owner' ? 'Farmacia' : 'Empleado'})
                   </Link>
@@ -229,7 +229,7 @@ export default function Navbar() {
                       setIsOpen(false);
                       handleLogout();
                     }}
-                    className="flex w-full items-center justify-center gap-2 px-4 py-3 rounded-xl border border-border text-red-500 hover:bg-red-50/50 text-xs font-bold uppercase tracking-wider"
+                    className="flex w-full items-center justify-center gap-2 px-4 py-3.5 rounded-xl border border-border text-red-500 hover:bg-red-50/50 text-sm font-bold uppercase tracking-wider bg-white"
                   >
                     <LogOut className="w-4 h-4" />
                     Cerrar Sesión
@@ -239,7 +239,7 @@ export default function Navbar() {
                 <Link
                   href="/login"
                   onClick={() => setIsOpen(false)}
-                  className="flex w-full items-center justify-center px-4 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider shadow-md"
+                  className="flex w-full items-center justify-center px-4 py-3.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold uppercase tracking-wider shadow-md text-center"
                 >
                   Ingresar al Sistema
                 </Link>

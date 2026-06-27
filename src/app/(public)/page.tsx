@@ -249,28 +249,28 @@ export default function HomePage() {
       <section className="bg-white border-b border-border py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left flex-shrink-0">
-            <span className="text-[9px] font-bold text-primary uppercase tracking-widest block font-sans">Instituciones Asociadas</span>
-            <span className="text-xs font-extrabold text-[#0f172a] block">Obras Sociales y Mutuales</span>
+            <span className="text-xs font-black text-primary uppercase tracking-widest block font-sans">Instituciones Asociadas</span>
+            <span className="text-sm font-extrabold text-[#0f172a] block">Obras Sociales y Mutuales</span>
           </div>
           <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-items-center">
             {/* Logo OSPF */}
-            <a href="https://www.ospf.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-[#0F4C81]" />
+            <a href="https://www.ospf.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0F4C81]" />
               <span>OSPF OBRA SOCIAL</span>
             </a>
             {/* Logo OSECAC */}
-            <a href="https://www.osecac.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <a href="https://www.osecac.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
               <span>OSECAC COMERCIO</span>
             </a>
             {/* Logo AMUPEF */}
-            <div className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <div className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
               <span>AMUPEF MUTUAL</span>
             </div>
             {/* Logo FATFA */}
-            <a href="https://fatfa.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
-              <span className="w-2 h-2 rounded-full bg-[#0F4C81]" />
+            <a href="https://fatfa.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
+              <span className="w-2.5 h-2.5 rounded-full bg-[#0F4C81]" />
               <span>FATFA NACIONAL</span>
             </a>
           </div>
@@ -282,11 +282,11 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column */}
           <div className="lg:col-span-5 space-y-4">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Servicios del Sindicato</span>
+            <span className="text-xs font-black text-primary uppercase tracking-widest block font-sans">Servicios del Sindicato</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#0f172a]">
               Plataforma digital para la gestión sindical
             </h2>
-            <p className="text-sm text-[#64748b] leading-relaxed font-medium max-w-md">
+            <p className="text-base text-slate-600 leading-relaxed font-semibold max-w-md">
               Digitalizamos los procesos gremiales para garantizar mayor transparencia y control para empleadores y afiliados.
             </p>
           </div>
@@ -298,26 +298,26 @@ export default function HomePage() {
               return (
                 <div 
                   key={idx} 
-                  className="py-6 flex items-start gap-5 group transition-all hover:bg-white px-3 rounded-lg border border-transparent hover:border-border hover:shadow-premium"
+                  className="py-6 flex items-start gap-5 group transition-all hover:bg-white px-4 rounded-xl border border-transparent hover:border-border hover:shadow-premium"
                 >
                   {/* Icon Container with subtle hover visual indicator */}
-                  <div className="p-2.5 rounded-lg bg-card text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-all border border-border flex-shrink-0">
-                    <Icon className="w-5 h-5" />
+                  <div className="p-3 rounded-lg bg-card text-slate-500 group-hover:text-primary group-hover:bg-primary/5 transition-all border border-border flex-shrink-0">
+                    <Icon className="w-6 h-6" />
                   </div>
-                  <div className="space-y-1.5 w-full">
-                    <h3 className="font-bold text-sm text-[#0f172a] group-hover:text-primary transition-colors">
+                  <div className="space-y-2 w-full">
+                    <h3 className="font-bold text-base text-[#0f172a] group-hover:text-primary transition-colors">
                       {service.title}
                     </h3>
-                    <p className="text-xs text-[#64748b] leading-relaxed font-medium">
+                    <p className="text-sm text-slate-600 leading-relaxed font-semibold">
                       {service.description}
                     </p>
-                    <div className="pt-1.5">
+                    <div className="pt-1">
                       <Link 
                         href={(service as any).href || '#'} 
-                        className="inline-flex items-center text-xs font-bold text-primary hover:text-secondary group/btn"
+                        className="inline-flex items-center text-sm font-extrabold text-primary hover:text-secondary group/btn"
                       >
                         <span>{(service as any).linkText || 'Ingresar al sistema'}</span>
-                        <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover/btn:translate-x-0.5 transition-transform" />
+                        <ArrowRight className="w-3.5 h-3.5 ml-1.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>
                   </div>
@@ -350,11 +350,11 @@ export default function HomePage() {
                   className="px-6 py-8 md:py-4 flex flex-col justify-between space-y-6 hover:bg-slate-50/40 transition-colors rounded-xl md:rounded-none first:pl-0 last:pr-0"
                 >
                   <div className="space-y-4">
-                    <div className="p-2.5 bg-slate-50 text-slate-400 rounded-lg inline-block border border-border">
+                    <div className="p-2.5 bg-slate-50 text-slate-500 rounded-lg inline-block border border-border">
                       <Icon className="w-5 h-5" />
                     </div>
                     <h3 className="font-bold text-base text-[#0f172a]">{benefit.title}</h3>
-                    <p className="text-xs text-[#64748b] leading-relaxed font-medium">
+                    <p className="text-sm text-slate-600 leading-relaxed font-semibold">
                       {benefit.description}
                     </p>
                   </div>
@@ -365,18 +365,18 @@ export default function HomePage() {
                         href={benefit.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center text-xs font-bold text-primary hover:text-secondary group"
+                        className="inline-flex items-center text-sm font-extrabold text-primary hover:text-secondary group"
                       >
                         <span>Saber más</span>
-                        <ChevronRight className="w-3.5 h-3.5 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight className="w-4 h-4 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
                       </a>
                     ) : (
                       <Link
                         href={benefit.href}
-                        className="inline-flex items-center text-xs font-bold text-primary hover:text-secondary group"
+                        className="inline-flex items-center text-sm font-extrabold text-primary hover:text-secondary group"
                       >
                         <span>Gestionar online</span>
-                        <ChevronRight className="w-3.5 h-3.5 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
+                        <ChevronRight className="w-4 h-4 ml-0.5 group-hover:translate-x-0.5 transition-transform" />
                       </Link>
                     )}
                   </div>
