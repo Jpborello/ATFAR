@@ -126,15 +126,15 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-8">
-            <div className="flex items-baseline gap-7">
+          <div className="hidden md:flex items-center gap-4 lg:gap-6">
+            <div className="flex items-center gap-4 lg:gap-5">
               {navLinks.map((link) => {
                 const isActive = pathname === link.href;
                 return (
                   <Link
                     key={link.label}
                     href={link.href}
-                    className={`text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary ${
+                    className={`text-[11px] lg:text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
                       isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
                     }`}
                   >
