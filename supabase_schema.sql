@@ -177,8 +177,30 @@ CREATE OR REPLACE TRIGGER on_auth_user_created
 
 
 -- ----------------------------------------------------
+-- DATABASE EXTENSIONS (MIGRATION FOR NEW PHARMACY FIELDS)
+-- ----------------------------------------------------
+ALTER TABLE public.pharmacies
+  ADD COLUMN IF NOT EXISTS initial_period DATE,
+  ADD COLUMN IF NOT EXISTS razon_social TEXT,
+  ADD COLUMN IF NOT EXISTS nombre_fantasia TEXT,
+  ADD COLUMN IF NOT EXISTS whatsapp TEXT,
+  ADD COLUMN IF NOT EXISTS actividad_economica TEXT,
+  ADD COLUMN IF NOT EXISTS declared_employee_count INTEGER,
+  ADD COLUMN IF NOT EXISTS branches TEXT,
+  ADD COLUMN IF NOT EXISTS notes TEXT,
+  ADD COLUMN IF NOT EXISTS declared_addresses TEXT,
+  ADD COLUMN IF NOT EXISTS resp_email TEXT,
+  ADD COLUMN IF NOT EXISTS resp_phone TEXT,
+  ADD COLUMN IF NOT EXISTS resp_alt_email TEXT,
+  ADD COLUMN IF NOT EXISTS hr_email TEXT,
+  ADD COLUMN IF NOT EXISTS hr_phone TEXT,
+  ADD COLUMN IF NOT EXISTS hr_alt_email TEXT;
+
+
+-- ----------------------------------------------------
 -- STORAGE BUCKETS CONFIGURATION (Optional - Run manually or configure via Dashboard)
 -- ----------------------------------------------------
 -- Recuerda habilitar dos Buckets en la sección Storage de Supabase con acceso público:
 -- 1. 'cvs' (para la Bolsa de Trabajo)
 -- 2. 'receipts' (para los comprobantes de Útiles Escolares)
+
