@@ -246,7 +246,7 @@ export default function HomePage() {
       </section>
 
       {/* Logos Section */}
-      <section className="bg-white border-b border-border py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+      <section className="bg-primary/5 border-b border-primary/10 py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="text-center md:text-left flex-shrink-0">
             <span className="text-xs font-black text-primary uppercase tracking-widest block font-sans">Instituciones Asociadas</span>
