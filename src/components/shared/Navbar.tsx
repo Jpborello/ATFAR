@@ -125,55 +125,53 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-6">
-            <div className="flex items-center gap-4 lg:gap-5">
-              {navLinks.map((link) => {
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.label}
-                    href={link.href}
-                    className={`text-[11px] lg:text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
-                      isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
-                    }`}
-                  >
-                    {link.label}
-                  </Link>
-                );
-              })}
-            </div>
-
-            {/* Auth Buttons */}
-            <div className="border-l border-border pl-8 flex items-center gap-4">
-              {profile ? (
-                <div className="flex items-center gap-4">
-                  <Link
-                    href={getDashboardHref()}
-                    className="flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium"
-                  >
-                    {profile.role === 'admin' && <Shield className="w-4 h-4 text-secondary" />}
-                    {profile.role === 'pharmacy_owner' && <MapPin className="w-4 h-4 text-secondary" />}
-                    {profile.role === 'employee' && <ClipboardList className="w-4 h-4 text-secondary" />}
-                    <span>Panel ({profile.role === 'admin' ? 'Sindicato' : profile.role === 'pharmacy_owner' ? 'Farmacia' : 'Empleado'})</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    title="Cerrar sesión"
-                    className="p-3 rounded-xl border border-border text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer"
-                  >
-                    <LogOut className="w-4.5 h-4.5" />
-                  </button>
-                </div>
-              ) : (
+          {/* Desktop Navigation Links */}
+          <div className="hidden md:flex items-center gap-4 lg:gap-5 ml-auto mr-6 lg:mr-10">
+            {navLinks.map((link) => {
+              const isActive = pathname === link.href;
+              return (
                 <Link
-                  href="/login"
-                  className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5"
+                  key={link.label}
+                  href={link.href}
+                  className={`text-[11px] lg:text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
+                    isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
+                  }`}
                 >
-                  Ingresar al Sistema
+                  {link.label}
                 </Link>
-              )}
-            </div>
+              );
+            })}
+          </div>
+
+          {/* Auth Buttons */}
+          <div className="hidden md:flex items-center border-l border-border pl-6 lg:pl-8">
+            {profile ? (
+              <div className="flex items-center gap-4">
+                <Link
+                  href={getDashboardHref()}
+                  className="flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium"
+                >
+                  {profile.role === 'admin' && <Shield className="w-4 h-4 text-secondary" />}
+                  {profile.role === 'pharmacy_owner' && <MapPin className="w-4 h-4 text-secondary" />}
+                  {profile.role === 'employee' && <ClipboardList className="w-4 h-4 text-secondary" />}
+                  <span>Panel ({profile.role === 'admin' ? 'Sindicato' : profile.role === 'pharmacy_owner' ? 'Farmacia' : 'Empleado'})</span>
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  title="Cerrar sesión"
+                  className="p-3 rounded-xl border border-border text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer"
+                >
+                  <LogOut className="w-4.5 h-4.5" />
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5"
+              >
+                Ingresar al Sistema
+              </Link>
+            )}
           </div>
 
           {/* Mobile menu button */}
