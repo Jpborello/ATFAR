@@ -90,6 +90,16 @@ CREATE POLICY "Pharmacies viewable by everyone" ON public.pharmacies
 CREATE POLICY "Owners can update their own pharmacy" ON public.pharmacies
     FOR UPDATE USING (auth.uid() = owner_id);
 
+CREATE POLICY "Owners can insert their own pharmacy" ON public.pharmacies
+    FOR INSERT WITH CHECK (
+        auth.uid() = owner_id 
+        AND EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() 
+            AND (profiles.role = 'pharmacy_owner' OR profiles.role = 'admin')
+        )
+    );
+
 CREATE POLICY "Admins can do everything on pharmacies" ON public.pharmacies
     FOR ALL USING (
         EXISTS (
