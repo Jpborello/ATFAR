@@ -129,21 +129,24 @@ function LoginContent() {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: registerRole,
+          }
+        }
       });
 
       if (authError) throw new Error(authError.message);
       if (!authData.user) throw new Error('Error en el registro.');
 
-      // 2. Insert profile record (Supabase triggers or direct insert)
+      // 2. Update profile record (which was auto-inserted by database triggers)
       const { error: profileError } = await supabase
         .from('profiles')
-        .insert({
-          id: authData.user.id,
-          email,
-          full_name: fullName,
-          role: registerRole,
+        .update({
           phone,
-        });
+        })
+        .eq('id', authData.user.id);
 
       if (profileError) throw new Error(`Error de perfil: ${profileError.message}`);
 
