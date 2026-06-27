@@ -72,16 +72,22 @@ export default function HomePage() {
       title: 'Declaraciones Juradas',
       description: 'Acceso online para que los empleadores declaren su nómina de personal de manera ágil.',
       icon: FileText,
+      linkText: 'Presentar DDJJ online',
+      href: '/farmacia/declaraciones',
     },
     {
       title: 'Bolsa de Empleo',
       description: 'Carga de currículums y perfiles profesionales para farmacias adheridas de la región.',
       icon: Users,
+      linkText: 'Cargar Curriculum Vitae',
+      href: '/bolsa',
     },
     {
       title: 'Control de Aportes',
       description: 'Monitoreo de aportes previsionales y salarios mínimos garantizados por convenio.',
       icon: ShieldCheck,
+      linkText: 'Consultar Aportes CCT',
+      href: '/login',
     },
   ];
 
@@ -239,12 +245,44 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Logos Section */}
+      <section className="bg-white border-b border-border py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
+        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="text-center md:text-left flex-shrink-0">
+            <span className="text-[9px] font-bold text-primary uppercase tracking-widest block font-sans">Instituciones Asociadas</span>
+            <span className="text-xs font-extrabold text-[#0f172a] block">Obras Sociales y Mutuales</span>
+          </div>
+          <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-items-center">
+            {/* Logo OSPF */}
+            <a href="https://www.ospf.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
+              <span className="w-2 h-2 rounded-full bg-[#0F4C81]" />
+              <span>OSPF OBRA SOCIAL</span>
+            </a>
+            {/* Logo OSECAC */}
+            <a href="https://www.osecac.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              <span>OSECAC COMERCIO</span>
+            </a>
+            {/* Logo AMUPEF */}
+            <div className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
+              <span className="w-2 h-2 rounded-full bg-amber-500" />
+              <span>AMUPEF MUTUAL</span>
+            </div>
+            {/* Logo FATFA */}
+            <a href="https://fatfa.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-400 font-bold tracking-wider text-xs grayscale hover:grayscale-0 transition-all opacity-60 hover:opacity-100 flex items-center gap-1.5 cursor-pointer">
+              <span className="w-2 h-2 rounded-full bg-[#0F4C81]" />
+              <span>FATFA NACIONAL</span>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* Services Section */}
-      <section className="bg-white border-y border-border py-20 px-4 sm:px-6 lg:px-8">
+      <section className="bg-slate-50 border-b border-border py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
           {/* Left Column */}
           <div className="lg:col-span-5 space-y-4">
-            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Servicios del Sindicato</span>
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Servicios del Sindicato</span>
             <h2 className="text-3xl font-extrabold tracking-tight text-[#0f172a]">
               Plataforma digital para la gestión sindical
             </h2>
@@ -260,19 +298,28 @@ export default function HomePage() {
               return (
                 <div 
                   key={idx} 
-                  className="py-6 flex items-start gap-5 group transition-colors hover:bg-slate-50/50 px-3 rounded-lg"
+                  className="py-6 flex items-start gap-5 group transition-all hover:bg-white px-3 rounded-lg border border-transparent hover:border-border hover:shadow-premium"
                 >
                   {/* Icon Container with subtle hover visual indicator */}
-                  <div className="p-2.5 rounded-lg bg-slate-50 text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-all border border-border flex-shrink-0">
+                  <div className="p-2.5 rounded-lg bg-card text-slate-400 group-hover:text-primary group-hover:bg-primary/5 transition-all border border-border flex-shrink-0">
                     <Icon className="w-5 h-5" />
                   </div>
-                  <div className="space-y-1">
+                  <div className="space-y-1.5 w-full">
                     <h3 className="font-bold text-sm text-[#0f172a] group-hover:text-primary transition-colors">
                       {service.title}
                     </h3>
                     <p className="text-xs text-[#64748b] leading-relaxed font-medium">
                       {service.description}
                     </p>
+                    <div className="pt-1.5">
+                      <Link 
+                        href={(service as any).href || '#'} 
+                        className="inline-flex items-center text-xs font-bold text-primary hover:text-secondary group/btn"
+                      >
+                        <span>{(service as any).linkText || 'Ingresar al sistema'}</span>
+                        <ArrowRight className="w-3.5 h-3.5 ml-1 group-hover/btn:translate-x-0.5 transition-transform" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               );
@@ -380,6 +427,53 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Downloads & Documentation Section */}
+      <section className="bg-white border-y border-border py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+          <div className="lg:col-span-5 space-y-4">
+            <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Documentación Oficial</span>
+            <h2 className="text-3xl font-extrabold tracking-tight text-[#0f172a]">
+              Descargas y Formularios
+            </h2>
+            <p className="text-sm text-[#64748b] leading-relaxed font-medium max-w-md">
+              Accedé a las copias oficiales del Convenio Colectivo de Trabajo, instructivos de trámites y formularios gremiales aprobados.
+            </p>
+          </div>
+
+          <div className="lg:col-span-7 divide-y divide-border border-t border-border">
+            {[
+              { title: 'Convenio Colectivo de Trabajo CCT 659/13 (Texto Completo)', size: '2.4 MB', file: 'CCT_659_13_Farmacia.pdf' },
+              { title: 'Escala Salarial Homologada - Vigente Junio 2026', size: '420 KB', file: 'Escala_Salarial_Junio_2026.pdf' },
+              { title: 'Formulario de Solicitud de Afiliación Sindical', size: '850 KB', file: 'Formulario_Afiliacion_ATFAR.pdf' },
+              { title: 'Guía de Trámites de Inscripción de Nuevas Farmacias', size: '1.1 MB', file: 'Guia_Inscripcion_Farmacia.pdf' },
+            ].map((doc, idx) => (
+              <div 
+                key={idx} 
+                className="py-4.5 flex items-center justify-between gap-4 px-2 hover:bg-slate-50/50 rounded-lg transition-colors group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-lg bg-red-50 text-red-500 border border-red-100 flex-shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold text-[#0f172a] block">{doc.title}</span>
+                    <span className="text-[10px] text-[#64748b] font-medium uppercase font-sans">Archivo PDF • {doc.size}</span>
+                  </div>
+                </div>
+                <a 
+                  href={`/exel/PLANILLA_LIQUIDACION_VALOR_HORAS.xls`}
+                  download={doc.file}
+                  className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-slate-50 border border-border text-xs font-bold text-[#0f172a] hover:bg-primary hover:text-white hover:border-primary transition-all cursor-pointer shadow-sm"
+                >
+                  Descargar
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       {/* Institutional History Summary */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 text-center space-y-6">
