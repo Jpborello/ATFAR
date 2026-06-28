@@ -68,25 +68,25 @@ export default function FarmaciaDashboard() {
   // Employee Add form state
   const [newEmpName, setNewEmpName] = useState('');
   const [newEmpCuil, setNewEmpCuil] = useState('');
-  const [newEmpCategory, setNewEmpCategory] = useState('Auxiliar de Farmacia');
+  const [newEmpCategory, setNewEmpCategory] = useState('Personal en Gestión de Farmacia');
   const [newEmpEntryDate, setNewEmpEntryDate] = useState('');
   const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
 
   const [employees, setEmployees] = useState<Employee[]>([
-    { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Auxiliar de Farmacia', entryDate: '2024-03-15', active: true },
-    { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Cajero de Farmacia', entryDate: '2025-01-10', active: true },
-    { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal de Salón (Vendedor)', entryDate: '2025-11-01', active: true },
+    { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true },
+    { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true },
+    { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true },
   ]);
 
   // CCT Categories List
   const cctCategories = [
-    'Farmacéutico Director Técnico',
-    'Farmacéutico Auxiliar',
-    'Auxiliar de Farmacia',
-    'Cajero de Farmacia',
-    'Personal de Salón (Vendedor)',
-    'Personal Auxiliar no Calificado',
-    'Cadete / Mensajería'
+    'Cadetes',
+    'Aprendiz Ayudante',
+    'Personal Auxiliar Interno y Externo',
+    'Personal con Asignación Específica',
+    'Ayudante en Gestión de Farmacia',
+    'Personal en Gestión de Farmacia',
+    'Farmacéutico'
   ];
 
   useEffect(() => {
@@ -285,7 +285,7 @@ export default function FarmaciaDashboard() {
     // reset fields
     setNewEmpName('');
     setNewEmpCuil('');
-    setNewEmpCategory('Auxiliar de Farmacia');
+    setNewEmpCategory('Personal en Gestión de Farmacia');
     setNewEmpEntryDate('');
     setNewEmpWeeklyHours(44);
     setIsEmployeeModalOpen(false);
