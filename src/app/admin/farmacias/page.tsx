@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { 
@@ -22,6 +22,7 @@ import {
   Filter,
   Loader2
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 // Dynamic import of the map to prevent SSR issues
 const PharmacyMap = dynamic(() => import('@/components/map/PharmacyMap'), {
@@ -50,15 +51,58 @@ interface Pharmacy {
 }
 
 export default function FarmaciasPanelPage() {
-  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([
-    { id: '1', razonSocial: 'Farmacia del Centro S.R.L.', cuit: '30-71122334-9', address: 'San Martin 801', city: 'Rosario', responsible: 'Dr. Lucas Gómez', employeeCount: 14, status: 'activa', lastDeclaration: 'Junio 2026', paymentStatus: 'al_dia', lat: -32.9479, lng: -60.6394 },
-    { id: '2', razonSocial: 'Farmacia Belgrano', cuit: '30-68444555-2', address: 'Pellegrini 1420', city: 'Rosario', responsible: 'Dra. María Rossi', employeeCount: 8, status: 'activa', lastDeclaration: 'Junio 2026', paymentStatus: 'al_dia', lat: -32.9567, lng: -60.6548 },
-    { id: '3', razonSocial: 'Farmacia Alberdi Coop.', cuit: '30-50443221-5', address: 'Bv. Rondeau 1200', city: 'Rosario', responsible: 'Carlos Fernández', employeeCount: 3, status: 'inactiva', lastDeclaration: 'Mayo 2026', paymentStatus: 'con_deuda', lat: -32.9064, lng: -60.6865 },
-    { id: '4', razonSocial: 'Farmacia del Parque', cuit: '30-71888999-4', address: 'Av. Francia 850', city: 'Rosario', responsible: 'Guillermo Benítez', employeeCount: 6, status: 'activa', lastDeclaration: 'Junio 2026', paymentStatus: 'al_dia', lat: -32.9582, lng: -60.6659 },
-    { id: '5', razonSocial: 'Farmacia Rosario Norte', cuit: '30-65222333-1', address: 'Corrientes 1572', city: 'Rosario', responsible: 'Patricia Díaz', employeeCount: 5, status: 'activa', lastDeclaration: 'Mayo 2026', paymentStatus: 'con_deuda', lat: -32.9324, lng: -60.6558 },
-    { id: '6', razonSocial: 'Farmacia Sur S.A.', cuit: '30-75440220-7', address: 'San Martín 4500', city: 'Rosario', responsible: 'Martín López', employeeCount: 12, status: 'activa', lastDeclaration: 'Junio 2026', paymentStatus: 'al_dia', lat: -32.9892, lng: -60.6402 },
-    { id: '7', razonSocial: 'Farmacia Pellegrini Gral.', cuit: '30-58442991-3', address: 'Av. Pellegrini 2300', city: 'Rosario', responsible: 'Ana Benítez', employeeCount: 4, status: 'activa', lastDeclaration: 'Junio 2026', paymentStatus: 'pendiente', lat: -32.9610, lng: -60.6601 },
-  ]);
+  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchPharmacies() {
+      try {
+        const { data, error } = await supabase
+          .from('pharmacies')
+          .select(`
+            id,
+            name,
+            cuit,
+            address,
+            latitude,
+            longitude,
+            registered,
+            has_debt,
+            owner_id,
+            profiles:owner_id (full_name)
+          `);
+
+        if (error) throw error;
+
+        if (data) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mapped = data.map((p: any) => ({
+            id: p.id,
+            razonSocial: p.name,
+            cuit: p.cuit,
+            address: p.address,
+            city: 'Rosario',
+            responsible: p.profiles?.full_name || 'Sin Responsable',
+            employeeCount: 0,
+            status: p.registered ? ('activa' as const) : ('inactiva' as const),
+            lastDeclaration: '-',
+            paymentStatus: !p.registered 
+              ? ('pendiente' as const) 
+              : (p.has_debt ? ('con_deuda' as const) : ('al_dia' as const)),
+            lat: p.latitude || -32.9511,
+            lng: p.longitude || -60.6663
+          }));
+          setPharmacies(mapped);
+        }
+      } catch (err) {
+        console.error("Error loading pharmacies from Supabase:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchPharmacies();
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [filterPayment, setFilterPayment] = useState<string>('all');
@@ -68,9 +112,18 @@ export default function FarmaciasPanelPage() {
   const itemsPerPage = 5;
 
   // Actions
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('¿Seguro que deseas eliminar este registro de farmacia?')) {
-      setPharmacies(prev => prev.filter(p => p.id !== id));
+      try {
+        const { error } = await supabase
+          .from('pharmacies')
+          .delete()
+          .eq('id', id);
+        if (error) throw error;
+        setPharmacies(prev => prev.filter(p => p.id !== id));
+      } catch (err) {
+        console.error("Error deleting pharmacy:", err);
+      }
     }
   };
 

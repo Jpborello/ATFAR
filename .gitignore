@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local data / scraping temp files
+refar_farmacias.csv
+ddg_lite.html

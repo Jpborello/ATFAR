@@ -11,6 +11,7 @@ interface Pharmacy {
   lat: number;
   lng: number;
   registered: boolean;
+  hasDebt?: boolean;
 }
 
 interface PharmacyMapProps {
@@ -39,9 +40,11 @@ export default function PharmacyMap({
     // Initialize leaflet map
     leafletMap.current = L.map(mapRef.current).setView(rosarioCenter, 13);
 
-    // Add OpenStreetMap tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    // Add Google Maps road map tile layer
+    L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+      maxZoom: 20,
+      subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+      attribution: '&copy; Google Maps',
     }).addTo(leafletMap.current);
 
     // Map click event
@@ -70,31 +73,38 @@ export default function PharmacyMap({
     // Custom SVG Icons
     const createCustomIcon = (color: string) => {
       return L.divIcon({
-        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px style=white; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">F</div>`,
+        html: `<div style="background-color: ${color}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 5px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 10px;">F</div>`,
         className: 'custom-map-icon',
         iconSize: [24, 24],
         iconAnchor: [12, 12],
       });
     };
 
-    const registeredIcon = createCustomIcon('#0d9488'); // Teal for registered
-    const unregisteredIcon = createCustomIcon('#ef4444'); // Red for unregistered
+    const registeredCleanIcon = createCustomIcon('#10b981'); // Green for registered & al dia
+    const registeredDebtIcon = createCustomIcon('#ef4444');  // Red for registered & con deuda
+    const unregisteredIcon = createCustomIcon('#8b5cf6');      // Purple for unregistered
 
     pharmacies.forEach((pharmacy) => {
+      let icon = unregisteredIcon;
+      if (pharmacy.registered) {
+        icon = pharmacy.hasDebt ? registeredDebtIcon : registeredCleanIcon;
+      }
+
       const marker = L.marker([pharmacy.lat, pharmacy.lng], {
-        icon: pharmacy.registered ? registeredIcon : unregisteredIcon,
+        icon: icon,
       });
 
       marker.addTo(leafletMap.current!);
       
+      const badgeColor = !pharmacy.registered ? '#8b5cf6' : (pharmacy.hasDebt ? '#ef4444' : '#10b981');
+      const badgeText = !pharmacy.registered ? 'No Registrada' : (pharmacy.hasDebt ? 'Con Deuda' : 'Al Día');
+
       // Popup with basic details
       marker.bindPopup(`
         <div style="font-family: sans-serif; font-size: 13px; line-height: 1.4;">
           <strong style="display: block; font-size: 14px;">${pharmacy.name}</strong>
           <span style="color: #64748b; display: block; margin-bottom: 6px;">${pharmacy.address}</span>
-          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: bold; color: white; background-color: ${
-            pharmacy.registered ? '#0d9488' : '#ef4444'
-          };">${pharmacy.registered ? 'Registrada' : 'No Registrada / Alerta'}</span>
+          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: bold; color: white; background-color: ${badgeColor};">${badgeText}</span>
         </div>
       `);
 
@@ -124,12 +134,16 @@ export default function PharmacyMap({
       <div className="absolute bottom-4 left-4 z-20 bg-card/95 backdrop-blur border border-border px-3.5 py-2.5 rounded-xl shadow-md text-xs space-y-1.5 glass">
         <div className="font-semibold text-foreground">Referencias de Control:</div>
         <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-full bg-secondary border border-white" />
-          <span className="text-muted-foreground font-medium">Farmacia Registrada (Al Día)</span>
+          <div className="w-3.5 h-3.5 rounded-full bg-emerald-500 border border-white" />
+          <span className="text-muted-foreground font-medium">Registrada (Al Día)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3.5 h-3.5 rounded-full bg-red-500 border border-white" />
-          <span className="text-muted-foreground font-medium">Farmacia No Registrada / Alerta Gremial</span>
+          <span className="text-muted-foreground font-medium">Registrada (Con Deuda)</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full bg-violet-500 border border-white" />
+          <span className="text-muted-foreground font-medium">No Registrada / Alerta</span>
         </div>
         <div className="text-[10px] text-muted-foreground/80 pt-1">
           * Hacé clic en cualquier punto del mapa para geolocalizar una alerta.

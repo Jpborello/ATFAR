@@ -1,8 +1,13 @@
--- 1. Create Profile Roles Enum
-CREATE TYPE user_role AS ENUM ('admin', 'pharmacy_owner', 'employee');
+-- 1. Create Profile Roles Enum Safely
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+        CREATE TYPE user_role AS ENUM ('admin', 'pharmacy_owner', 'employee');
+    END IF;
+END$$;
 
 -- 2. Create Profiles Table (extends auth.users)
-CREATE TABLE public.profiles (
+CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
     email TEXT NOT NULL,
     full_name TEXT,
@@ -15,7 +20,7 @@ CREATE TABLE public.profiles (
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
 -- 3. Create Pharmacies Table
-CREATE TABLE public.pharmacies (
+CREATE TABLE IF NOT EXISTS public.pharmacies (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     name TEXT NOT NULL,
     cuit TEXT NOT NULL UNIQUE,
@@ -30,14 +35,14 @@ CREATE TABLE public.pharmacies (
 
 ALTER TABLE public.pharmacies ENABLE ROW LEVEL SECURITY;
 
--- 4. Create Employees Table
-CREATE TABLE public.employees (
+-- 4. Create Employees Table (Safely check column nullability or defaults if inserting from registration)
+CREATE TABLE IF NOT EXISTS public.employees (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     pharmacy_id UUID REFERENCES public.pharmacies(id) ON DELETE CASCADE,
     full_name TEXT NOT NULL,
     cuil TEXT NOT NULL UNIQUE,
-    category TEXT NOT NULL,
-    entry_date DATE NOT NULL,
+    category TEXT, -- Modified to support registration without initial category
+    entry_date DATE, -- Modified to support registration without initial entry_date
     weekly_hours INTEGER DEFAULT 44 NOT NULL,
     active BOOLEAN DEFAULT true NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
@@ -46,7 +51,7 @@ CREATE TABLE public.employees (
 ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
 
 -- 5. Create Benefit Requests Table (for school kits, etc.)
-CREATE TABLE public.benefit_requests (
+CREATE TABLE IF NOT EXISTS public.benefit_requests (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     employee_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
     benefit_type TEXT NOT NULL,
@@ -59,7 +64,7 @@ CREATE TABLE public.benefit_requests (
 ALTER TABLE public.benefit_requests ENABLE ROW LEVEL SECURITY;
 
 -- 6. Create Job Applications Table (for CV Board)
-CREATE TABLE public.job_applications (
+CREATE TABLE IF NOT EXISTS public.job_applications (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     full_name TEXT NOT NULL,
     email TEXT NOT NULL,
@@ -73,26 +78,36 @@ ALTER TABLE public.job_applications ENABLE ROW LEVEL SECURITY;
 
 
 -- ----------------------------------------------------
--- RLS POLICIES (Row Level Security)
+-- RLS POLICIES (Row Level Security) - Dropped first to avoid "already exists" errors
 -- ----------------------------------------------------
 
 -- Profiles Policies
+DROP POLICY IF EXISTS "Public profiles are viewable by everyone" ON public.profiles;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.profiles
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile" ON public.profiles
     FOR UPDATE USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Enable insert for profiles" ON public.profiles;
+CREATE POLICY "Enable insert for profiles" ON public.profiles
+    FOR INSERT WITH CHECK (true);
+
 -- Pharmacies Policies
+DROP POLICY IF EXISTS "Pharmacies viewable by everyone" ON public.pharmacies;
 CREATE POLICY "Pharmacies viewable by everyone" ON public.pharmacies
     FOR SELECT USING (true);
 
+DROP POLICY IF EXISTS "Owners can update their own pharmacy" ON public.pharmacies;
 CREATE POLICY "Owners can update their own pharmacy" ON public.pharmacies
     FOR UPDATE USING (auth.uid() = owner_id);
 
+DROP POLICY IF EXISTS "Enable insert for pharmacies" ON public.pharmacies;
 CREATE POLICY "Enable insert for pharmacies" ON public.pharmacies
     FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Admins can do everything on pharmacies" ON public.pharmacies;
 CREATE POLICY "Admins can do everything on pharmacies" ON public.pharmacies
     FOR ALL USING (
         EXISTS (
@@ -102,6 +117,7 @@ CREATE POLICY "Admins can do everything on pharmacies" ON public.pharmacies
     );
 
 -- Employees Policies
+DROP POLICY IF EXISTS "Owners can see their own employees" ON public.employees;
 CREATE POLICY "Owners can see their own employees" ON public.employees
     FOR SELECT USING (
         EXISTS (
@@ -110,6 +126,7 @@ CREATE POLICY "Owners can see their own employees" ON public.employees
         )
     );
 
+DROP POLICY IF EXISTS "Owners can manage their own employees" ON public.employees;
 CREATE POLICY "Owners can manage their own employees" ON public.employees
     FOR ALL USING (
         EXISTS (
@@ -118,6 +135,7 @@ CREATE POLICY "Owners can manage their own employees" ON public.employees
         )
     );
 
+DROP POLICY IF EXISTS "Admins can view and manage all employees" ON public.employees;
 CREATE POLICY "Admins can view and manage all employees" ON public.employees
     FOR ALL USING (
         EXISTS (
@@ -127,12 +145,15 @@ CREATE POLICY "Admins can view and manage all employees" ON public.employees
     );
 
 -- Benefit Requests Policies
+DROP POLICY IF EXISTS "Users can view their own requests" ON public.benefit_requests;
 CREATE POLICY "Users can view their own requests" ON public.benefit_requests
     FOR SELECT USING (auth.uid() = employee_id);
 
+DROP POLICY IF EXISTS "Users can create their own requests" ON public.benefit_requests;
 CREATE POLICY "Users can create their own requests" ON public.benefit_requests
     FOR INSERT WITH CHECK (auth.uid() = employee_id);
 
+DROP POLICY IF EXISTS "Admins can view and update all requests" ON public.benefit_requests;
 CREATE POLICY "Admins can view and update all requests" ON public.benefit_requests
     FOR ALL USING (
         EXISTS (
@@ -142,9 +163,11 @@ CREATE POLICY "Admins can view and update all requests" ON public.benefit_reques
     );
 
 -- Job Applications Policies (Bolsa de empleo)
+DROP POLICY IF EXISTS "Public can submit applications" ON public.job_applications;
 CREATE POLICY "Public can submit applications" ON public.job_applications
     FOR INSERT WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Only Admins can view applications" ON public.job_applications;
 CREATE POLICY "Only Admins can view applications" ON public.job_applications
     FOR SELECT USING (
         EXISTS (
@@ -161,20 +184,38 @@ CREATE POLICY "Only Admins can view applications" ON public.job_applications
 -- Function to handle new user registration
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  default_role public.user_role := 'employee'::public.user_role;
+  assigned_role public.user_role;
+  raw_role_text text;
 BEGIN
-  INSERT INTO public.profiles (id, email, full_name, role)
+  -- Extraemos el rol de los metadatos como texto simple
+  raw_role_text := new.raw_user_meta_data->>'role';
+  
+  -- Intentamos convertirlo de manera segura
+  IF raw_role_text = 'admin' THEN
+    assigned_role := 'admin'::public.user_role;
+  ELSIF raw_role_text = 'pharmacy_owner' THEN
+    assigned_role := 'pharmacy_owner'::public.user_role;
+  ELSE
+    assigned_role := default_role;
+  END IF;
+
+  INSERT INTO public.profiles (id, email, full_name, role, phone)
   VALUES (
     new.id,
     new.email,
     COALESCE(new.raw_user_meta_data->>'full_name', ''),
-    COALESCE((new.raw_user_meta_data->>'role')::user_role, 'employee'::user_role)
+    assigned_role,
+    new.raw_user_meta_data->>'phone'
   );
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger execution
-CREATE OR REPLACE TRIGGER on_auth_user_created
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
@@ -197,13 +238,5 @@ ALTER TABLE public.pharmacies
   ADD COLUMN IF NOT EXISTS resp_alt_email TEXT,
   ADD COLUMN IF NOT EXISTS hr_email TEXT,
   ADD COLUMN IF NOT EXISTS hr_phone TEXT,
-  ADD COLUMN IF NOT EXISTS hr_alt_email TEXT;
-
-
--- ----------------------------------------------------
--- STORAGE BUCKETS CONFIGURATION (Optional - Run manually or configure via Dashboard)
--- ----------------------------------------------------
--- Recuerda habilitar dos Buckets en la sección Storage de Supabase con acceso público:
--- 1. 'cvs' (para la Bolsa de Trabajo)
--- 2. 'receipts' (para los comprobantes de Útiles Escolares)
-
+  ADD COLUMN IF NOT EXISTS hr_alt_email TEXT,
+  ADD COLUMN IF NOT EXISTS has_debt BOOLEAN DEFAULT false NOT NULL;

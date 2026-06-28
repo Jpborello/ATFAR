@@ -96,9 +96,9 @@ function LoginContent() {
       } else {
         router.push('/empleado');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message || 'Error al iniciar sesión.');
+      setErrorMsg(err instanceof Error ? err.message : 'Error al iniciar sesión.');
     } finally {
       setLoading(false);
     }
@@ -133,34 +133,53 @@ function LoginContent() {
           data: {
             full_name: fullName,
             role: registerRole,
+            phone: phone,
           }
         }
       });
 
-      if (authError) throw new Error(authError.message);
+      if (authError) {
+        alert("Error de Supabase Auth: " + authError.message + " (Status: " + authError.status + ")");
+        throw new Error(authError.message);
+      }
       if (!authData.user) throw new Error('Error en el registro.');
 
-      // 2. Update profile record (which was auto-inserted by database triggers)
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({
-          phone,
-        })
-        .eq('id', authData.user.id);
-
-      if (profileError) throw new Error(`Error de perfil: ${profileError.message}`);
-
-      // 3. Insert specific details based on role
       if (registerRole === 'pharmacy_owner') {
-        const { error: pharmacyError } = await supabase
+        // Check if the pharmacy already exists in the database by CUIT
+        const { data: existingPharm, error: fetchError } = await supabase
           .from('pharmacies')
-          .insert({
-            name: pharmacyName,
-            cuit: pharmacyCuit,
-            address: pharmacyAddress,
-            owner_id: authData.user.id,
-            registered: false,
-          });
+          .select('id')
+          .eq('cuit', pharmacyCuit)
+          .maybeSingle();
+
+        if (fetchError) console.error("Error checking existing pharmacy:", fetchError);
+
+        let pharmacyError;
+        if (existingPharm) {
+          // Update the existing pharmacy to link to owner and mark as registered
+          const { error: updateError } = await supabase
+            .from('pharmacies')
+            .update({
+              owner_id: authData.user.id,
+              registered: true,
+              name: pharmacyName,
+              address: pharmacyAddress,
+            })
+            .eq('id', existingPharm.id);
+          pharmacyError = updateError;
+        } else {
+          // Insert a new pharmacy
+          const { error: insertError } = await supabase
+            .from('pharmacies')
+            .insert({
+              name: pharmacyName,
+              cuit: pharmacyCuit,
+              address: pharmacyAddress,
+              owner_id: authData.user.id,
+              registered: true,
+            });
+          pharmacyError = insertError;
+        }
 
         if (pharmacyError) throw new Error(`Error al registrar farmacia: ${pharmacyError.message}`);
         router.push('/farmacia');
@@ -177,9 +196,9 @@ function LoginContent() {
         if (employeeError) console.error('Error registering employee row:', employeeError);
         router.push('/empleado');
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setErrorMsg(err.message || 'Error en el registro.');
+      setErrorMsg(err instanceof Error ? err.message : 'Error en el registro.');
     } finally {
       setLoading(false);
     }
