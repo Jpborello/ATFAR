@@ -451,6 +451,15 @@ export default function FarmaciaDashboard() {
                 <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded">Al Día</span>
               </div>
             </div>
+            <div className="pt-3 border-t border-border/80">
+              <Link
+                href="/farmacia/acuerdos/acta-mayo-2026"
+                className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-800 text-white text-xs font-bold uppercase tracking-wider hover:bg-slate-700 transition-all shadow-sm"
+              >
+                <FileText className="w-4 h-4 text-secondary" />
+                <span>Acta Acuerdo Mayo 2026</span>
+              </Link>
+            </div>
           </div>
         </div>
 

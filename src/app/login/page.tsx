@@ -14,7 +14,9 @@ import {
   ShieldCheck, 
   ArrowLeft,
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -39,6 +41,7 @@ function LoginContent() {
   const [pharmacyName, setPharmacyName] = useState('');
   const [pharmacyCuit, setPharmacyCuit] = useState('');
   const [pharmacyAddress, setPharmacyAddress] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   // Handle URL tab changes
   useEffect(() => {
@@ -243,6 +246,8 @@ function LoginContent() {
               onClick={() => {
                 setActiveTab('login');
                 setErrorMsg('');
+                setPassword('');
+                setShowPassword(false);
               }}
               className={`flex-1 text-center py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === 'login'
@@ -256,6 +261,8 @@ function LoginContent() {
               onClick={() => {
                 setActiveTab('register');
                 setErrorMsg('');
+                setPassword('');
+                setShowPassword(false);
               }}
               className={`flex-1 text-center py-2.5 rounded-lg text-sm font-semibold transition-all ${
                 activeTab === 'register'
@@ -306,13 +313,20 @@ function LoginContent() {
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                    className="w-full pl-10 pr-12 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
@@ -495,13 +509,20 @@ function LoginContent() {
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                   <input
-                    type="password"
+                    type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="Mínimo 6 caracteres"
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                    className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
