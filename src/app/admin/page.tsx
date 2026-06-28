@@ -12,10 +12,77 @@ import {
   ArrowUpRight,
   ArrowRight,
   ShieldCheck,
-  DollarSign
+  DollarSign,
+  X,
+  FileText,
+  AlertCircle,
+  Check
 } from 'lucide-react';
 
+interface Activity {
+  id: number;
+  pharmacy: string;
+  action: string;
+  date: string;
+  status: string;
+  amount: number;
+  cuit: string;
+  period: string;
+  transCode: string;
+  fileName: string;
+}
+
 export default function AdminDashboardPage() {
+  const [activities, setActivities] = useState<Activity[]>([
+    { id: 1, pharmacy: 'Farmacia del Centro', action: 'Declaración mensual presentada (Junio)', date: 'Hace 15 min', status: 'pending', amount: 45000, cuit: '30-71122334-9', period: 'Junio 2026', transCode: 'TX-948273', fileName: 'comprobante_junio.pdf' },
+    { id: 2, pharmacy: 'Farmacia Alberdi', action: 'Pago de aportes procesado con éxito', date: 'Hace 2 horas', status: 'paid', amount: 38200, cuit: '30-65554443-1', period: 'Mayo 2026', transCode: 'TX-910283', fileName: 'transferencia_alberdi.jpg' },
+    { id: 3, pharmacy: 'Farmacia Rosario Norte', action: 'Generación de deuda por período vencido', date: 'Ayer', status: 'unpaid', amount: 12500, cuit: '30-88877766-2', period: 'Abril 2026', transCode: '---', fileName: '---' },
+    { id: 4, pharmacy: 'Farmacia Belgrano', action: 'Declaración mensual validada por administración', date: 'Ayer', status: 'paid', amount: 41000, cuit: '30-55544433-8', period: 'Mayo 2026', transCode: 'TX-897120', fileName: 'pago_belgrano.pdf' },
+  ]);
+
+  const [monthlyRevenue, setMonthlyRevenue] = useState(4850000);
+  const [activePharmaciesCount, setActivePharmaciesCount] = useState(130);
+  const [debtPharmaciesCount, setDebtPharmaciesCount] = useState(12);
+  const [pendingDeclarationsCount, setPendingDeclarationsCount] = useState(8);
+
+  const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
+  const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+
+  const handleOpenAudit = (activity: Activity) => {
+    if (activity.status === 'pending') {
+      setSelectedActivity(activity);
+      setIsAuditModalOpen(true);
+    }
+  };
+
+  const handleApprovePayment = async (activityId: number) => {
+    setAuditLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    const activity = activities.find(a => a.id === activityId);
+    if (activity) {
+      setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'paid', action: 'Declaración mensual validada por administración' } : a));
+      setMonthlyRevenue(prev => prev + activity.amount);
+      setActivePharmaciesCount(prev => prev + 1);
+      setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+    }
+    setAuditLoading(false);
+    setIsAuditModalOpen(false);
+  };
+
+  const handleRejectPayment = async (activityId: number) => {
+    setAuditLoading(true);
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    
+    setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'unpaid', action: 'Pago rechazado por administración' } : a));
+    setDebtPharmaciesCount(prev => prev + 1);
+    setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+    
+    setAuditLoading(false);
+    setIsAuditModalOpen(false);
+  };
+
   const cards = [
     { 
       label: 'Farmacias Registradas', 
@@ -26,21 +93,21 @@ export default function AdminDashboardPage() {
     },
     { 
       label: 'Farmacias Activas', 
-      value: '130', 
+      value: activePharmaciesCount.toString(), 
       detail: 'Declaraciones presentadas al día', 
       color: 'text-emerald-600 bg-emerald-500/5 border-emerald-500/10',
       icon: CheckCircle2 
     },
     { 
       label: 'Farmacias con Deuda', 
-      value: '12', 
+      value: debtPharmaciesCount.toString(), 
       detail: 'Aportes pendientes de pago', 
       color: 'text-red-600 bg-red-500/5 border-red-500/10',
       icon: XCircle 
     },
     { 
       label: 'Declaraciones Pendientes', 
-      value: '8', 
+      value: pendingDeclarationsCount.toString(), 
       detail: 'Esperando validación de nómina', 
       color: 'text-amber-600 bg-amber-500/5 border-amber-500/10',
       icon: AlertTriangle 
@@ -53,14 +120,7 @@ export default function AdminDashboardPage() {
     { month: 'Mar', amount: 4400000, height: 'h-40' },
     { month: 'Abr', amount: 4200000, height: 'h-38' },
     { month: 'May', amount: 4600000, height: 'h-44' },
-    { month: 'Jun', amount: 4850000, height: 'h-48' }, // Current month
-  ];
-
-  const recentActivity = [
-    { id: 1, pharmacy: 'Farmacia del Centro', action: 'Declaración mensual presentada (Junio)', date: 'Hace 15 min', status: 'pending', amount: '$45.000' },
-    { id: 2, pharmacy: 'Farmacia Alberdi', action: 'Pago de aportes procesado con éxito', date: 'Hace 2 horas', status: 'paid', amount: '$38.200' },
-    { id: 3, pharmacy: 'Farmacia Rosario Norte', action: 'Generación de deuda por período vencido', date: 'Ayer', status: 'unpaid', amount: '$12.500' },
-    { id: 4, pharmacy: 'Farmacia Belgrano', action: 'Declaración mensual validada por administración', date: 'Ayer', status: 'paid', amount: '$41.000' },
+    { month: 'Jun', amount: monthlyRevenue, height: 'h-48' }, // Tied to monthlyRevenue state
   ];
 
   return (
@@ -83,7 +143,7 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Recaudación Mensual (Jun)</span>
-            <span className="text-xl font-black text-primary">$4.850.000</span>
+            <span className="text-xl font-black text-primary">${monthlyRevenue.toLocaleString('es-AR')}</span>
           </div>
         </div>
       </div>
@@ -165,8 +225,15 @@ export default function AdminDashboardPage() {
           </div>
 
           <div className="divide-y divide-border/60">
-            {recentActivity.map((activity) => (
-              <div key={activity.id} className="py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-4">
+            {activities.map((activity) => (
+              <div 
+                key={activity.id} 
+                onClick={() => handleOpenAudit(activity)}
+                className={`py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-4 ${
+                  activity.status === 'pending' ? 'cursor-pointer hover:bg-muted/30 px-2 -mx-2 rounded-xl transition-all' : ''
+                }`}
+                title={activity.status === 'pending' ? 'Hacer clic para auditar comprobante' : undefined}
+              >
                 <div className="space-y-1">
                   <span className="text-xs font-bold text-foreground block">{activity.pharmacy}</span>
                   <span className="text-[10px] text-muted-foreground block font-medium">{activity.action}</span>
@@ -177,12 +244,12 @@ export default function AdminDashboardPage() {
                 </div>
                 
                 <div className="text-right space-y-1 flex-shrink-0">
-                  <span className="text-xs font-bold text-foreground block">{activity.amount}</span>
+                  <span className="text-xs font-bold text-foreground block">${activity.amount.toLocaleString('es-AR')}</span>
                   <span className={`inline-block text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${
                     activity.status === 'paid' 
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
                       : activity.status === 'pending'
-                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                      ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 animate-pulse'
                       : 'bg-red-500/10 text-red-600 dark:text-red-400'
                   }`}>
                     {activity.status === 'paid' ? 'Pagado' : activity.status === 'pending' ? 'Pendiente' : 'Deuda'}
@@ -193,6 +260,93 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Audit Modal */}
+      {isAuditModalOpen && selectedActivity && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-premium-lg relative animate-scaleIn">
+            <button
+              onClick={() => setIsAuditModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight mb-4 flex items-center gap-2 border-b border-border pb-3">
+              <ShieldCheck className="w-5.5 h-5.5 text-secondary" />
+              <span>Auditoría de Transferencia</span>
+            </h3>
+
+            <div className="space-y-4">
+              <div className="bg-muted/40 rounded-2xl p-4 border border-border space-y-2 text-xs font-semibold text-slate-700">
+                <div className="flex justify-between">
+                  <span>Farmacia:</span>
+                  <span className="text-[#0f172a] font-extrabold">{selectedActivity.pharmacy}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>CUIT Comercial:</span>
+                  <span className="text-[#0f172a] font-bold">{selectedActivity.cuit}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Período Declarado:</span>
+                  <span className="text-[#0f172a] font-bold">{selectedActivity.period}</span>
+                </div>
+                <div className="flex justify-between border-t border-border/80 pt-2 font-black">
+                  <span>Monto Declarado:</span>
+                  <span className="text-primary text-sm">${selectedActivity.amount.toLocaleString('es-AR')}</span>
+                </div>
+              </div>
+
+              <div className="space-y-2.5">
+                <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block">Datos del Depósito</span>
+                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-2">
+                  <div className="flex justify-between">
+                    <span>Nro. Operación:</span>
+                    <span className="font-mono font-bold text-emerald-950">{selectedActivity.transCode}</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span>Archivo Adjunto:</span>
+                    <a
+                      href="#"
+                      onClick={(e) => { e.preventDefault(); alert(`Simulando descarga de comprobante: ${selectedActivity.fileName}`); }}
+                      className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 underline font-bold"
+                    >
+                      <FileText className="w-3.5 h-3.5" />
+                      <span>{selectedActivity.fileName}</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-3 flex items-start gap-2.5">
+                <AlertCircle className="w-4.5 h-4.5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <p className="text-[10px] text-amber-850 font-bold leading-relaxed">
+                  Por favor, verifique en el homebanking del gremio que la transferencia con este número de operación esté acreditada antes de aprobar.
+                </p>
+              </div>
+
+              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  disabled={auditLoading}
+                  onClick={() => handleRejectPayment(selectedActivity.id)}
+                  className="flex-1 px-4 py-2.5 rounded-xl border border-red-200 text-red-600 text-xs font-bold uppercase tracking-wider hover:bg-red-50 transition-all cursor-pointer bg-white disabled:opacity-50"
+                >
+                  {auditLoading ? 'Procesando...' : 'Rechazar Pago'}
+                </button>
+                <button
+                  type="button"
+                  disabled={auditLoading}
+                  onClick={() => handleApprovePayment(selectedActivity.id)}
+                  className="flex-1 px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-xs font-bold uppercase tracking-wider hover:bg-emerald-700 transition-all shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {auditLoading ? 'Procesando...' : 'Aprobar Pago'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

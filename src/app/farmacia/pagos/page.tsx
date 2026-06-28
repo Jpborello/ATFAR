@@ -13,7 +13,12 @@ import {
   DollarSign,
   Loader2,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Upload,
+  Copy,
+  Check,
+  Clock,
+  FileText
 } from 'lucide-react';
 
 interface Invoice {
@@ -21,7 +26,7 @@ interface Invoice {
   invoiceNumber: string;
   period: string;
   amount: number;
-  status: 'pagado' | 'impago';
+  status: 'pagado' | 'impago' | 'en_revision';
   dueDate: string;
   payDate: string;
 }
@@ -37,14 +42,32 @@ export default function PagosPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // CC States
   const [cardNumber, setCardNumber] = useState('');
   const [cardName, setCardName] = useState('');
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
 
+  // Transfer States
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'transfer'>('online');
+  const [transactionFileName, setTransactionFileName] = useState('');
+  const [transactionCode, setTransactionCode] = useState('');
+  const [transferDate, setTransferDate] = useState('');
+  const [copied, setCopied] = useState(false);
+
   const handleOpenCheckout = (invoice: Invoice) => {
     setCheckoutInvoice(invoice);
     setPaymentSuccess(false);
+    setPaymentMethod('online');
+    setTransactionFileName('');
+    setTransactionCode('');
+    setTransferDate('');
+  };
+
+  const handleCopyCbu = () => {
+    navigator.clipboard.writeText('0650020701000000379012');
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const handleProcessPayment = async (e: React.FormEvent) => {
@@ -76,6 +99,31 @@ export default function PagosPage() {
     setCardName('');
     setCardExpiry('');
     setCardCvv('');
+  };
+
+  const handleProcessTransfer = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!transactionCode || !transferDate || !transactionFileName) {
+      alert('Por favor complete todos los campos y adjunte el comprobante.');
+      return;
+    }
+
+    setPaymentLoading(true);
+    // Simulate upload
+    await new Promise((resolve) => setTimeout(resolve, 1800));
+
+    if (checkoutInvoice) {
+      setInvoices((prev) =>
+        prev.map((inv) =>
+          inv.id === checkoutInvoice.id
+            ? { ...inv, status: 'en_revision', payDate: 'Pendiente Aud.' }
+            : inv
+        )
+      );
+    }
+
+    setPaymentLoading(false);
+    setPaymentSuccess(true);
   };
 
   const totalUnpaid = invoices
@@ -151,6 +199,7 @@ export default function PagosPage() {
                       <span>Período: {inv.period}</span>
                       <span>Vence: {inv.dueDate}</span>
                       {inv.status === 'pagado' && <span className="text-emerald-500 font-bold">Pago: {inv.payDate}</span>}
+                      {inv.status === 'en_revision' && <span className="text-amber-500 font-bold">Auditoría: {inv.payDate}</span>}
                     </div>
                   </div>
 
@@ -170,6 +219,13 @@ export default function PagosPage() {
                         >
                           <Download className="w-3.5 h-3.5" />
                         </button>
+                      </div>
+                    ) : inv.status === 'en_revision' ? (
+                      <div className="flex items-center gap-2">
+                        <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-500/10 text-amber-600 rounded-lg text-[9px] font-black uppercase">
+                          <Clock className="w-3.5 h-3.5" />
+                          <span>En Revisión</span>
+                        </span>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -194,55 +250,96 @@ export default function PagosPage() {
           {/* Right: Payment simulator form / Checkout */}
           <div className="lg:col-span-4">
             {checkoutInvoice ? (
-              <div className="bg-card border-2 border-[#009ee3] rounded-3xl p-6 shadow-xl space-y-6 relative overflow-hidden animate-fadeIn">
-                {/* MP branding */}
-                <div className="flex items-center justify-between border-b border-border pb-3">
-                  <div className="flex items-center gap-1">
-                    <div className="w-3.5 h-3.5 rounded-full bg-[#009ee3] flex items-center justify-center text-[8px] font-black text-white">m</div>
-                    <span className="text-xs font-black text-[#009ee3]">mercado pago</span>
+              <div className={`bg-card border-2 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden animate-fadeIn transition-colors ${
+                paymentMethod === 'online' ? 'border-[#009ee3]' : 'border-emerald-500'
+              }`}>
+                {/* Header with Switcher Tabs */}
+                <div className="space-y-3">
+                  <div className="flex bg-muted p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('online')}
+                      className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
+                        paymentMethod === 'online'
+                          ? 'bg-card text-[#009ee3] shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Pago Online
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('transfer')}
+                      className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
+                        paymentMethod === 'transfer'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      Transferencia
+                    </button>
                   </div>
-                  <span className="text-[10px] text-muted-foreground font-bold">Checkout Oficial</span>
                 </div>
 
                 {paymentSuccess ? (
                   <div className="text-center py-6 space-y-4">
-                    <div className="inline-flex p-3 bg-emerald-500/10 text-emerald-500 rounded-full">
-                      <CheckCircle2 className="w-10 h-10" />
+                    <div className={`inline-flex p-3 rounded-full ${
+                      paymentMethod === 'online' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                    }`}>
+                      {paymentMethod === 'online' ? <CheckCircle2 className="w-10 h-10" /> : <Clock className="w-10 h-10" />}
                     </div>
                     <div className="space-y-1">
-                      <h4 className="font-extrabold text-foreground text-sm">¡Aportes Acreditados!</h4>
+                      <h4 className="font-extrabold text-foreground text-sm">
+                        {paymentMethod === 'online' ? '¡Aportes Acreditados!' : '¡Comprobante Enviado!'}
+                      </h4>
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
-                        El pago de **${checkoutInvoice.amount.toLocaleString('es-AR')}** fue validado por Mercado Pago y acreditado en tu estado de cuenta.
+                        {paymentMethod === 'online' ? (
+                          `El pago de **$${checkoutInvoice.amount.toLocaleString('es-AR')}** fue validado por Mercado Pago y acreditado en tu estado de cuenta.`
+                        ) : (
+                          `El comprobante por **$${checkoutInvoice.amount.toLocaleString('es-AR')}** fue cargado con éxito. Queda en revisión por el sindicato.`
+                        )}
                       </p>
                     </div>
                     <button
                       onClick={() => setCheckoutInvoice(null)}
-                      className="w-full py-2.5 rounded-xl bg-[#009ee3] text-white font-bold text-xs uppercase"
+                      className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase text-white cursor-pointer ${
+                        paymentMethod === 'online' ? 'bg-[#009ee3] hover:bg-[#008ac6]' : 'bg-emerald-600 hover:bg-emerald-700'
+                      }`}
                     >
                       Volver
                     </button>
                   </div>
-                ) : (
+                ) : paymentMethod === 'online' ? (
+                  /* Mercado Pago Form */
                   <form onSubmit={handleProcessPayment} className="space-y-4">
-                    <div className="bg-muted/40 p-3.5 rounded-xl border border-border/80 space-y-1 text-xs">
+                    {/* MP branding */}
+                    <div className="flex items-center justify-between border-b border-border pb-1">
+                      <div className="flex items-center gap-1">
+                        <div className="w-3.5 h-3.5 rounded-full bg-[#009ee3] flex items-center justify-center text-[8px] font-black text-white">m</div>
+                        <span className="text-xs font-black text-[#009ee3]">mercado pago</span>
+                      </div>
+                      <span className="text-[10px] text-muted-foreground font-bold">Tarjeta</span>
+                    </div>
+
+                    <div className="bg-[#009ee3]/5 p-3 rounded-xl border border-[#009ee3]/10 space-y-1 text-xs">
                       <div className="flex justify-between font-bold text-foreground">
-                        <span>Pago de Boleta:</span>
-                        <span className="text-primary">{checkoutInvoice.invoiceNumber}</span>
+                        <span>Boleta:</span>
+                        <span className="text-[#009ee3]">{checkoutInvoice.invoiceNumber}</span>
                       </div>
                       <div className="flex justify-between text-muted-foreground">
                         <span>Período:</span>
                         <span>{checkoutInvoice.period}</span>
                       </div>
                       <div className="flex justify-between font-black text-foreground pt-1.5 border-t border-border/60">
-                        <span>Monto Final:</span>
-                        <span className="text-primary text-sm">${checkoutInvoice.amount.toLocaleString('es-AR')}</span>
+                        <span>Total:</span>
+                        <span className="text-[#009ee3] text-sm">${checkoutInvoice.amount.toLocaleString('es-AR')}</span>
                       </div>
                     </div>
 
                     {/* Credit Card Mock Form */}
                     <div className="space-y-3">
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Nombre en la tarjeta</label>
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Nombre en la tarjeta</label>
                         <input
                           type="text"
                           required
@@ -253,7 +350,7 @@ export default function PagosPage() {
                         />
                       </div>
                       <div className="space-y-1">
-                        <label className="text-[10px] font-bold text-muted-foreground uppercase">Número de tarjeta</label>
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Número de tarjeta</label>
                         <input
                           type="text"
                           required
@@ -266,7 +363,7 @@ export default function PagosPage() {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase">Vencimiento</label>
+                          <label className="text-[9px] font-bold text-muted-foreground uppercase">Vencimiento</label>
                           <input
                             type="text"
                             required
@@ -278,7 +375,7 @@ export default function PagosPage() {
                           />
                         </div>
                         <div className="space-y-1">
-                          <label className="text-[10px] font-bold text-muted-foreground uppercase">Cód. Seguridad</label>
+                          <label className="text-[9px] font-bold text-muted-foreground uppercase">CVV</label>
                           <input
                             type="password"
                             required
@@ -296,12 +393,12 @@ export default function PagosPage() {
                     <button
                       type="submit"
                       disabled={paymentLoading}
-                      className="w-full py-3 rounded-xl bg-[#009ee3] text-white hover:bg-[#008ac6] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50"
+                      className="w-full py-3 rounded-xl bg-[#009ee3] text-white hover:bg-[#008ac6] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50 cursor-pointer"
                     >
                       {paymentLoading ? (
                         <>
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Procesando Cobro...
+                          Procesando...
                         </>
                       ) : (
                         <>
@@ -314,9 +411,122 @@ export default function PagosPage() {
                     <button
                       type="button"
                       onClick={() => setCheckoutInvoice(null)}
-                      className="w-full text-center text-[10px] font-bold text-muted-foreground hover:text-foreground"
+                      className="w-full text-center text-[10px] font-bold text-muted-foreground hover:text-foreground cursor-pointer"
                     >
-                      Cancelar Operación
+                      Cancelar
+                    </button>
+                  </form>
+                ) : (
+                  /* Bank Transfer / Receipt Upload Form */
+                  <form onSubmit={handleProcessTransfer} className="space-y-4">
+                    {/* ATFAR Bank info */}
+                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3.5 text-xs text-emerald-950 font-semibold space-y-2">
+                      <span className="text-[10px] font-extrabold text-emerald-800 uppercase block tracking-wider">Cuentas del Sindicato</span>
+                      <div className="space-y-1 font-medium text-slate-700">
+                        <div className="flex justify-between">
+                          <span>Banco:</span>
+                          <span className="font-bold text-emerald-950">Banco Municipal</span>
+                        </div>
+                        <div className="flex justify-between items-center gap-2">
+                          <span>CBU:</span>
+                          <div className="flex items-center gap-1 font-mono font-bold text-emerald-950">
+                            <span>0650020701000000379012</span>
+                            <button
+                              type="button"
+                              onClick={handleCopyCbu}
+                              className="p-1 hover:bg-emerald-500/10 rounded text-emerald-700 cursor-pointer"
+                              title="Copiar CBU"
+                            >
+                              {copied ? <Check className="w-3 h-3 text-emerald-600" /> : <Copy className="w-3 h-3" />}
+                            </button>
+                          </div>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Alias:</span>
+                          <span className="font-bold text-emerald-950">ATFAR.ROSARIO.GREMIO</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>CUIT:</span>
+                          <span className="font-bold text-emerald-950">30-54827379-1</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      {/* File upload */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Comprobante (Imagen o PDF)</label>
+                        <div className="relative border border-dashed border-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10 rounded-xl p-4 text-center cursor-pointer transition-all">
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            required
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setTransactionFileName(file.name);
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <Upload className="w-6 h-6 text-emerald-600 mx-auto mb-1.5" />
+                          <span className="text-[10px] font-bold text-slate-700 block truncate">
+                            {transactionFileName || 'Adjuntar archivo (PDF, JPG, PNG)'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Transaction Code */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Número de Transacción / Referencia</label>
+                        <input
+                          type="text"
+                          required
+                          value={transactionCode}
+                          onChange={(e) => setTransactionCode(e.target.value)}
+                          placeholder="Ej: TX-948273"
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-semibold"
+                        />
+                      </div>
+
+                      {/* Date */}
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Fecha de Transferencia</label>
+                        <input
+                          type="date"
+                          required
+                          value={transferDate}
+                          onChange={(e) => setTransferDate(e.target.value)}
+                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-semibold"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Submit */}
+                    <button
+                      type="submit"
+                      disabled={paymentLoading}
+                      className="w-full py-3 rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                    >
+                      {paymentLoading ? (
+                        <>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          Enviando...
+                        </>
+                      ) : (
+                        <>
+                          <FileText className="w-3.5 h-3.5" />
+                          Enviar Comprobante
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCheckoutInvoice(null)}
+                      className="w-full text-center text-[10px] font-bold text-muted-foreground hover:text-foreground cursor-pointer"
+                    >
+                      Cancelar
                     </button>
                   </form>
                 )}
