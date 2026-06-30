@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS public.pharmacies (
     address TEXT NOT NULL,
     latitude FLOAT8,
     longitude FLOAT8,
+    cross_streets TEXT,
+    phone_alt TEXT,
     registered BOOLEAN DEFAULT false NOT NULL,
     owner_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     last_checked TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()),
@@ -239,4 +241,130 @@ ALTER TABLE public.pharmacies
   ADD COLUMN IF NOT EXISTS hr_email TEXT,
   ADD COLUMN IF NOT EXISTS hr_phone TEXT,
   ADD COLUMN IF NOT EXISTS hr_alt_email TEXT,
+  ADD COLUMN IF NOT EXISTS hr_name TEXT,
+  ADD COLUMN IF NOT EXISTS hr_role TEXT,
   ADD COLUMN IF NOT EXISTS has_debt BOOLEAN DEFAULT false NOT NULL;
+
+
+-- ----------------------------------------------------
+-- STORAGE BUCKETS CONFIGURATION (cvs & receipts)
+-- ----------------------------------------------------
+
+-- 1. Create buckets safely
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('cvs', 'cvs', true)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO storage.buckets (id, name, public)
+VALUES ('receipts', 'receipts', true)
+ON CONFLICT (id) DO NOTHING;
+
+-- 2. Storage security policies
+DROP POLICY IF EXISTS "Public Access to CVs" ON storage.objects;
+CREATE POLICY "Public Access to CVs" ON storage.objects
+    FOR SELECT USING (bucket_id = 'cvs');
+
+DROP POLICY IF EXISTS "Allow Public Upload to CVs" ON storage.objects;
+CREATE POLICY "Allow Public Upload to CVs" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'cvs');
+
+DROP POLICY IF EXISTS "Public Access to Receipts" ON storage.objects;
+CREATE POLICY "Public Access to Receipts" ON storage.objects
+    FOR SELECT USING (bucket_id = 'receipts');
+
+DROP POLICY IF EXISTS "Allow Public Upload to Receipts" ON storage.objects;
+CREATE POLICY "Allow Public Upload to Receipts" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'receipts');
+
+
+-- ----------------------------------------------------
+-- PAYMENTS TABLE CONFIGURATION
+-- ----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS public.payments (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    pharmacy_id UUID REFERENCES public.pharmacies(id) ON DELETE CASCADE NOT NULL,
+    invoice_number TEXT NOT NULL,
+    period TEXT NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL,
+    status TEXT DEFAULT 'impago' NOT NULL, -- 'pagado', 'impago', 'en_revision'
+    due_date DATE NOT NULL,
+    pay_date DATE,
+    transaction_code TEXT,
+    receipt_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+DROP POLICY IF EXISTS "Owners can view own payments" ON public.payments;
+CREATE POLICY "Owners can view own payments" ON public.payments
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacies 
+            WHERE pharmacies.id = payments.pharmacy_id AND pharmacies.owner_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Owners can manage own payments" ON public.payments;
+CREATE POLICY "Owners can manage own payments" ON public.payments
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacies 
+            WHERE pharmacies.id = payments.pharmacy_id AND pharmacies.owner_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Admins can view and manage all payments" ON public.payments;
+CREATE POLICY "Admins can view and manage all payments" ON public.payments
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
+
+
+-- ----------------------------------------------------
+-- ANNOUNCEMENTS TABLE CONFIGURATION
+-- ----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS public.announcements (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    summary TEXT NOT NULL,
+    content TEXT NOT NULL,
+    category TEXT NOT NULL, -- 'Gremiales', 'Beneficios', 'Capacitación', 'Institucional'
+    visibility TEXT DEFAULT 'public' NOT NULL, -- 'public' o 'pharmacy'
+    image_url TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
+
+-- Policies
+DROP POLICY IF EXISTS "Everyone can view public announcements" ON public.announcements;
+CREATE POLICY "Everyone can view public announcements" ON public.announcements
+    FOR SELECT USING (visibility = 'public');
+
+DROP POLICY IF EXISTS "Owners can view pharmacy announcements" ON public.announcements;
+CREATE POLICY "Owners can view pharmacy announcements" ON public.announcements
+    FOR SELECT USING (
+        visibility = 'pharmacy' AND EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND (profiles.role = 'pharmacy_owner' OR profiles.role = 'admin')
+        )
+    );
+
+DROP POLICY IF EXISTS "Admins can view and manage all announcements" ON public.announcements;
+CREATE POLICY "Admins can view and manage all announcements" ON public.announcements
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
+
+
+

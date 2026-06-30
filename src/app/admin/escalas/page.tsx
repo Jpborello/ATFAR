@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import { 
   FileText, 
   Plus, 
@@ -37,6 +38,9 @@ export default function AdminEscalasPage() {
   const [newsTitle, setNewsTitle] = useState('');
   const [newsCategory, setNewsCategory] = useState('Gremiales');
   const [newsContent, setNewsContent] = useState('');
+  const [newsSummary, setNewsSummary] = useState('');
+  const [newsVisibility, setNewsVisibility] = useState<'public' | 'pharmacy'>('public');
+  const [newsImageUrl, setNewsImageUrl] = useState('');
   const [publishedNewsCount, setPublishedNewsCount] = useState(3);
 
   // File upload states
@@ -52,13 +56,43 @@ export default function AdminEscalasPage() {
     alert('Básico de categoría actualizado con éxito.');
   };
 
-  const handlePublishNews = (e: React.FormEvent) => {
+  const handlePublishNews = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsTitle || !newsContent) return;
-    setPublishedNewsCount((prev) => prev + 1);
-    setNewsTitle('');
-    setNewsContent('');
-    alert('Noticia publicada con éxito en la web institucional.');
+    if (!newsTitle || !newsContent || !newsSummary) {
+      alert('Por favor completa todos los campos obligatorios (Título, Copete y Contenido).');
+      return;
+    }
+
+    try {
+      const isConfigured = 
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      if (isConfigured) {
+        const { error } = await supabase
+          .from('announcements')
+          .insert({
+            title: newsTitle,
+            summary: newsSummary,
+            content: newsContent,
+            category: newsCategory,
+            visibility: newsVisibility,
+            image_url: newsImageUrl || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600'
+          });
+
+        if (error) throw error;
+      }
+
+      setPublishedNewsCount((prev) => prev + 1);
+      setNewsTitle('');
+      setNewsSummary('');
+      setNewsContent('');
+      setNewsImageUrl('');
+      setNewsVisibility('public');
+      alert('Noticia publicada con éxito en el sistema.');
+    } catch (err: any) {
+      alert(err.message || 'Error al publicar el comunicado.');
+    }
   };
 
   const handleUploadPdf = (e: React.FormEvent) => {
@@ -159,48 +193,85 @@ export default function AdminEscalasPage() {
             </h3>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground">Título de la Noticia</label>
+              <label className="text-xs font-semibold text-muted-foreground">Título de la Noticia *</label>
               <input
                 type="text"
                 required
                 value={newsTitle}
                 onChange={(e) => setNewsTitle(e.target.value)}
                 placeholder="Ej. Comunicado sobre el feriado del 9 de Julio"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
               />
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground">Categoría</label>
-              <select
-                value={newsCategory}
-                onChange={(e) => setNewsCategory(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
-              >
-                <option value="Gremiales">Gremiales</option>
-                <option value="Beneficios">Beneficios</option>
-                <option value="Capacitación">Capacitación</option>
-                <option value="Institucional">Institucional</option>
-              </select>
+              <label className="text-xs font-semibold text-muted-foreground">Copete / Resumen Corto *</label>
+              <input
+                type="text"
+                required
+                value={newsSummary}
+                onChange={(e) => setNewsSummary(e.target.value)}
+                placeholder="Una breve descripción que se verá en el listado..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">Categoría</label>
+                <select
+                  value={newsCategory}
+                  onChange={(e) => setNewsCategory(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
+                >
+                  <option value="Gremiales">Gremiales</option>
+                  <option value="Beneficios">Beneficios</option>
+                  <option value="Capacitación">Capacitación</option>
+                  <option value="Institucional">Institucional</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-muted-foreground">Visibilidad / Destino</label>
+                <select
+                  value={newsVisibility}
+                  onChange={(e) => setNewsVisibility(e.target.value as any)}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-bold"
+                >
+                  <option value="public">Público (Web y Noticias)</option>
+                  <option value="pharmacy">Privado (Sólo Farmacias)</option>
+                </select>
+              </div>
             </div>
 
             <div className="space-y-1">
-              <label className="text-xs font-semibold text-muted-foreground">Contenido del Comunicado</label>
+              <label className="text-xs font-semibold text-muted-foreground">URL de Imagen (Opcional)</label>
+              <input
+                type="text"
+                value={newsImageUrl}
+                onChange={(e) => setNewsImageUrl(e.target.value)}
+                placeholder="Ej. https://images.unsplash.com/..."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-xs font-semibold text-muted-foreground">Contenido del Comunicado *</label>
               <textarea
                 required
                 rows={3}
                 value={newsContent}
                 onChange={(e) => setNewsContent(e.target.value)}
                 placeholder="Escribí el texto completo que leerán los afiliados..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all resize-none"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all resize-none text-foreground"
               />
             </div>
 
             <button
               type="submit"
-              className="w-full py-2.5 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold hover:bg-secondary/90 transition-all shadow-sm"
+              className="w-full py-2.5 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold hover:bg-secondary/90 transition-all shadow-sm cursor-pointer"
             >
-              Publicar Noticia
+              Publicar Comunicado
             </button>
           </form>
 

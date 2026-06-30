@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 import { 
   CreditCard, 
   ArrowLeft, 
@@ -32,11 +33,9 @@ interface Invoice {
 }
 
 export default function PagosPage() {
-  const [invoices, setInvoices] = useState<Invoice[]>([
-    { id: '1', invoiceNumber: 'FAC-2026-06', period: 'Junio 2026', amount: 45000, status: 'impago', dueDate: '10/07/2026', payDate: '---' },
-    { id: '2', invoiceNumber: 'FAC-2026-05', period: 'Mayo 2026', amount: 45000, status: 'pagado', dueDate: '10/06/2026', payDate: '09/06/2026' },
-    { id: '3', invoiceNumber: 'FAC-2026-04', period: 'Abril 2026', amount: 41800, status: 'pagado', dueDate: '10/05/2026', payDate: '08/05/2026' },
-  ]);
+  const [loading, setLoading] = useState(true);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
 
   const [checkoutInvoice, setCheckoutInvoice] = useState<Invoice | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -55,6 +54,90 @@ export default function PagosPage() {
   const [transferDate, setTransferDate] = useState('');
   const [copied, setCopied] = useState(false);
 
+  useEffect(() => {
+    async function loadInvoices() {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured || !session) {
+          // Simulation fallback
+          setInvoices([
+            { id: '1', invoiceNumber: 'FAC-2026-06', period: 'Junio 2026', amount: 45000, status: 'impago', dueDate: '10/07/2026', payDate: '---' },
+            { id: '2', invoiceNumber: 'FAC-2026-05', period: 'Mayo 2026', amount: 45000, status: 'pagado', dueDate: '10/06/2026', payDate: '09/06/2026' },
+            { id: '3', invoiceNumber: 'FAC-2026-04', period: 'Abril 2026', amount: 41800, status: 'pagado', dueDate: '10/05/2026', payDate: '08/05/2026' },
+          ]);
+          setLoading(false);
+          return;
+        }
+
+        // Fetch pharmacy
+        const { data: pharmacy } = await supabase
+          .from('pharmacies')
+          .select('id')
+          .eq('owner_id', session.user.id)
+          .single();
+
+        if (pharmacy) {
+          // Fetch invoices
+          const { data: paymentList } = await supabase
+            .from('payments')
+            .select('*')
+            .eq('pharmacy_id', pharmacy.id)
+            .order('created_at', { ascending: false });
+
+          if (paymentList && paymentList.length > 0) {
+            setInvoices(paymentList.map(p => ({
+              id: p.id,
+              invoiceNumber: p.invoice_number,
+              period: p.period,
+              amount: Number(p.amount),
+              status: p.status as 'pagado' | 'impago' | 'en_revision',
+              dueDate: new Date(p.due_date).toLocaleDateString('es-AR'),
+              payDate: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : '---'
+            })));
+          } else {
+            // Seed a default test invoice
+            const defaultInvoice = {
+              pharmacy_id: pharmacy.id,
+              invoice_number: 'FAC-2026-06',
+              period: 'Junio 2026',
+              amount: 45000,
+              status: 'impago',
+              due_date: '2026-07-10'
+            };
+
+            const { data: newPay } = await supabase
+              .from('payments')
+              .insert(defaultInvoice)
+              .select()
+              .single();
+
+            if (newPay) {
+              setInvoices([{
+                id: newPay.id,
+                invoiceNumber: newPay.invoice_number,
+                period: newPay.period,
+                amount: Number(newPay.amount),
+                status: newPay.status as 'pagado' | 'impago' | 'en_revision',
+                dueDate: new Date(newPay.due_date).toLocaleDateString('es-AR'),
+                payDate: '---'
+              }]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error loading invoices:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadInvoices();
+  }, []);
+
   const handleOpenCheckout = (invoice: Invoice) => {
     setCheckoutInvoice(invoice);
     setPaymentSuccess(false);
@@ -62,6 +145,7 @@ export default function PagosPage() {
     setTransactionFileName('');
     setTransactionCode('');
     setTransferDate('');
+    setReceiptFile(null);
   };
 
   const handleCopyCbu = () => {
@@ -72,17 +156,30 @@ export default function PagosPage() {
 
   const handleProcessPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!cardNumber || !cardName || !cardExpiry || !cardCvv) {
+    if (!cardNumber || !cardName || !cardExpiry || !cardCvv || !checkoutInvoice) {
       alert('Por favor complete todos los datos de tarjeta.');
       return;
     }
 
     setPaymentLoading(true);
-    // Simulate Mercado Pago processing
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
-    // Update local state invoice to paid
-    if (checkoutInvoice) {
+
+    try {
+      const isConfigured = 
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      if (isConfigured) {
+        const { error } = await supabase
+          .from('payments')
+          .update({
+            status: 'pagado',
+            pay_date: new Date().toISOString().split('T')[0]
+          })
+          .eq('id', checkoutInvoice.id);
+
+        if (error) throw error;
+      }
+
       setInvoices((prev) =>
         prev.map((inv) =>
           inv.id === checkoutInvoice.id
@@ -90,29 +187,68 @@ export default function PagosPage() {
             : inv
         )
       );
+
+      setPaymentSuccess(true);
+      setCardNumber('');
+      setCardName('');
+      setCardExpiry('');
+      setCardCvv('');
+    } catch (err: any) {
+      alert(err.message || 'Error al procesar el pago.');
+    } finally {
+      setPaymentLoading(false);
     }
-    
-    setPaymentLoading(false);
-    setPaymentSuccess(true);
-    // Clear inputs
-    setCardNumber('');
-    setCardName('');
-    setCardExpiry('');
-    setCardCvv('');
   };
 
   const handleProcessTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!transactionCode || !transferDate || !transactionFileName) {
+    if (!transactionCode || !transferDate || !transactionFileName || !checkoutInvoice || !receiptFile) {
       alert('Por favor complete todos los campos y adjunte el comprobante.');
       return;
     }
 
     setPaymentLoading(true);
-    // Simulate upload
-    await new Promise((resolve) => setTimeout(resolve, 1800));
 
-    if (checkoutInvoice) {
+    try {
+      const isConfigured = 
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      let publicUrl = '';
+
+      if (isConfigured) {
+        // 1. Upload receipt to storage bucket 'receipts'
+        const fileExt = receiptFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+        const filePath = `receipts/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('receipts')
+          .upload(filePath, receiptFile);
+
+        if (uploadError) throw new Error(`Error al subir comprobante: ${uploadError.message}`);
+
+        // 2. Get Public URL
+        const { data: { publicUrl: url } } = supabase.storage
+          .from('receipts')
+          .getPublicUrl(filePath);
+
+        publicUrl = url;
+
+        // 3. Update payment in database
+        const { error: updateError } = await supabase
+          .from('payments')
+          .update({
+            status: 'en_revision',
+            pay_date: transferDate,
+            transaction_code: transactionCode,
+            receipt_url: publicUrl
+          })
+          .eq('id', checkoutInvoice.id);
+
+        if (updateError) throw updateError;
+      }
+
       setInvoices((prev) =>
         prev.map((inv) =>
           inv.id === checkoutInvoice.id
@@ -120,15 +256,29 @@ export default function PagosPage() {
             : inv
         )
       );
-    }
 
-    setPaymentLoading(false);
-    setPaymentSuccess(true);
+      setPaymentSuccess(true);
+    } catch (err: any) {
+      alert(err.message || 'Error al enviar comprobante.');
+    } finally {
+      setPaymentLoading(false);
+    }
   };
 
   const totalUnpaid = invoices
     .filter((inv) => inv.status === 'impago')
     .reduce((sum, inv) => sum + inv.amount, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
+        <div className="flex flex-col items-center gap-2">
+          <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          <span className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Cargando Estado de Cuenta...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f8fafc] text-[#1e293b] min-h-screen">
@@ -465,6 +615,7 @@ export default function PagosPage() {
                               const file = e.target.files?.[0];
                               if (file) {
                                 setTransactionFileName(file.name);
+                                setReceiptFile(file);
                               }
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"

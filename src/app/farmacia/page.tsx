@@ -23,6 +23,7 @@ import {
   Briefcase
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
 
 interface Employee {
   id: string;
@@ -62,7 +63,9 @@ export default function FarmaciaDashboard() {
     respAltEmail: 'admin@farmaciacentral.com',
     hrEmail: 'rrhh@farmaciacentral.com',
     hrPhone: '0341-4247815',
-    hrAltEmail: 'contable@farmaciacentral.com'
+    hrAltEmail: 'contable@farmaciacentral.com',
+    hrName: 'Roberto Gómez',
+    hrRole: 'Contador / RRHH'
   });
 
   // Employee Add form state
@@ -76,6 +79,10 @@ export default function FarmaciaDashboard() {
     { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true },
     { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true },
     { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true },
+  ]);
+
+  const [announcements, setAnnouncements] = useState<any[]>([
+    { id: '1', title: 'Nueva Homologación CCT 659/13', summary: 'Se informa a las farmacias la escala de Julio 2026 vigente para liquidaciones.', date: '25 Jun 2026' }
   ]);
 
   // CCT Categories List
@@ -121,11 +128,30 @@ export default function FarmaciaDashboard() {
         return;
       }
 
-      const { data: pharmacy } = await supabase
+      let { data: pharmacy } = await supabase
         .from('pharmacies')
         .select('*')
         .eq('owner_id', session.user.id)
-        .single();
+        .maybeSingle();
+
+      if (!pharmacy) {
+        // Autocreate pharmacy row if missing to prevent page crash
+        const { data: newPharm, error: createError } = await supabase
+          .from('pharmacies')
+          .insert({
+            name: 'Mi Farmacia',
+            cuit: '99-' + Math.floor(10000000 + Math.random() * 90000000) + '-9',
+            address: 'Dirección no declarada',
+            owner_id: session.user.id,
+            registered: true
+          })
+          .select()
+          .single();
+
+        if (!createError && newPharm) {
+          pharmacy = newPharm;
+        }
+      }
 
       if (pharmacy) {
         setPharmacyId(pharmacy.id);
@@ -148,8 +174,10 @@ export default function FarmaciaDashboard() {
           respPhone: pharmacy.resp_phone || '',
           respAltEmail: pharmacy.resp_alt_email || '',
           hrEmail: pharmacy.hr_email || '',
-          hr_phone: pharmacy.hr_phone || '',
-          hrAltEmail: pharmacy.hr_alt_email || ''
+          hrPhone: pharmacy.hr_phone || '',
+          hrAltEmail: pharmacy.hr_alt_email || '',
+          hrName: pharmacy.hr_name || '',
+          hrRole: pharmacy.hr_role || ''
         } as any);
 
         // Fetch registered employees
@@ -166,6 +194,22 @@ export default function FarmaciaDashboard() {
             category: emp.category,
             entryDate: emp.entry_date,
             active: emp.active
+          })));
+        }
+
+        // Fetch announcements
+        const { data: annData } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('visibility', 'pharmacy')
+          .order('created_at', { ascending: false });
+
+        if (annData && annData.length > 0) {
+          setAnnouncements(annData.map(a => ({
+            id: a.id,
+            title: a.title,
+            summary: a.summary,
+            date: new Date(a.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
           })));
         }
       }
@@ -217,6 +261,8 @@ export default function FarmaciaDashboard() {
             hr_email: profileData.hrEmail,
             hr_phone: profileData.hrPhone,
             hr_alt_email: profileData.hrAltEmail,
+            hr_name: profileData.hrName,
+            hr_role: profileData.hrRole,
           })
           .eq('owner_id', session.user.id);
 
@@ -463,58 +509,105 @@ export default function FarmaciaDashboard() {
           </div>
         </div>
 
-        {/* Staff Table Summary */}
-        <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
-          <div className="flex items-center justify-between border-b border-border pb-4">
-            <h3 className="font-bold text-[#0f172a] text-md flex items-center gap-2">
-              <Users className="w-5 h-5 text-secondary" />
-              Nómina de Empleados Declarada
-            </h3>
-            <div className="flex items-center gap-3">
-              <button
-                onClick={() => setIsEmployeeModalOpen(true)}
-                className="inline-flex items-center justify-center gap-1 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
-              >
-                <Plus className="w-4 h-4 mr-1" />
-                <span>Agregar Empleado</span>
-              </button>
-              <span className="text-[10px] bg-secondary/15 text-secondary font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                Junio 2026
-              </span>
+        {/* Main Grid split for Staff and Announcements */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          
+          {/* Staff Table Summary */}
+          <div className="lg:col-span-8 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <h3 className="font-bold text-[#0f172a] text-md flex items-center gap-2">
+                <Users className="w-5 h-5 text-secondary" />
+                Nómina de Empleados Declarada
+              </h3>
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsEmployeeModalOpen(true)}
+                  className="inline-flex items-center justify-center gap-1 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
+                >
+                  <Plus className="w-4 h-4 mr-1" />
+                  <span>Agregar Empleado</span>
+                </button>
+                <span className="text-[10px] bg-secondary/15 text-secondary font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
+                  Junio 2026
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="border-b border-border text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
+                    <th className="py-3 px-4">Nombre y Apellido</th>
+                    <th className="py-3 px-4">CUIL</th>
+                    <th className="py-3 px-4">Categoría Profesional</th>
+                    <th className="py-3 px-4 text-center">Ingreso</th>
+                    <th className="py-3 px-4 text-center">Antigüedad</th>
+                    <th className="py-3 px-4 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
+                  {employees.map((emp) => {
+                    const catInfo = getCurrentCategory(emp.category, emp.entryDate);
+                    return (
+                      <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-[#0f172a]">{emp.fullName}</td>
+                        <td className="py-3.5 px-4 font-mono text-slate-500">{emp.cuil}</td>
+                        <td className="py-3.5 px-4 text-slate-500">
+                          <div className="flex flex-col">
+                            <span>{catInfo.category}</span>
+                            {catInfo.promoted && (
+                              <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded w-max mt-0.5">
+                                Promovido (+{catInfo.steps} cat.)
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center text-slate-500">{emp.entryDate}</td>
+                        <td className="py-3.5 px-4 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>
+                        <td className="py-3.5 px-4 text-center">
+                          <button
+                            onClick={() => handleDeleteEmployee(emp.id)}
+                            className="p-1.5 rounded-lg border border-border hover:bg-red-50 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer shadow-sm"
+                            title="Dar de Baja"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="border-b border-border text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
-                  <th className="py-3 px-4">Nombre y Apellido</th>
-                  <th className="py-3 px-4">CUIL</th>
-                  <th className="py-3 px-4">Categoría Profesional</th>
-                  <th className="py-3 px-4 text-center">Ingreso</th>
-                  <th className="py-3 px-4 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
-                {employees.map((emp) => (
-                  <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3.5 px-4 font-bold text-[#0f172a]">{emp.fullName}</td>
-                    <td className="py-3.5 px-4 font-mono text-slate-500">{emp.cuil}</td>
-                    <td className="py-3.5 px-4 text-slate-500">{emp.category}</td>
-                    <td className="py-3.5 px-4 text-center text-slate-500">{emp.entryDate}</td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => handleDeleteEmployee(emp.id)}
-                        className="p-1.5 rounded-lg border border-border hover:bg-red-50 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer shadow-sm"
-                        title="Dar de Baja"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          {/* Announcements Card (Pharmacy Exclusives) */}
+          <div className="lg:col-span-4 bg-card border border-border rounded-3xl p-6 shadow-premium glass space-y-6">
+            <div className="border-b border-border pb-4">
+              <h3 className="font-bold text-[#0f172a] text-md flex items-center gap-2">
+                <FileText className="w-5 h-5 text-secondary" />
+                Circulares y Acuerdos
+              </h3>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">Exclusivo para Farmacias</p>
+            </div>
+
+            <div className="space-y-4 max-h-[400px] overflow-y-auto pr-1">
+              {announcements.length === 0 ? (
+                <div className="text-center py-6 text-xs text-muted-foreground font-semibold">
+                  No hay comunicados gremiales en este momento.
+                </div>
+              ) : (
+                announcements.map((ann) => (
+                  <div key={ann.id} className="p-3.5 border border-border rounded-2xl bg-slate-50/50 hover:bg-slate-100/50 transition-colors space-y-1.5">
+                    <span className="text-[9px] bg-secondary/15 text-secondary font-black px-2 py-0.5 rounded uppercase tracking-wider block w-max">
+                      {ann.date}
+                    </span>
+                    <h4 className="font-bold text-xs text-[#0f172a] leading-snug">{ann.title}</h4>
+                    <p className="text-[11px] text-slate-500 font-semibold leading-relaxed">{ann.summary}</p>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         </div>
 
@@ -711,35 +804,58 @@ export default function FarmaciaDashboard() {
                     </div>
                   </div>
 
-                  {/* Responsable de RRHH */}
+                  {/* Responsable de RRHH / Segundo Contacto */}
                   <div className="space-y-3.5">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Responsable de Recursos Humanos (RRHH)</span>
+                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Segundo Responsable (RRHH / Contabilidad / Apoderado)</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre Completo del Responsable</label>
+                        <input 
+                          type="text" 
+                          value={profileData.hrName || ''} 
+                          onChange={(e) => handleProfileFieldChange('hrName', e.target.value)} 
+                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                          placeholder="Ej: Roberto Gómez"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Relación / Cargo / Oficina</label>
+                        <input 
+                          type="text" 
+                          value={profileData.hrRole || ''} 
+                          onChange={(e) => handleProfileFieldChange('hrRole', e.target.value)} 
+                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                          placeholder="Ej: Contador, Recursos Humanos"
+                        />
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <div>
                         <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email RRHH</label>
                         <input 
                           type="email" 
-                          value={profileData.hrEmail} 
+                          value={profileData.hrEmail || ''} 
                           onChange={(e) => handleProfileFieldChange('hrEmail', e.target.value)} 
                           className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          required
+                          placeholder="rrhh@ejemplo.com"
                         />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Teléfono RRHH</label>
                         <input 
                           type="text" 
-                          value={profileData.hrPhone} 
+                          value={profileData.hrPhone || ''} 
                           onChange={(e) => handleProfileFieldChange('hrPhone', e.target.value)} 
                           className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          required
+                          placeholder="Ej: 3415556677"
                         />
                       </div>
                       <div>
                         <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email Alt. RRHH</label>
                         <input 
                           type="email" 
-                          value={profileData.hrAltEmail} 
+                          value={profileData.hrAltEmail || ''} 
                           onChange={(e) => handleProfileFieldChange('hrAltEmail', e.target.value)} 
                           className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
                         />

@@ -31,17 +31,27 @@ function LoginContent() {
   const [errorMsg, setErrorMsg] = useState('');
   
   // Form states
+  // Form states
   const [email, setEmail] = useState('');
+  const [emailConfirm, setEmailConfirm] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
   
   // Role specific states
   const [cuil, setCuil] = useState('');
   const [pharmacyName, setPharmacyName] = useState('');
+  const [pharmacyRazonSocial, setPharmacyRazonSocial] = useState('');
   const [pharmacyCuit, setPharmacyCuit] = useState('');
   const [pharmacyAddress, setPharmacyAddress] = useState('');
+  const [pharmacyCrossStreets, setPharmacyCrossStreets] = useState('');
+  const [pharmacyPhoneAlt, setPharmacyPhoneAlt] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+
+  // Map coordinate picker states (Rosario default coords)
+  const [latitude, setLatitude] = useState(-32.9468);
+  const [longitude, setLongitude] = useState(-60.6393);
 
   // Handle URL tab changes
   useEffect(() => {
@@ -49,6 +59,59 @@ function LoginContent() {
     if (tab === 'register') setActiveTab('register');
     else setActiveTab('login');
   }, [searchParams]);
+
+  // Leaflet map selector loading
+  useEffect(() => {
+    if (activeTab !== 'register' || registerRole !== 'pharmacy_owner' || typeof window === 'undefined') return;
+
+    let mapInstance: any = null;
+    let markerInstance: any = null;
+
+    Promise.all([
+      import('leaflet'),
+      import('leaflet/dist/leaflet.css' as any)
+    ]).then(([L]) => {
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+      });
+
+      const container = document.getElementById('map-selector');
+      if (!container) return;
+
+      mapInstance = L.map('map-selector').setView([latitude, longitude], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap'
+      }).addTo(mapInstance);
+
+      markerInstance = L.marker([latitude, longitude], { draggable: true }).addTo(mapInstance);
+
+      const updateCoordinates = (lat: number, lng: number) => {
+        setLatitude(lat);
+        setLongitude(lng);
+      };
+
+      markerInstance.on('dragend', () => {
+        const position = markerInstance.getLatLng();
+        updateCoordinates(position.lat, position.lng);
+      });
+
+      mapInstance.on('click', (e: any) => {
+        markerInstance.setLatLng(e.latlng);
+        updateCoordinates(e.latlng.lat, e.latlng.lng);
+      });
+    }).catch(err => {
+      console.warn("Failed to load map:", err);
+    });
+
+    return () => {
+      if (mapInstance) {
+        mapInstance.remove();
+      }
+    };
+  }, [activeTab, registerRole]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +175,34 @@ function LoginContent() {
     setLoading(true);
     setErrorMsg('');
 
+    if (email !== emailConfirm) {
+      setErrorMsg('Los correos electrónicos ingresados no coinciden.');
+      setLoading(false);
+      return;
+    }
+
+    if (password !== passwordConfirm) {
+      setErrorMsg('Las contraseñas ingresadas no coinciden.');
+      setLoading(false);
+      return;
+    }
+
+    if (registerRole === 'pharmacy_owner') {
+      const cuitRegex = /^\d{11}$/;
+      if (!cuitRegex.test(pharmacyCuit)) {
+        setErrorMsg('El CUIT debe poseer exactamente 11 dígitos numéricos, sin espacios ni guiones.');
+        setLoading(false);
+        return;
+      }
+    }
+
+    let formattedPhone = phone.replace(/\D/g, '');
+    if (formattedPhone.startsWith('0')) formattedPhone = formattedPhone.substring(1);
+    if (formattedPhone.startsWith('15')) formattedPhone = formattedPhone.substring(2);
+    if (formattedPhone.length > 0 && !formattedPhone.startsWith('54')) {
+      formattedPhone = '549' + formattedPhone;
+    }
+
     try {
       const isConfigured = 
         process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
@@ -136,7 +227,7 @@ function LoginContent() {
           data: {
             full_name: fullName,
             role: registerRole,
-            phone: phone,
+            phone: formattedPhone,
           }
         }
       });
@@ -166,7 +257,12 @@ function LoginContent() {
               owner_id: authData.user.id,
               registered: true,
               name: pharmacyName,
+              razon_social: pharmacyRazonSocial,
               address: pharmacyAddress,
+              cross_streets: pharmacyCrossStreets,
+              phone_alt: pharmacyPhoneAlt,
+              latitude: latitude,
+              longitude: longitude
             })
             .eq('id', existingPharm.id);
           pharmacyError = updateError;
@@ -176,8 +272,13 @@ function LoginContent() {
             .from('pharmacies')
             .insert({
               name: pharmacyName,
+              razon_social: pharmacyRazonSocial,
               cuit: pharmacyCuit,
               address: pharmacyAddress,
+              cross_streets: pharmacyCrossStreets,
+              phone_alt: pharmacyPhoneAlt,
+              latitude: latitude,
+              longitude: longitude,
               owner_id: authData.user.id,
               registered: true,
             });
@@ -383,7 +484,7 @@ function LoginContent() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Nombre Completo
+                    Nombre Completo del Titular *
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -392,14 +493,14 @@ function LoginContent() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Ej. Ana Rossi"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                      placeholder="Ej. Emanuel Borello"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
                     />
                   </div>
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Teléfono
+                    Teléfono Celular (WhatsApp) *
                   </label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -408,27 +509,46 @@ function LoginContent() {
                       required
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Ej. 3415554433"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                      placeholder="Ej: 3415556677 (sin 0 ni 15)"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Correo Electrónico
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type="email"
-                    required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="correo@ejemplo.com"
-                    className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
-                  />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Correo Electrónico *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      required
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="correo@ejemplo.com"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Repetir Correo Electrónico *
+                  </label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type="email"
+                      required
+                      value={emailConfirm}
+                      onChange={(e) => setEmailConfirm(e.target.value)}
+                      placeholder="correo@ejemplo.com"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -452,15 +572,15 @@ function LoginContent() {
                 </div>
               ) : (
                 /* Pharmacy Owner Fields */
-                <div className="space-y-3 p-3 bg-muted/40 rounded-xl border border-border/80">
-                  <span className="text-[10px] font-bold text-secondary uppercase tracking-wider">
+                <div className="space-y-3.5 p-4 bg-muted/40 rounded-xl border border-border/80">
+                  <span className="text-[10px] font-bold text-secondary uppercase tracking-wider block border-b border-border/60 pb-1">
                     Datos de la Farmacia
                   </span>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-muted-foreground">
-                        Nombre de la Farmacia
+                        Nombre de Fantasía *
                       </label>
                       <input
                         type="text"
@@ -468,12 +588,28 @@ function LoginContent() {
                         value={pharmacyName}
                         onChange={(e) => setPharmacyName(e.target.value)}
                         placeholder="Ej. Farmacia Centro"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
                       />
                     </div>
                     <div className="space-y-1">
                       <label className="text-[10px] font-semibold text-muted-foreground">
-                        CUIT Comercial
+                        Razón Social *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={pharmacyRazonSocial}
+                        onChange={(e) => setPharmacyRazonSocial(e.target.value)}
+                        placeholder="Ej. Farmacia Centro S.H."
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        CUIT Comercial (11 números sin guiones) *
                       </label>
                       <input
                         type="text"
@@ -481,48 +617,104 @@ function LoginContent() {
                         value={pharmacyCuit}
                         onChange={(e) => setPharmacyCuit(e.target.value)}
                         placeholder="Ej. 30777888990"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-mono font-bold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        Teléfono Alternativo (Fijo/Móvil)
+                      </label>
+                      <input
+                        type="text"
+                        value={pharmacyPhoneAlt}
+                        onChange={(e) => setPharmacyPhoneAlt(e.target.value)}
+                        placeholder="Ej. 03414445555"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
                       />
                     </div>
                   </div>
                   
-                  <div className="space-y-1">
-                    <label className="text-[10px] font-semibold text-muted-foreground">
-                      Dirección (Rosario, Santa Fe)
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        Dirección (Rosario, Santa Fe) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={pharmacyAddress}
+                        onChange={(e) => setPharmacyAddress(e.target.value)}
+                        placeholder="Ej. San Martin 1234"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-semibold text-muted-foreground">
+                        Entre qué calles *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={pharmacyCrossStreets}
+                        onChange={(e) => setPharmacyCrossStreets(e.target.value)}
+                        placeholder="Ej. Entre Mendoza y 3 de Febrero"
+                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1 pt-1">
+                    <label className="text-[10px] font-semibold text-slate-500 block mb-1">
+                      Geolocalización: Señale la posición exacta de la Farmacia
                     </label>
-                    <input
-                      type="text"
-                      required
-                      value={pharmacyAddress}
-                      onChange={(e) => setPharmacyAddress(e.target.value)}
-                      placeholder="Ej. San Martin 1234"
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
-                    />
+                    <div id="map-selector" className="h-44 w-full rounded-xl border border-border overflow-hidden bg-slate-100 z-10" />
+                    <span className="text-[9px] text-muted-foreground block text-right font-medium">
+                      Coordenadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
+                    </span>
                   </div>
                 </div>
               )}
 
-              <div className="space-y-1">
-                <label className="text-xs font-semibold text-muted-foreground">
-                  Contraseña de Acceso
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    required
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Contraseña de Acceso *
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Repetir Contraseña *
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={passwordConfirm}
+                      onChange={(e) => setPasswordConfirm(e.target.value)}
+                      placeholder="Mínimo 6 caracteres"
+                      className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
+                    />
+                  </div>
                 </div>
               </div>
 

@@ -18,6 +18,7 @@ import {
   MapPin,
   ChevronLeft
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -114,7 +115,7 @@ export default function HomePage() {
     },
   ];
 
-  const news = [
+  const [news, setNews] = useState([
     {
       id: 'acuerdo-junio-2026',
       title: 'Acuerdo Salarial Junio 2026: Nuevos Valores',
@@ -139,13 +140,49 @@ export default function HomePage() {
       author: 'Área Formación',
       image: 'https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=600',
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    async function fetchNews() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('visibility', 'public')
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setNews(data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            category: item.category,
+            date: new Date(item.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
+            author: 'Gremio ATFAR',
+            image: item.image_url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600'
+          })));
+        }
+      } catch (err) {
+        // Error loading news ignored
+      }
+    }
+
+    fetchNews();
+  }, []);
 
   const featuredScales = [
-    { category: 'Farmacéutico (Director Técnico)', basic: '$820.000' },
-    { category: 'Auxiliar de Farmacia', basic: '$640.000' },
-    { category: 'Cajero de Farmacia', basic: '$590.000' },
-    { category: 'Personal de Salón (Vendedor)', basic: '$585.000' },
+    { category: 'Farmacéutico (Director Técnico)', basic: '$2.095.145,60' },
+    { category: 'Auxiliar de Farmacia', basic: '$1.897.306,78' },
+    { category: 'Cajero de Farmacia', basic: '$1.550.823,66' },
+    { category: 'Personal de Salón (Vendedor)', basic: '$1.381.087,99' },
   ];
 
   return (

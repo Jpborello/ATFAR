@@ -104,7 +104,7 @@ export default function Navbar() {
         <Link href="/escalas" className="underline hover:opacity-90 ml-1">Ver Escalas →</Link>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full py-2 sm:py-3">
+      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 w-full py-2 sm:py-3">
         <div className="flex items-center justify-between h-16">
           {/* Logo Brand */}
           <div className="flex-shrink-0 flex items-center">
@@ -126,7 +126,7 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:flex items-center gap-4 lg:gap-5 ml-auto mr-6 lg:mr-10">
+          <div className="hidden lg:flex items-center gap-4 lg:gap-5 ml-auto mr-6 lg:mr-10">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -144,7 +144,7 @@ export default function Navbar() {
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden md:flex items-center border-l border-border pl-6 lg:pl-8">
+          <div className="hidden lg:flex items-center border-l border-border pl-6 lg:pl-8">
             {profile ? (
               <div className="flex items-center gap-4">
                 <Link
@@ -175,7 +175,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden flex items-center">
+          <div className="lg:hidden flex items-center">
             <button
               onClick={() => setIsOpen(!isOpen)}
               className="inline-flex items-center justify-center p-2.5 rounded-xl text-foreground hover:text-primary hover:bg-muted/50 focus:outline-none transition-colors"
@@ -188,7 +188,7 @@ export default function Navbar() {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden bg-card border-b border-border shadow-premium-lg transition-all duration-300 animate-fadeIn">
+        <div className="lg:hidden bg-card border-b border-border shadow-premium-lg transition-all duration-300 animate-fadeIn">
           <div className="px-3 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;

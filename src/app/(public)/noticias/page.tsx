@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, User, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface NewsItem {
   id: string;
@@ -16,8 +17,7 @@ interface NewsItem {
 
 export default function NoticiasPage() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
-  const newsItems: NewsItem[] = [
+  const [news, setNews] = useState<NewsItem[]>([
     {
       id: 'acuerdo-junio-2026',
       title: 'Acuerdo Salarial Junio 2026: Nuevos Valores',
@@ -54,13 +54,49 @@ export default function NoticiasPage() {
       summary: 'Informamos a los afiliados que el período regular de entrega de mochilas y kits escolares para el ciclo lectivo culmina el próximo mes. Completá la solicitud online.',
       image: 'https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&q=80&w=600',
     },
-  ];
+  ]);
+
+  useEffect(() => {
+    async function loadNews() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        const { data, error } = await supabase
+          .from('announcements')
+          .select('*')
+          .eq('visibility', 'public')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          setNews(data.map((item: any) => ({
+            id: item.id,
+            title: item.title,
+            category: item.category as any,
+            date: new Date(item.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
+            author: 'Gremio ATFAR',
+            summary: item.summary,
+            image: item.image_url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600'
+          })));
+        }
+      } catch (err) {
+        console.error("Error loading news:", err);
+      }
+    }
+
+    loadNews();
+  }, []);
 
   const categories = ['all', 'Gremiales', 'Beneficios', 'Capacitación', 'Institucional'];
 
   const filteredNews = selectedCategory === 'all'
-    ? newsItems
-    : newsItems.filter(item => item.category === selectedCategory);
+    ? news
+    : news.filter(item => item.category === selectedCategory);
 
   return (
     <div className="bg-background text-foreground min-h-screen py-12 px-4 sm:px-6 lg:px-8 relative">
