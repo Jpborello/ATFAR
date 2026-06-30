@@ -170,11 +170,12 @@ CREATE POLICY "Public can submit applications" ON public.job_applications
     FOR INSERT WITH CHECK (true);
 
 DROP POLICY IF EXISTS "Only Admins can view applications" ON public.job_applications;
-CREATE POLICY "Only Admins can view applications" ON public.job_applications
+DROP POLICY IF EXISTS "Admins and Pharmacy Owners can view applications" ON public.job_applications;
+CREATE POLICY "Admins and Pharmacy Owners can view applications" ON public.job_applications
     FOR SELECT USING (
         EXISTS (
             SELECT 1 FROM public.profiles 
-            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+            WHERE profiles.id = auth.uid() AND (profiles.role = 'admin' OR profiles.role = 'pharmacy_owner')
         )
     );
 
