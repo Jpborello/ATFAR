@@ -107,7 +107,7 @@ CREATE POLICY "Owners can update their own pharmacy" ON public.pharmacies
 
 DROP POLICY IF EXISTS "Enable insert for pharmacies" ON public.pharmacies;
 CREATE POLICY "Enable insert for pharmacies" ON public.pharmacies
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT WITH CHECK (auth.uid() = owner_id);
 
 DROP POLICY IF EXISTS "Admins can do everything on pharmacies" ON public.pharmacies;
 CREATE POLICY "Admins can do everything on pharmacies" ON public.pharmacies
@@ -195,10 +195,8 @@ BEGIN
   -- Extraemos el rol de los metadatos como texto simple
   raw_role_text := new.raw_user_meta_data->>'role';
   
-  -- Intentamos convertirlo de manera segura
-  IF raw_role_text = 'admin' THEN
-    assigned_role := 'admin'::public.user_role;
-  ELSIF raw_role_text = 'pharmacy_owner' THEN
+  -- Intentamos convertirlo de manera segura (evitamos que metadatos del cliente puedan definir un 'admin')
+  IF raw_role_text = 'pharmacy_owner' THEN
     assigned_role := 'pharmacy_owner'::public.user_role;
   ELSE
     assigned_role := default_role;
@@ -274,8 +272,8 @@ CREATE POLICY "Public Access to Receipts" ON storage.objects
     FOR SELECT USING (bucket_id = 'receipts');
 
 DROP POLICY IF EXISTS "Allow Public Upload to Receipts" ON storage.objects;
-CREATE POLICY "Allow Public Upload to Receipts" ON storage.objects
-    FOR INSERT WITH CHECK (bucket_id = 'receipts');
+CREATE POLICY "Allow Authenticated Upload to Receipts" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'receipts' AND auth.role() = 'authenticated');
 
 
 -- ----------------------------------------------------
