@@ -1,0 +1,513 @@
+============================================================
+DEPARTAMENTO: SAN LORENZO
+Total Farmacias: 108
+============================================================
+
+[1] GIACUMELLI
+    Dirección:   RIOJA 1101
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.897318, Long: -60.912412
+--------------------------------------------------
+[2] MUTUAL
+    Dirección:   SARMIENTO 1405
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.714511, Long: -61.04908
+--------------------------------------------------
+[3] TUMINI
+    Dirección:   PELLEGRINI 738
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.898921, Long: -60.907606
+--------------------------------------------------
+[4] MUTUAL PERSONAL OBREROS SULFACID SA
+    Dirección:   DORREGO 50
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78344369, Long: -60.72707078
+--------------------------------------------------
+[5] CECARELLI
+    Dirección:   AV SAN MARTIN 1267
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78937623, Long: -60.72444749
+--------------------------------------------------
+[6] LORENZO
+    Dirección:   GRAL LOPEZ 26 PB
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.819703, Long: -60.723628
+--------------------------------------------------
+[7] GRANADEROS A CABALLO
+    Dirección:   RICHERI 347
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.748807, Long: -60.72987
+--------------------------------------------------
+[8] VITALE
+    Dirección:   GRAL SAVIO 214
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.783667, Long: -60.730215
+--------------------------------------------------
+[9] GRISOLIA
+    Dirección:   SAN MARTIN 1118
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.750377, Long: -60.734185
+--------------------------------------------------
+[10] POPULAR
+    Dirección:   Bv OROÑO 621
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.735397, Long: -60.734099
+--------------------------------------------------
+[11] SMYK
+    Dirección:   J. INGENIERON  1104
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73999, Long: -60.739483
+--------------------------------------------------
+[12] NOEL
+    Dirección:   Sgto CABRAL 1970
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.742526, Long: -60.730567
+--------------------------------------------------
+[13] LOPEZ
+    Dirección:   SAN MARTIN 1302
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.748662, Long: -60.734145
+--------------------------------------------------
+[14] DUTTO
+    Dirección:   1RA. JUNTA 20
+    Localidad:   ALDAO (CP: 2214)
+--------------------------------------------------
+[15] MANSILLA
+    Dirección:   MARIANO MORENO ESQ. MITRE
+    Localidad:   ALDAO (CP: 2214)
+--------------------------------------------------
+[16] TURRI
+    Dirección:   RUCCI 845
+    Localidad:   LUIS PALACIOS (CP: 2142)
+--------------------------------------------------
+[17] PLACCI
+    Dirección:   9 DE JULIO 257
+    Localidad:   VILLA MUGUETA (CP: 2175)
+    Ubicación:   Lat: -33.31152645, Long: -61.05529383
+--------------------------------------------------
+[18] RASTELLI
+    Dirección:   SAN MARTIN 555
+    Localidad:   VILLA MUGUETA (CP: 2175)
+    Ubicación:   Lat: -33.31186298, Long: -61.05727593
+--------------------------------------------------
+[19] DE GRANDIS
+    Dirección:   BELGRANO 225
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71660428, Long: -60.73510393
+--------------------------------------------------
+[20] GOBBO
+    Dirección:   BELGRANO 502
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71410787, Long: -60.73450422
+--------------------------------------------------
+[21] LESZKIEWICZ
+    Dirección:   BUENOS AIRES  1018
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71185533, Long: -60.73642941
+--------------------------------------------------
+[22] MEROI
+    Dirección:   CORDOBA 857
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71669669, Long: -60.73578879
+--------------------------------------------------
+[23] SINDICATO DE OBREROS Y EMP. ACEITEROS
+    Dirección:   CORDOBA 1109
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71622351, Long: -60.73850129
+--------------------------------------------------
+[24] VOLGUEIN
+    Dirección:   RUTA 11 KM 334 949
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+--------------------------------------------------
+[25] BOSIO
+    Dirección:   SAN MARTIN 622
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71361509, Long: -60.73026258
+--------------------------------------------------
+[26] DEL PUERTO
+    Dirección:   SAN MARTIN 168
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71776338, Long: -60.73119845
+--------------------------------------------------
+[27] PELOSI
+    Dirección:   SAN MARTIN 378
+    Localidad:   PUERTO GENERAL SAN MARTIN (CP: 2202)
+    Ubicación:   Lat: -32.71587617, Long: -60.73079167
+--------------------------------------------------
+[28] MAROZZI
+    Dirección:   BV. COLON 928
+    Localidad:   PUJATO (CP: 2123)
+    Ubicación:   Lat: -33.01589059, Long: -61.04407063
+--------------------------------------------------
+[29] FIORI
+    Dirección:   J. R. RODRIGUEZ 567
+    Localidad:   PUJATO (CP: 2123)
+--------------------------------------------------
+[30] PENNACCHIONI
+    Dirección:   J. R. RODRIGUEZ 1199
+    Localidad:   PUJATO (CP: 2123)
+--------------------------------------------------
+[31] RODRIGUEZ
+    Dirección:   J. R. RODRIGUEZ 943
+    Localidad:   PUJATO (CP: 2123)
+--------------------------------------------------
+[32] JANDIRIZ
+    Dirección:   SAN MARTIN 646
+    Localidad:   PUJATO (CP: 2123)
+    Ubicación:   Lat: -33.01863227, Long: -61.04252468
+--------------------------------------------------
+[33] WINKER
+    Dirección:   CAFFERATA 490
+    Localidad:   RICARDONE (CP: 2201)
+--------------------------------------------------
+[34] CLARI
+    Dirección:   URBANO IRIONDO 648
+    Localidad:   RICARDONE (CP: 2201)
+    Ubicación:   Lat: -32.77100445, Long: -60.78299721
+--------------------------------------------------
+[35] TRIONFETTI
+    Dirección:   ALBERDI 402
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.90386328, Long: -60.90546263
+--------------------------------------------------
+[36] TORNABENE
+    Dirección:   CATAMARCA 788
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.90532385, Long: -60.90996016
+--------------------------------------------------
+[37] BUSTAMANTE
+    Dirección:   GRAL. LOPEZ 753
+    Localidad:   ROLDAN (CP: 2134)
+--------------------------------------------------
+[38] ALBINOLI
+    Dirección:   SAN MARTIN 818
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.90024035, Long: -60.90907942
+--------------------------------------------------
+[39] CAPDEVILA
+    Dirección:   URQUIZA 207
+    Localidad:   ROLDAN (CP: 2134)
+    Ubicación:   Lat: -32.90163602, Long: -60.90774371
+--------------------------------------------------
+[40] A.P.R.E.P.A.
+    Dirección:   1° DE JUNIO 464
+    Localidad:   SAN JERONIMO SUD (CP: 2136)
+    Ubicación:   Lat: -32.88110243, Long: -61.02381155
+--------------------------------------------------
+[41] KRENZ
+    Dirección:   ESTRASBURGO 354
+    Localidad:   SAN JERONIMO SUD (CP: 2136)
+    Ubicación:   Lat: -32.88050803, Long: -61.02308383
+--------------------------------------------------
+[42] DORREGO
+    Dirección:   AV. DORREGO 2119
+    Localidad:   SAN LORENZO (CP: 2200)
+--------------------------------------------------
+[43] POTALIVO
+    Dirección:   AV. SAN MARTIN 2123
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.74115379, Long: -60.73408665
+--------------------------------------------------
+[44] TERZAGHI
+    Dirección:   AV. SAN MARTIN 3071
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73113601, Long: -60.73341172
+--------------------------------------------------
+[45] ROMEGIALLI
+    Dirección:   AVDA. GUREL 689
+    Localidad:   SAN LORENZO (CP: 2200)
+--------------------------------------------------
+[46] CALZIA
+    Dirección:   BELGRANO 675
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7467467, Long: -60.73499938
+--------------------------------------------------
+[47] MIOR
+    Dirección:   BV. OROÑO 1223
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73428746, Long: -60.74008088
+--------------------------------------------------
+[48] MIRIAM GARCIA
+    Dirección:   BV. OROÑO 1546
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73355884, Long: -60.7441531
+--------------------------------------------------
+[49] ALBANESI
+    Dirección:   DORREGO 704
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75440047, Long: -60.73744791
+--------------------------------------------------
+[50] RIOS
+    Dirección:   DORREGO 1554
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7461933, Long: -60.73726499
+--------------------------------------------------
+[51] SQUILLACE
+    Dirección:   DORREGO 2411
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73794317, Long: -60.7368514
+--------------------------------------------------
+[52] FARMACIA A.M.U.R. ASOC. RURALISTA
+    Dirección:   Avenida San Martín 1147
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.750141, Long: -60.7342988
+--------------------------------------------------
+[53] VIVIANA SILVA
+    Dirección:   ENTRE RIOS 754
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.74307207, Long: -60.73570398
+--------------------------------------------------
+[54] ALESSANDRINI
+    Dirección:   GRAL LOPEZ 932
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75203483, Long: -60.73536935
+--------------------------------------------------
+[55] CERRETTO
+    Dirección:   GRAL. LOPEZ 3708
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.72493423, Long: -60.7335846
+--------------------------------------------------
+[56] SUTKOWSKI
+    Dirección:   HIPOLITO YRIGOYEN 2698
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73510041, Long: -60.73599293
+--------------------------------------------------
+[57] GARCIA ALONSO
+    Dirección:   L N ALEM 617
+    Localidad:   SAN LORENZO (CP: 2200)
+--------------------------------------------------
+[58] MASSONI
+    Dirección:   MISIONES 1085
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75637915, Long: -60.74079668
+--------------------------------------------------
+[59] ALI
+    Dirección:   PASAJE DEL INMIGRANTE 758
+    Localidad:   SAN LORENZO (CP: 2200)
+--------------------------------------------------
+[60] HOSPITAL GRANADEROS A CABALLO
+    Dirección:   RICHIERI 347
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75785371, Long: -60.73449455
+--------------------------------------------------
+[61] PANACEA
+    Dirección:   SALTA 690
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.74486501, Long: -60.73510945
+--------------------------------------------------
+[62] FROSCHAUER
+    Dirección:   SAN CARLOS 744
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75443665, Long: -60.73267699
+--------------------------------------------------
+[63] DOCOLA
+    Dirección:   SAN MARTIN 3319
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7288323, Long: -60.73307694
+--------------------------------------------------
+[64] LUDUEÑA
+    Dirección:   SAN MARTIN 3882
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7234002, Long: -60.73225619
+--------------------------------------------------
+[65] MEROI
+    Dirección:   SAN MARTIN 1147
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75011898, Long: -60.73432698
+--------------------------------------------------
+[66] RUCCI
+    Dirección:   SAN MARTIN 943
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75198492, Long: -60.73437115
+--------------------------------------------------
+[67] S.O.E.P.U.
+    Dirección:   SAN MARTIN 968
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75175146, Long: -60.73436923
+--------------------------------------------------
+[68] SERENELLI
+    Dirección:   SAN MARTIN 1798
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.74402446, Long: -60.73417279
+--------------------------------------------------
+[69] ALESSANDRI
+    Dirección:   SARGENTO CABRAL 1335
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.74848006, Long: -60.73079624
+--------------------------------------------------
+[70] MARTINEZ
+    Dirección:   SARGENTO CABRAL 2345
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.73951888, Long: -60.73057612
+--------------------------------------------------
+[71] ROJAS
+    Dirección:   SARGENTO CABRAL 552
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.75678241, Long: -60.7316285
+--------------------------------------------------
+[72] ROQUETTA
+    Dirección:   SARGENTO CABRAL 884
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7525916, Long: -60.73087413
+--------------------------------------------------
+[73] ALZUGARAY
+    Dirección:   URIBURU 1405
+    Localidad:   SAN LORENZO (CP: 2200)
+    Ubicación:   Lat: -32.7474758, Long: -60.74054402
+--------------------------------------------------
+[74] FARMACIA RUCCI
+    Dirección:   9 de Julio 177
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+    Ubicación:   Lat: -32.8205323, Long: -60.7173316
+--------------------------------------------------
+[75] CEBALLOS
+    Dirección:   AV SAN LORENZO 229
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[76] PERLO
+    Dirección:   AV. EVA PERON 586
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[77] ALARCON
+    Dirección:   AV. SAN LORENZO 3147
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[78] FARMACIA FERNANDEZ
+    Dirección:   Avenida San Lorenzo 1629
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+    Ubicación:   Lat: -32.8170211, Long: -60.716289
+--------------------------------------------------
+[79] ROJAS
+    Dirección:   AV. SAN LORENZO 901
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[80] ROSARIO
+    Dirección:   AV. SAN LORENZO 671
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[81] ZACCO
+    Dirección:   AV. SAN ROQUE 35
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[82] ROSSINI
+    Dirección:   C. COLON 13
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[83] CINALLI
+    Dirección:   CELEDONIO ESCALADA 50
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[84] GIALLEONARDO
+    Dirección:   COLON 799
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[85] FARMACIA GONZALEZ
+    Dirección:   Colón 1312
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[86] GAIA
+    Dirección:   JUJUY 573
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[87] VILLAREAL
+    Dirección:   JUJUY 31
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[88] RICCA
+    Dirección:   PTE. PERON 99
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[89] YUS
+    Dirección:   SALTA 60
+    Localidad:   CAPITAN BERMUDEZ (CP: 2154)
+--------------------------------------------------
+[90] SAN MARTIN
+    Dirección:   1° DE MAYO 443
+    Localidad:   CARCARAÑA (CP: 2138)
+--------------------------------------------------
+[91] CUSUMANO
+    Dirección:   AV. LA PLATA 1660
+    Localidad:   CARCARAÑA (CP: 2138)
+--------------------------------------------------
+[92] PIKHART
+    Dirección:   AVDA. LA PLATA 654
+    Localidad:   CARCARAÑA (CP: 2138)
+--------------------------------------------------
+[93] GASSMANN
+    Dirección:   BELGRANO 1032
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85618725, Long: -61.15567577
+--------------------------------------------------
+[94] LA CUMBRE
+    Dirección:   BELGRANO 1433
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85725328, Long: -61.14986001
+--------------------------------------------------
+[95] PITTERI
+    Dirección:   EVA PERON 536
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85612642, Long: -61.15898217
+--------------------------------------------------
+[96] NARDI
+    Dirección:   SAN MARTIN 726
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85384369, Long: -61.15942302
+--------------------------------------------------
+[97] BERASAIN
+    Dirección:   SARMIENTO 1055
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85757209, Long: -61.15569346
+--------------------------------------------------
+[98] SOC. ITALIANA DE S. M .
+    Dirección:   SARMIENTO 1405/23
+    Localidad:   CARCARAÑA (CP: 2138)
+    Ubicación:   Lat: -32.85845687, Long: -61.15063832
+--------------------------------------------------
+[99] ROSSETTI
+    Dirección:   AV. LAS COLONIAS 146
+    Localidad:   CORONEL ARNOLD (CP: 2123)
+--------------------------------------------------
+[100] ORTIZ
+    Dirección:   ARTURO ILLIA 21
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+--------------------------------------------------
+[101] RIVERO
+    Dirección:   AV. SAN MARTIN 1267
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78937623, Long: -60.72444749
+--------------------------------------------------
+[102] PONCE
+    Dirección:   AV. SAN MARTIN 2035
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78235943, Long: -60.72650765
+--------------------------------------------------
+[103] MUTUAL SULFACID
+    Dirección:   DORREGO 50
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78344369, Long: -60.72707078
+--------------------------------------------------
+[104] VITALE
+    Dirección:   GRAL. SAVIO 214
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.78370056, Long: -60.73045648
+--------------------------------------------------
+[105] MUGICA
+    Dirección:   LAS HERAS 73
+    Localidad:   FRAY LUIS BELTRAN (CP: 2156)
+    Ubicación:   Lat: -32.80059378, Long: -60.7217892
+--------------------------------------------------
+[106] CIACCIO
+    Dirección:   INDEPENDENCIA 398
+    Localidad:   FUENTES (CP: 2123)
+    Ubicación:   Lat: -33.17333385, Long: -61.07444725
+--------------------------------------------------
+[107] BLANCATO
+    Dirección:   RECONQUISTA 445
+    Localidad:   FUENTES (CP: 2123)
+    Ubicación:   Lat: -33.17454903, Long: -61.0777121
+--------------------------------------------------
+[108] BUCCI
+    Dirección:   SIMON DE IRIONDO 406
+    Localidad:   FUENTES (CP: 2123)
+    Ubicación:   Lat: -33.17260098, Long: -61.07330054
+--------------------------------------------------

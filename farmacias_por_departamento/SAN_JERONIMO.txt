@@ -1,0 +1,193 @@
+============================================================
+DEPARTAMENTO: SAN JERÓNIMO
+Total Farmacias: 40
+============================================================
+
+[1] MUTUAL -ARGUS SALUD
+    Dirección:   BARTOLOMÉ MITRE 357
+    Localidad:   GALVEZ (CP: 2252)
+--------------------------------------------------
+[2] MUTUAL DE AYUDA ENTRE ASOCIADOS Y ADHERENTES DEL CLUB ATLÉTICO SAN GENARO
+    Dirección:   UDINO GALETTO ESQ. LAVALLE
+    Localidad:   SAN GENARO (CP: 2146)
+--------------------------------------------------
+[3] RUBIES
+    Dirección:   URQUIZA 441
+    Localidad:   IRIGOYEN (CP: 2248)
+    Ubicación:   Lat: -32.1588474, Long: -61.10885031
+--------------------------------------------------
+[4] BORGHETTI
+    Dirección:   AVENIDA LOPEZ 1677
+    Localidad:   LOPEZ (CP: 2255)
+--------------------------------------------------
+[5] VERON
+    Dirección:   MENDOZA 501
+    Localidad:   MACIEL (CP: 2208)
+    Ubicación:   Lat: -32.45616254, Long: -60.89197866
+--------------------------------------------------
+[6] ZELAYA
+    Dirección:   CORDOBA 744
+    Localidad:   MACIEL (CP: 2208)
+    Ubicación:   Lat: -32.45682176, Long: -60.88836585
+--------------------------------------------------
+[7] LORENZATTI
+    Dirección:   FCO. B. CAMINOS 691
+    Localidad:   MONJE (CP: 2212)
+--------------------------------------------------
+[8] SPEZIA
+    Dirección:   SAN MARTIN 563
+    Localidad:   MONJE (CP: 2212)
+    Ubicación:   Lat: -32.3572885, Long: -60.9420535
+--------------------------------------------------
+[9] TELLO
+    Dirección:   CASTELLANO 840
+    Localidad:   GABOTO (CP: 2208)
+    Ubicación:   Lat: -32.43354416, Long: -60.81769255
+--------------------------------------------------
+[10] CASTINI
+    Dirección:   JORGE NEWBERY 447
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.03581654, Long: -61.21525705
+--------------------------------------------------
+[11] ITALIANA
+    Dirección:   SAN MARTIN 501
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.03119633, Long: -61.22159391
+--------------------------------------------------
+[12] MEYNET
+    Dirección:   BME. MITRE 1124
+    Localidad:   GALVEZ (CP: 2252)
+--------------------------------------------------
+[13] PERLO
+    Dirección:   BELGRANO 948
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.02977482, Long: -61.21625774
+--------------------------------------------------
+[14] RAMPONE
+    Dirección:   BELGRANO 699
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.03151414, Long: -61.21949165
+--------------------------------------------------
+[15] SOLTERMANN
+    Dirección:   AV. MAYO 814
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.0286214, Long: -61.21950473
+--------------------------------------------------
+[16] VENICA
+    Dirección:   BELGRANO 599
+    Localidad:   GALVEZ (CP: 2252)
+    Ubicación:   Lat: -32.03229556, Long: -61.22078776
+--------------------------------------------------
+[17] CHIAPPO
+    Dirección:   PRESBITERO DOMINGO NARDI 898
+    Localidad:   GESSLER (CP: 2253)
+--------------------------------------------------
+[18] MARIONI
+    Dirección:   SAN MARTIN 1152
+    Localidad:   GESSLER (CP: 2253)
+    Ubicación:   Lat: -31.87658512, Long: -61.12892603
+--------------------------------------------------
+[19] GAIDO
+    Dirección:   BV.LEDESMA Y SAN FABIAN
+    Localidad:   AROCENA (CP: 2242)
+    Ubicación:   Lat: -32.07765211, Long: -60.97401997
+--------------------------------------------------
+[20] DIP
+    Dirección:   AVDA. PAGANINI 521
+    Localidad:   BARRANCAS (CP: 2246)
+--------------------------------------------------
+[21] GALLOTTO
+    Dirección:   BENAVIDEZ 172
+    Localidad:   BARRANCAS (CP: 2246)
+    Ubicación:   Lat: -32.23114416, Long: -60.98260289
+--------------------------------------------------
+[22] LORENZATTI
+    Dirección:   Avenida Paganini 1062
+    Localidad:   BARRANCAS (CP: 2246)
+    Ubicación:   Lat: -32.23759712, Long: -60.98036528
+--------------------------------------------------
+[23] DASCANIO
+    Dirección:   SARMIENTO 1298
+    Localidad:   CENTENO (CP: 2148)
+    Ubicación:   Lat: -32.29791851, Long: -61.40960703
+--------------------------------------------------
+[24] SOPRANZETTI
+    Dirección:   BUENOS AIRES 1254
+    Localidad:   CENTENO (CP: 2148)
+--------------------------------------------------
+[25] CAMPANINI
+    Dirección:   A.MARITANO 1341
+    Localidad:   SAN GENARO (CP: 2146)
+--------------------------------------------------
+[26] MAGRA
+    Dirección:   MITRE 1471
+    Localidad:   SAN GENARO (CP: 2146)
+    Ubicación:   Lat: -32.36917684, Long: -61.35698595
+--------------------------------------------------
+[27] QUINTERO
+    Dirección:   LAVALLE 1959
+    Localidad:   SAN GENARO (CP: 2146)
+--------------------------------------------------
+[28] ZALLOCCO
+    Dirección:   AV. ROQUE SAENZ PEÑA 1201
+    Localidad:   SAN GENARO (CP: 2146)
+    Ubicación:   Lat: -32.36873581, Long: -61.3530681
+--------------------------------------------------
+[29] CASTAGNO
+    Dirección:   JUAN CHAVARRI 566
+    Localidad:   SAN GENARO NORTE (CP: 2147)
+--------------------------------------------------
+[30] FLORES
+    Dirección:   AV. ROQUE SAENZ PEÑA 1532
+    Localidad:   SAN GENARO NORTE (CP: 2147)
+    Ubicación:   Lat: -32.36596934, Long: -61.34629447
+--------------------------------------------------
+[31] GOMEZ
+    Dirección:   BELGRANO 801
+    Localidad:   SAN GENARO NORTE (CP: 2147)
+    Ubicación:   Lat: -32.36529966, Long: -61.33798503
+--------------------------------------------------
+[32] VIVAS
+    Dirección:   SAN MARTIN 1028
+    Localidad:   SAN GENARO NORTE (CP: 2147)
+    Ubicación:   Lat: -32.36795536, Long: -61.3505713
+--------------------------------------------------
+[33] ACOSTA
+    Dirección:   LISANDRO DE LA TORRE Y PTE ROCA
+    Localidad:   CORONDA (CP: 2240)
+--------------------------------------------------
+[34] CASTAÑO
+    Dirección:   BELGRANO 2110
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97749684, Long: -60.92255672
+--------------------------------------------------
+[35] GAIDO DE BERTERO
+    Dirección:   25 DE MAYO 1502
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97244, Long: -60.92054286
+--------------------------------------------------
+[36] GOBBO
+    Dirección:   ALBERDI 1907
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97530184, Long: -60.92094953
+--------------------------------------------------
+[37] LESCE
+    Dirección:   SAN MARTIN Y GUEMES
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97314225, Long: -60.92340989
+--------------------------------------------------
+[38] LUCIETICH
+    Dirección:   ALBERDI 1505
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97026024, Long: -60.92016898
+--------------------------------------------------
+[39] PALACIOS
+    Dirección:   ALBERDI 2232
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97890282, Long: -60.92149845
+--------------------------------------------------
+[40] SOSA
+    Dirección:   SARMIENTO 1864
+    Localidad:   CORONDA (CP: 2240)
+    Ubicación:   Lat: -31.97467069, Long: -60.9167934
+--------------------------------------------------

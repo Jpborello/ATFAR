@@ -53,6 +53,16 @@ function LoginContent() {
   const [latitude, setLatitude] = useState(-32.9468);
   const [longitude, setLongitude] = useState(-60.6393);
 
+  // Autocomplete states
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null);
+
+  // Leaflet refs for coordinate sync
+  const [mapRef, setMapRef] = useState<any>(null);
+  const [markerRef, setMarkerRef] = useState<any>(null);
+
   // Handle URL tab changes
   useEffect(() => {
     const tab = searchParams.get('tab');
@@ -87,6 +97,8 @@ function LoginContent() {
       }).addTo(mapInstance);
 
       markerInstance = L.marker([latitude, longitude], { draggable: true }).addTo(mapInstance);
+      setMapRef(mapInstance);
+      setMarkerRef(markerInstance);
 
       const updateCoordinates = (lat: number, lng: number) => {
         setLatitude(lat);
@@ -110,8 +122,48 @@ function LoginContent() {
       if (mapInstance) {
         mapInstance.remove();
       }
+      setMapRef(null);
+      setMarkerRef(null);
     };
   }, [activeTab, registerRole]);
+
+  // Update map position when coordinates are updated by autocompleting
+  useEffect(() => {
+    if (mapRef && markerRef) {
+      markerRef.setLatLng([latitude, longitude]);
+      mapRef.setView([latitude, longitude], 15);
+    }
+  }, [latitude, longitude, mapRef, markerRef]);
+
+  // Search pharmacies in real-time
+  useEffect(() => {
+    if (searchQuery.trim().length < 3) {
+      setSearchResults([]);
+      return;
+    }
+
+    const delayDebounceFn = setTimeout(async () => {
+      setSearching(true);
+      try {
+        const { data, error } = await supabase
+          .from('pharmacies')
+          .select('id, name, address, latitude, longitude')
+          .eq('registered', false)
+          .ilike('name', `%${searchQuery}%`)
+          .limit(10);
+        
+        if (!error && data) {
+          setSearchResults(data);
+        }
+      } catch (err) {
+        console.error("Error searching pharmacies:", err);
+      } finally {
+        setSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [searchQuery]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -239,23 +291,15 @@ function LoginContent() {
       if (!authData.user) throw new Error('Error en el registro.');
 
       if (registerRole === 'pharmacy_owner') {
-        // Check if the pharmacy already exists in the database by CUIT
-        const { data: existingPharm, error: fetchError } = await supabase
-          .from('pharmacies')
-          .select('id')
-          .eq('cuit', pharmacyCuit)
-          .maybeSingle();
-
-        if (fetchError) console.error("Error checking existing pharmacy:", fetchError);
-
         let pharmacyError;
-        if (existingPharm) {
-          // Update the existing pharmacy to link to owner and mark as registered
+        if (selectedPharmacyId) {
+          // Update the pre-registered pharmacy to link to owner, mark as registered, and set real CUIT
           const { error: updateError } = await supabase
             .from('pharmacies')
             .update({
               owner_id: authData.user.id,
               registered: true,
+              cuit: pharmacyCuit,
               name: pharmacyName,
               razon_social: pharmacyRazonSocial,
               address: pharmacyAddress,
@@ -264,25 +308,53 @@ function LoginContent() {
               latitude: latitude,
               longitude: longitude
             })
-            .eq('id', existingPharm.id);
+            .eq('id', selectedPharmacyId);
           pharmacyError = updateError;
         } else {
-          // Insert a new pharmacy
-          const { error: insertError } = await supabase
+          // Check if the pharmacy already exists in the database by CUIT
+          const { data: existingPharm, error: fetchError } = await supabase
             .from('pharmacies')
-            .insert({
-              name: pharmacyName,
-              razon_social: pharmacyRazonSocial,
-              cuit: pharmacyCuit,
-              address: pharmacyAddress,
-              cross_streets: pharmacyCrossStreets,
-              phone_alt: pharmacyPhoneAlt,
-              latitude: latitude,
-              longitude: longitude,
-              owner_id: authData.user.id,
-              registered: true,
-            });
-          pharmacyError = insertError;
+            .select('id')
+            .eq('cuit', pharmacyCuit)
+            .maybeSingle();
+
+          if (fetchError) console.error("Error checking existing pharmacy:", fetchError);
+
+          if (existingPharm) {
+            // Update the existing pharmacy to link to owner and mark as registered
+            const { error: updateError } = await supabase
+              .from('pharmacies')
+              .update({
+                owner_id: authData.user.id,
+                registered: true,
+                name: pharmacyName,
+                razon_social: pharmacyRazonSocial,
+                address: pharmacyAddress,
+                cross_streets: pharmacyCrossStreets,
+                phone_alt: pharmacyPhoneAlt,
+                latitude: latitude,
+                longitude: longitude
+              })
+              .eq('id', existingPharm.id);
+            pharmacyError = updateError;
+          } else {
+            // Insert a new pharmacy
+            const { error: insertError } = await supabase
+              .from('pharmacies')
+              .insert({
+                name: pharmacyName,
+                razon_social: pharmacyRazonSocial,
+                cuit: pharmacyCuit,
+                address: pharmacyAddress,
+                cross_streets: pharmacyCrossStreets,
+                phone_alt: pharmacyPhoneAlt,
+                latitude: latitude,
+                longitude: longitude,
+                owner_id: authData.user.id,
+                registered: true,
+              });
+            pharmacyError = insertError;
+          }
         }
 
         if (pharmacyError) throw new Error(`Error al registrar farmacia: ${pharmacyError.message}`);
@@ -573,13 +645,68 @@ function LoginContent() {
               ) : (
                 /* Pharmacy Owner Fields */
                 <div className="space-y-3.5 p-4 bg-muted/40 rounded-xl border border-border/80">
-                  <span className="text-[10px] font-bold text-secondary uppercase tracking-wider block border-b border-border/60 pb-1">
+                  <span className="text-xs font-bold text-secondary uppercase tracking-wider block border-b border-border/60 pb-1">
                     Datos de la Farmacia
                   </span>
+
+                  {/* Search / Autocomplete */}
+                  <div className="space-y-1 relative">
+                    <label className="text-xs font-bold text-secondary flex items-center gap-1">
+                      <Building2 className="w-3 h-3" />
+                      Buscar mi Farmacia Pre-registrada
+                    </label>
+                    <input
+                      type="text"
+                      value={searchQuery}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        if (selectedPharmacyId) {
+                          setSelectedPharmacyId(null);
+                        }
+                      }}
+                      placeholder="Escribí el nombre de la farmacia..."
+                      className="w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                    />
+                    {searching && (
+                      <span className="absolute right-3.5 top-8 text-xs text-muted-foreground animate-pulse">
+                        Buscando...
+                      </span>
+                    )}
+                    {searchResults.length > 0 && !selectedPharmacyId && (
+                      <div className="absolute left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-xl z-50 max-h-48 overflow-y-auto">
+                        {searchResults.map((pharm) => (
+                          <div
+                            key={pharm.id}
+                            onClick={() => {
+                              setSelectedPharmacyId(pharm.id);
+                              setPharmacyName(pharm.name);
+                              setPharmacyAddress(pharm.address.split(',')[0]);
+                              if (pharm.latitude && pharm.longitude) {
+                                setLatitude(pharm.latitude);
+                                setLongitude(pharm.longitude);
+                              }
+                              setSearchQuery(pharm.name);
+                              setSearchResults([]);
+                            }}
+                            className="p-3 text-xs hover:bg-secondary/10 cursor-pointer border-b border-border/50 last:border-0 text-foreground"
+                          >
+                            <span className="font-bold block">{pharm.name}</span>
+                            <span className="text-muted-foreground text-xs">{pharm.address}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {selectedPharmacyId && (
+                      <div className="text-xs text-emerald-500 font-semibold flex items-center gap-1.5 mt-1 bg-emerald-500/10 border border-emerald-500/20 p-2 rounded-lg">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Vinculada con registro existente en la base de datos</span>
+                      </div>
+                    )}
+                  </div>
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         Nombre de Fantasía *
                       </label>
                       <input
@@ -592,7 +719,7 @@ function LoginContent() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         Razón Social *
                       </label>
                       <input
@@ -608,7 +735,7 @@ function LoginContent() {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         CUIT Comercial (11 números sin guiones) *
                       </label>
                       <input
@@ -621,7 +748,7 @@ function LoginContent() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         Teléfono Alternativo (Fijo/Móvil)
                       </label>
                       <input
@@ -636,7 +763,7 @@ function LoginContent() {
                   
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         Dirección (Rosario, Santa Fe) *
                       </label>
                       <input
@@ -649,7 +776,7 @@ function LoginContent() {
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-semibold text-muted-foreground">
+                      <label className="text-xs font-semibold text-muted-foreground">
                         Entre qué calles *
                       </label>
                       <input
@@ -664,11 +791,11 @@ function LoginContent() {
                   </div>
 
                   <div className="space-y-1 pt-1">
-                    <label className="text-[10px] font-semibold text-slate-500 block mb-1">
+                    <label className="text-xs font-semibold text-slate-500 block mb-1">
                       Geolocalización: Señale la posición exacta de la Farmacia
                     </label>
                     <div id="map-selector" className="h-44 w-full rounded-xl border border-border overflow-hidden bg-slate-100 z-10" />
-                    <span className="text-[9px] text-muted-foreground block text-right font-medium">
+                    <span className="text-xs text-muted-foreground block text-right font-medium">
                       Coordenadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
                     </span>
                   </div>

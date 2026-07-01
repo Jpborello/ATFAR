@@ -1,0 +1,390 @@
+============================================================
+DEPARTAMENTO: GENERAL OBLIGADO
+Total Farmacias: 81
+============================================================
+
+[1] CABALLERO
+    Dirección:   ZONA URBANA
+    Localidad:   TACUARENDI (CP: 3587)
+--------------------------------------------------
+[2] LEANDRO PEZZ
+    Dirección:   ROSARIO
+    Localidad:   VILLA GUILLERMINA (CP: 3589)
+    Ubicación:   Lat: -28.24564144, Long: -59.45103743
+--------------------------------------------------
+[3] FERRER
+    Dirección:   PADRE ANGEL TIBALDO 1300
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.48953558, Long: -59.35421989
+--------------------------------------------------
+[4] FIANT
+    Dirección:   BV.SARMIENTO 1101
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.49183782, Long: -59.35833701
+--------------------------------------------------
+[5] FONTANA
+    Dirección:   AV. SAN MARTIN 1582
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.48849381, Long: -59.35524671
+--------------------------------------------------
+[6] GALIBERT GARRO
+    Dirección:   CASEROS 1598
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.49172027, Long: -59.35542194
+--------------------------------------------------
+[7] MARIELA BENITEZ
+    Dirección:   9 DE JULIO 1473
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.48751962, Long: -59.35298493
+--------------------------------------------------
+[8] PASTEUR
+    Dirección:   MORENO 1268
+    Localidad:   VILLA OCAMPO (CP: 3580)
+    Ubicación:   Lat: -28.49004876, Long: -59.35668513
+--------------------------------------------------
+[9] VICENTIN
+    Dirección:   JUAN BAUTISTA  ALBERDI 2055
+    Localidad:   VILLA OCAMPO (CP: 3580)
+--------------------------------------------------
+[10] MUTUAL ASOSIACIÓN MUTUAL DE SERVICIOS PARA INTERNACIONES Y OPERACIONES (A.S.I.O)
+    Dirección:   CALLE 12 351
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11587191, Long: -59.65838328
+--------------------------------------------------
+[11] MUTUAL DE INTEGRANTES DEL PODER JUDICIAL -LAS TOSCAS-
+    Dirección:   CALLE 4 ENTRE 23 Y 25
+    Localidad:   LAS TOSCAS (CP: 3586)
+    Ubicación:   Lat: -28.35165073, Long: -59.26250893
+--------------------------------------------------
+[12] MUTUAL DE EMPLEADOS BANCARIOS DE SANTA FE
+    Dirección:   PATRICIO DIEZ 1025
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14389694, Long: -59.6488901
+--------------------------------------------------
+[13] MUTUAL DE INTEGRANTES DEL PODER JUDICIAL
+    Dirección:   IRIONDO 741
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14751632, Long: -59.64586794
+--------------------------------------------------
+[14] PYSZNIAK
+    Dirección:   CALLE 17 376
+    Localidad:   LAS TOSCAS (CP: 3586)
+    Ubicación:   Lat: -28.35543059, Long: -59.25909333
+--------------------------------------------------
+[15] RINESI
+    Dirección:   CALLE 10 Y 15
+    Localidad:   LAS TOSCAS (CP: 3586)
+    Ubicación:   Lat: -28.35653235, Long: -59.25881601
+--------------------------------------------------
+[16] SANDRIGO
+    Dirección:   SAN MARTIN S
+    Localidad:   LANTERI (CP: 3575)
+--------------------------------------------------
+[17] NADALICH
+    Dirección:   VICENTE CASARES Y GRAL LOPEZ
+    Localidad:   LAS GARZAS (CP: 3574)
+--------------------------------------------------
+[18] CURTI
+    Dirección:   CALLE 21 193
+    Localidad:   LAS TOSCAS (CP: 3586)
+    Ubicación:   Lat: -28.3532622, Long: -59.26133937
+--------------------------------------------------
+[19] SNAIDER
+    Dirección:   CALLE 21 50
+    Localidad:   LAS TOSCAS (CP: 3586)
+    Ubicación:   Lat: -28.35327825, Long: -59.2631324
+--------------------------------------------------
+[20] PETTINA
+    Dirección:   SARMIENTO 1701
+    Localidad:   MALABRIGO (CP: 3572)
+    Ubicación:   Lat: -29.34616803, Long: -59.96890504
+--------------------------------------------------
+[21] CENTIS
+    Dirección:   SILVESTRE BEGNIS 982
+    Localidad:   MALABRIGO (CP: 3572)
+    Ubicación:   Lat: -29.35364825, Long: -59.96915144
+--------------------------------------------------
+[22] GARCIA
+    Dirección:   SAN MARTIN 1435
+    Localidad:   MALABRIGO (CP: 3572)
+    Ubicación:   Lat: -29.34917217, Long: -59.96827481
+--------------------------------------------------
+[23] PREZ
+    Dirección:   AVDA.SIGEL 604
+    Localidad:   MALABRIGO (CP: 3572)
+--------------------------------------------------
+[24] SALPIETRO
+    Dirección:   SPONTON 998
+    Localidad:   MALABRIGO (CP: 3572)
+    Ubicación:   Lat: -29.35025735, Long: -59.97100154
+--------------------------------------------------
+[25] KAREN GIMENEZ
+    Dirección:   SAN MARTIN 501
+    Localidad:   FLORENCIA (CP: 3516)
+    Ubicación:   Lat: -28.04010209, Long: -59.21970989
+--------------------------------------------------
+[26] PERESON
+    Dirección:   GENERAL OBLIGADO 702
+    Localidad:   FLORENCIA (CP: 3516)
+--------------------------------------------------
+[27] ABRAHAN
+    Dirección:   BOULEVARD PERON 1896
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15411937, Long: -59.66142934
+--------------------------------------------------
+[28] AGUSTINI
+    Dirección:   H. IRIGOYEN 476
+    Localidad:   RECONQUISTA (CP: 3567)
+--------------------------------------------------
+[29] ARAMBURU
+    Dirección:   H.IRIGOYEN 1302
+    Localidad:   RECONQUISTA (CP: 3567)
+--------------------------------------------------
+[30] ALAL
+    Dirección:   ITURRASPE 676
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14328358, Long: -59.64447205
+--------------------------------------------------
+[31] ARAYA
+    Dirección:   MALVINAS ARGENTINAS 1405
+    Localidad:   RECONQUISTA (CP: 3567)
+--------------------------------------------------
+[32] BALLARIO
+    Dirección:   PATRICIO DIEZ 217
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14497328, Long: -59.63896153
+--------------------------------------------------
+[33] BANDEO
+    Dirección:   HABEGGER 1260
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14574329, Long: -59.65208569
+--------------------------------------------------
+[34] BARRIO CHAPERO
+    Dirección:   JESUSA CHAPERO 1920
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15688912, Long: -59.64907865
+--------------------------------------------------
+[35] BOURNISSENT
+    Dirección:   ALVEAR 1352
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14132216, Long: -59.65260152
+--------------------------------------------------
+[36] BUNCHICH
+    Dirección:   BV. LOVATO 1131
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.1553463, Long: -59.65167928
+--------------------------------------------------
+[37] CASTILLO
+    Dirección:   BELGRANO 1486
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15267917, Long: -59.64730366
+--------------------------------------------------
+[38] CESPEDES
+    Dirección:   MITRE 498
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14568319, Long: -59.64260865
+--------------------------------------------------
+[39] CIAN
+    Dirección:   JORGE NEWBERY 502
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15322564, Long: -59.64368197
+--------------------------------------------------
+[40] CORTI
+    Dirección:   ALESSIO 1502
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15245345, Long: -59.65100048
+--------------------------------------------------
+[41] CUCIT
+    Dirección:   CALLE 47 1784
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.16006708, Long: -59.66073226
+--------------------------------------------------
+[42] DEAN
+    Dirección:   ALVEAR 1896
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14057871, Long: -59.65955521
+--------------------------------------------------
+[43] DEGIUSTI
+    Dirección:   GOBERNADOR FREYRE 1302
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14998057, Long: -59.65319944
+--------------------------------------------------
+[44] SEIB
+    Dirección:   MORENO 744
+    Localidad:   FLORENCIA (CP: 3516)
+    Ubicación:   Lat: -28.04057883, Long: -59.22106962
+--------------------------------------------------
+[45] WIRTH
+    Dirección:   ZONA URBANA S
+    Localidad:   GUADALUPE NORTE (CP: 3574)
+--------------------------------------------------
+[46] DULAC
+    Dirección:   Patricio Diez 1094
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.1437226, Long: -59.649657
+--------------------------------------------------
+[47] FACCHINI
+    Dirección:   LISANDRO DE LA TORRE 1020
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.17216147, Long: -59.65284
+--------------------------------------------------
+[48] GALENO
+    Dirección:   OLESSIO 999
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.1470386, Long: -59.65024515
+--------------------------------------------------
+[49] GASSMANN
+    Dirección:   OLESSIO 2345
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.16142871, Long: -59.65202208
+--------------------------------------------------
+[50] GOMEZ INGARAMO
+    Dirección:   9 DE JULIO 1199
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14945536, Long: -59.64807868
+--------------------------------------------------
+[51] LILIANA ARAMBURU
+    Dirección:   9 DE JULIO 1598
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15377853, Long: -59.6486909
+--------------------------------------------------
+[52] MASAT
+    Dirección:   PIETROPAOLO 2074
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.1482016, Long: -59.66295209
+--------------------------------------------------
+[53] MENENDEZ
+    Dirección:   SAN MARTIN 402
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14139111, Long: -59.64199946
+--------------------------------------------------
+[54] MOSCHEN
+    Dirección:   MORENO 776
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14100551, Long: -59.64541444
+--------------------------------------------------
+[55] PADUAN
+    Dirección:   9 DE JULIO 498
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14193728, Long: -59.64705606
+--------------------------------------------------
+[56] PEIRONE
+    Dirección:   PTE.ROCA 2740
+    Localidad:   RECONQUISTA (CP: 3567)
+--------------------------------------------------
+[57] SARTOR
+    Dirección:   9 DE JULIO 1033
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14766597, Long: -59.64785914
+--------------------------------------------------
+[58] SELLARES
+    Dirección:   GENERAL OBLIGADO 1001
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14758242, Long: -59.64534257
+--------------------------------------------------
+[59] SOLODKOW
+    Dirección:   BELGRANO 669
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14388658, Long: -59.64608855
+--------------------------------------------------
+[60] TISEYRA
+    Dirección:   L. FUNES 977
+    Localidad:   RECONQUISTA (CP: 3567)
+--------------------------------------------------
+[61] VERDERONE
+    Dirección:   NEWBERY Y CALLE 12
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15322843, Long: -59.64365658
+--------------------------------------------------
+[62] VIANO
+    Dirección:   LUDUENA 1077
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.1487946, Long: -59.6416225
+--------------------------------------------------
+[63] VICENTIN
+    Dirección:   HIPOLITO IRIGOYEN 1057
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14699349, Long: -59.65664025
+--------------------------------------------------
+[64] VIZCAY
+    Dirección:   25 DE MAYO 1088
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.14813472, Long: -59.64916356
+--------------------------------------------------
+[65] VICENTIN
+    Dirección:   ARROYO CEIBAL
+    Localidad:   ARROYO CEIBAL (CP: 3575)
+--------------------------------------------------
+[66] BACCA
+    Dirección:   CALLE 22 293
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[67] CANO
+    Dirección:   CALLE 18 NRO. 258
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11530293, Long: -59.65450719
+--------------------------------------------------
+[68] DELLA ROSA
+    Dirección:   CALLE 15 1410
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.12099483, Long: -59.64766145
+--------------------------------------------------
+[69] FERRERO
+    Dirección:   CALLE 15 NRO. 592
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11982526, Long: -59.65775175
+--------------------------------------------------
+[70] POSSIEL
+    Dirección:   ZONA URBANA S
+    Localidad:   SAN ANTONIO DE OBLIGADO (CP: 3587)
+--------------------------------------------------
+[71] FIRPO
+    Dirección:   SAN MARTIN 1144
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[72] FRANCISCO SELLARES
+    Dirección:   CALLE 13 396
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11846986, Long: -59.66008131
+--------------------------------------------------
+[73] MAREGA
+    Dirección:   CALLE 18 NRO. 998
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.12338334, Long: -59.65572471
+--------------------------------------------------
+[74] MELGAREJO
+    Dirección:   CALLE 312 52
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11089736, Long: -59.65762226
+--------------------------------------------------
+[75] PIVIDORI
+    Dirección:   SAN MARTIN OESTE 298
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[76] VIANO
+    Dirección:   CALLE 9 NRO. 665
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.11663297, Long: -59.65637471
+--------------------------------------------------
+[77] VICENTIN
+    Dirección:   SAN MARTIN 875
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[78] VITTI
+    Dirección:   CALLE 4 NO. 398
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[79] WILHELM
+    Dirección:   CALLE 21 NUMERO 74
+    Localidad:   AVELLANEDA (CP: 3561)
+    Ubicación:   Lat: -29.1223535, Long: -59.66468531
+--------------------------------------------------
+[80] ZUPEL
+    Dirección:   CALLE 7-ESQ.10
+    Localidad:   AVELLANEDA (CP: 3561)
+--------------------------------------------------
+[81] FARMACIA HOSPITAL CENTRAL DRA. OLGA STUCKY DE RIZZI
+    Dirección:   Bv. Hipolito Yrigoyen 1580
+    Localidad:   RECONQUISTA (CP: 3567)
+    Ubicación:   Lat: -29.15176189, Long: -59.65768754
+--------------------------------------------------

@@ -1,0 +1,319 @@
+============================================================
+DEPARTAMENTO: LAS COLONIAS
+Total Farmacias: 65
+============================================================
+
+[1] MUTUAL EMPLEADOS BANCARIOS DE SANTA FE (MEBAFE)
+    Dirección:   SARMIENTO 2307
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44691672, Long: -60.93081038
+--------------------------------------------------
+[2] SINDICAL ATILRA
+    Dirección:   ESPERANZA 1984
+    Localidad:   FRANCK (CP: 3009)
+    Ubicación:   Lat: -31.58263097, Long: -60.9372864
+--------------------------------------------------
+[3] MUTUAL DEL PERSONAL DEL GRUPO MÉDICO LAS COLONIAS
+    Dirección:   LISANDRO DE LA TORRE 461
+    Localidad:   EMPALME SAN CARLOS (CP: 3007)
+--------------------------------------------------
+[4] BONETTI
+    Dirección:   AV.LIBERTAD 2151
+    Localidad:   HUMBOLDT (CP: 3081)
+    Ubicación:   Lat: -31.40070036, Long: -61.0836015
+--------------------------------------------------
+[5] KINEN
+    Dirección:   25 DE MAYO 1945
+    Localidad:   HUMBOLDT (CP: 3081)
+    Ubicación:   Lat: -31.39476161, Long: -61.08294893
+--------------------------------------------------
+[6] MARIN
+    Dirección:   ALDO BUSTOS 2138
+    Localidad:   HUMBOLDT (CP: 3081)
+    Ubicación:   Lat: -31.40238099, Long: -61.08417807
+--------------------------------------------------
+[7] SIGRIST
+    Dirección:   AVDA.BECK-HERZOG 1518
+    Localidad:   HUMBOLDT (CP: 3081)
+--------------------------------------------------
+[8] WEDER
+    Dirección:   M. MORENO 2143
+    Localidad:   HUMBOLDT (CP: 3081)
+--------------------------------------------------
+[9] TESOLIN
+    Dirección:   SAN MARTIN S N
+    Localidad:   LA PELADA (CP: 3027)
+    Ubicación:   Lat: -30.86437248, Long: -60.97547224
+--------------------------------------------------
+[10] DRIUSSI
+    Dirección:   ESTANISLAO LOPEZ 412
+    Localidad:   ELISA (CP: 3029)
+--------------------------------------------------
+[11] CARGNELLO
+    Dirección:   MALVINAS ARGENTINAS S
+    Localidad:   MARIA LUISA (CP: 3025)
+--------------------------------------------------
+[12] KARLEN
+    Dirección:   SAN MARTIN 1450
+    Localidad:   PILAR (CP: 3085)
+    Ubicación:   Lat: -31.4381302, Long: -61.25903114
+--------------------------------------------------
+[13] POLONI
+    Dirección:   LEHMANN 1255
+    Localidad:   PILAR (CP: 3085)
+    Ubicación:   Lat: -31.44080923, Long: -61.2604901
+--------------------------------------------------
+[14] VALENTINI
+    Dirección:   LOS COLONIZADORES 1264
+    Localidad:   PILAR (CP: 3085)
+    Ubicación:   Lat: -31.44101684, Long: -61.25892248
+--------------------------------------------------
+[15] MILESI
+    Dirección:   BV. SAN FRANCISCO 237
+    Localidad:   ELISA (CP: 3029)
+    Ubicación:   Lat: -30.69663308, Long: -61.04849305
+--------------------------------------------------
+[16] ALTHAUS
+    Dirección:   SARMIENTO 2780
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44284364, Long: -60.92958919
+--------------------------------------------------
+[17] FARMACIA BARRIOS
+    Dirección:   SIMON DE IRIONDO 3043
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.4408812, Long: -60.9279347
+--------------------------------------------------
+[18] BORGOGNO
+    Dirección:   LEHMANN 2307
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44896889, Long: -60.93825007
+--------------------------------------------------
+[19] CLAUDIA SCHNEIDER
+    Dirección:   AV.LOS COLONIZADORES 957
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45030054, Long: -60.9246777
+--------------------------------------------------
+[20] FAVARIN
+    Dirección:   SARMIENTO 1302
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45545086, Long: -60.93341099
+--------------------------------------------------
+[21] CALIANI
+    Dirección:   MANUEL BELGRANO NRO. 2
+    Localidad:   PROGRESO (CP: 3023)
+--------------------------------------------------
+[22] GAZANO
+    Dirección:   9 DE JULIO 1259
+    Localidad:   SARMIENTO (CP: 3023)
+    Ubicación:   Lat: -31.05823012, Long: -61.16877388
+--------------------------------------------------
+[23] VAN STRATE
+    Dirección:   JOSE LAMY 1360
+    Localidad:   SARMIENTO (CP: 3023)
+    Ubicación:   Lat: -31.05825714, Long: -61.1658943
+--------------------------------------------------
+[24] FORTI
+    Dirección:   GUEMES 595
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45540263, Long: -60.92177373
+--------------------------------------------------
+[25] FUENTES
+    Dirección:   MORENO 742
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45990822, Long: -60.93578752
+--------------------------------------------------
+[26] GAMBOA
+    Dirección:   BELGRANO 2324
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44720893, Long: -60.92877785
+--------------------------------------------------
+[27] HILAS
+    Dirección:   HNO LINO TERFORD 2957
+    Localidad:   ESPERANZA (CP: 3080)
+--------------------------------------------------
+[28] LIMACHE
+    Dirección:   AV.CORDOBA 1624
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.4487149, Long: -60.93161311
+--------------------------------------------------
+[29] LONGONI
+    Dirección:   SAAVEDRA 1806
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45018371, Long: -60.93664159
+--------------------------------------------------
+[30] MORELLI
+    Dirección:   Rivadavia 2002
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45019276, Long: -60.92852622
+--------------------------------------------------
+[31] PERIN
+    Dirección:   CORDOBA Y LAVALLE
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.4480542, Long: -60.93410262
+--------------------------------------------------
+[32] PIERUCCIONI
+    Dirección:   BALCARCE 1605
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45796234, Long: -60.93422141
+--------------------------------------------------
+[33] SAD
+    Dirección:   SARMIENTO 2041
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44921539, Long: -60.93151873
+--------------------------------------------------
+[34] SAUGY
+    Dirección:   AV.LOS COLONIZADORES 9
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45339159, Long: -60.91206927
+--------------------------------------------------
+[35] FARMACIA SCHNEIDER SERGIO
+    Dirección:   Avenida Córdoba 2251
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.447283, Long: -60.9372001
+--------------------------------------------------
+[36] TKACZYK
+    Dirección:   1  DE MAYO 2006
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45136532, Long: -60.92315353
+--------------------------------------------------
+[37] ZEHNDER
+    Dirección:   CULLEN 1332
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.45268528, Long: -60.92973651
+--------------------------------------------------
+[38] ZUQUELI
+    Dirección:   AUFRANC 1447
+    Localidad:   ESPERANZA (CP: 3080)
+    Ubicación:   Lat: -31.44302766, Long: -60.92803913
+--------------------------------------------------
+[39] CORRENTI
+    Dirección:   E. SENN 374
+    Localidad:   FELICIA (CP: 3087)
+    Ubicación:   Lat: -31.24353603, Long: -61.21147558
+--------------------------------------------------
+[40] FELICIA
+    Dirección:   PEDRO PALACIOS 584
+    Localidad:   FELICIA (CP: 3087)
+--------------------------------------------------
+[41] GRAZIOLI
+    Dirección:   MENDOZA 1145
+    Localidad:   SAN JERONIMO NORTE (CP: 3011)
+    Ubicación:   Lat: -31.54701702, Long: -61.07121746
+--------------------------------------------------
+[42] JULLIER
+    Dirección:   SAN MARTIN 476
+    Localidad:   SAN JERONIMO NORTE (CP: 3011)
+    Ubicación:   Lat: -31.55369385, Long: -61.07752845
+--------------------------------------------------
+[43] KESTLER
+    Dirección:   1 DE MAYO 302
+    Localidad:   SAN JERONIMO NORTE (CP: 3011)
+    Ubicación:   Lat: -31.55491825, Long: -61.07650701
+--------------------------------------------------
+[44] BURGI
+    Dirección:   SAAVEDRA 2053
+    Localidad:   FRANCK (CP: 3009)
+    Ubicación:   Lat: -31.58893545, Long: -60.94000583
+--------------------------------------------------
+[45] IRENE ALBRECHT
+    Dirección:   MIGUEL MANFREDI 2021
+    Localidad:   FRANCK (CP: 3009)
+--------------------------------------------------
+[46] MARIANO
+    Dirección:   SAN MARTIN 2199
+    Localidad:   FRANCK (CP: 3009)
+    Ubicación:   Lat: -31.58578672, Long: -60.93842643
+--------------------------------------------------
+[47] DOBLER
+    Dirección:   25 DE MAYO 377
+    Localidad:   PROGRESO (CP: 3023)
+    Ubicación:   Lat: -31.13624365, Long: -60.98942198
+--------------------------------------------------
+[48] SIOLI
+    Dirección:   INDENDENCIA 69
+    Localidad:   PROGRESO (CP: 3023)
+    Ubicación:   Lat: -31.13650191, Long: -60.9877865
+--------------------------------------------------
+[49] GARETTO
+    Dirección:   SA PEREIRA 232
+    Localidad:   SA PEREYRA (CP: 3011)
+    Ubicación:   Lat: -31.57029763, Long: -61.37712691
+--------------------------------------------------
+[50] RUFFNER
+    Dirección:   SAN LORENZO 355
+    Localidad:   SA PEREYRA (CP: 3011)
+    Ubicación:   Lat: -31.56994562, Long: -61.37780678
+--------------------------------------------------
+[51] NOVERO
+    Dirección:   SAN MARTIN 2600
+    Localidad:   EMPALME SAN CARLOS (CP: 3007)
+--------------------------------------------------
+[52] BOSCOVICH
+    Dirección:   BELGRANO 1601
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.73750155, Long: -61.09426834
+--------------------------------------------------
+[53] CALCATERRA DE GARCIA
+    Dirección:   SAN MARTIN 1217
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.73358373, Long: -61.09458831
+--------------------------------------------------
+[54] COLLA
+    Dirección:   BELGRANO 845
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.73022348, Long: -61.09236789
+--------------------------------------------------
+[55] CROSTA
+    Dirección:   SAN MARTIN 2051
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.74166447, Long: -61.09656534
+--------------------------------------------------
+[56] FAVRE
+    Dirección:   RIVADAVIA 598
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.72812776, Long: -61.09042638
+--------------------------------------------------
+[57] PRIERI
+    Dirección:   BELGRANO 699
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.72882196, Long: -61.0920277
+--------------------------------------------------
+[58] ZURBRIGGEN
+    Dirección:   SAN MARTIN 370
+    Localidad:   SAN CARLOS CENTRO (CP: 3013)
+    Ubicación:   Lat: -31.72541037, Long: -61.09258455
+--------------------------------------------------
+[59] MENY
+    Dirección:   CARLOS B.BERNARD 199
+    Localidad:   SAN CARLOS NORTE (CP: 3009)
+--------------------------------------------------
+[60] SAGER
+    Dirección:   SAN MARTIN 799
+    Localidad:   SAN CARLOS SUD (CP: 3013)
+    Ubicación:   Lat: -31.75958547, Long: -61.10102763
+--------------------------------------------------
+[61] PUSSETTO
+    Dirección:   CORONEL DOMINGUEZ 483
+    Localidad:   SANTA CLARA DE BUENA VISTA (CP: 2258)
+    Ubicación:   Lat: -31.76323894, Long: -61.31725088
+--------------------------------------------------
+[62] ROGGERO
+    Dirección:   CORONEL DOMINGUEZ 903
+    Localidad:   SANTA CLARA DE BUENA VISTA (CP: 2258)
+    Ubicación:   Lat: -31.7645329, Long: -61.32309187
+--------------------------------------------------
+[63] MAITRE MEIER
+    Dirección:   AV. LIBERTADOR 366
+    Localidad:   SANTO DOMINGO (CP: 3025)
+    Ubicación:   Lat: -31.12097979, Long: -60.88801328
+--------------------------------------------------
+[64] CIGNETTI
+    Dirección:   GUEMES 417
+    Localidad:   SAN JERONIMO NORTE (CP: 3011)
+    Ubicación:   Lat: -31.55101696, Long: -61.07690441
+--------------------------------------------------
+[65] GASPARINI
+    Dirección:   SARMIENTO 601
+    Localidad:   SAN JERONIMO NORTE (CP: 3011)
+    Ubicación:   Lat: -31.55193786, Long: -61.07841141
+--------------------------------------------------

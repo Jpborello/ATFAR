@@ -1,0 +1,40 @@
+============================================================
+DEPARTAMENTO: SAN JAVIER
+Total Farmacias: 7
+============================================================
+
+[1] COURVOISIER
+    Dirección:   SAN MARTIN 1499
+    Localidad:   ROMANG (CP: 3555)
+    Ubicación:   Lat: -29.49873556, Long: -59.75208742
+--------------------------------------------------
+[2] LOVATTO
+    Dirección:   AV. SAN MARTIN 1101
+    Localidad:   ALEJANDRA (CP: 3051)
+    Ubicación:   Lat: -29.90971617, Long: -59.82790841
+--------------------------------------------------
+[3] ENRIQUE KAENEL
+    Dirección:   9 DE JULIO 1105
+    Localidad:   ROMANG (CP: 3555)
+    Ubicación:   Lat: -29.50079194, Long: -59.75060919
+--------------------------------------------------
+[4] KAENEL
+    Dirección:   SAN MARTIN 1272
+    Localidad:   ROMANG (CP: 3555)
+    Ubicación:   Lat: -29.49912096, Long: -59.74989976
+--------------------------------------------------
+[5] RIBATTO
+    Dirección:   SAN MARTIN 999
+    Localidad:   ROMANG (CP: 3555)
+    Ubicación:   Lat: -29.49960158, Long: -59.74726409
+--------------------------------------------------
+[6] BARAGIOLA
+    Dirección:   GRAL. LOPEZ 1256
+    Localidad:   SAN JAVIER (CP: 3005)
+    Ubicación:   Lat: -30.58006161, Long: -59.93227556
+--------------------------------------------------
+[7] VILA
+    Dirección:   ALVEAR 2042
+    Localidad:   SAN JAVIER (CP: 3005)
+    Ubicación:   Lat: -30.57970437, Long: -59.92812282
+--------------------------------------------------

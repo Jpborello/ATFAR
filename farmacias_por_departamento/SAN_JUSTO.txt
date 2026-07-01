@@ -1,0 +1,130 @@
+============================================================
+DEPARTAMENTO: SAN JUSTO
+Total Farmacias: 27
+============================================================
+
+[1] PILATTI
+    Dirección:   ZONA URBANA
+    Localidad:   VERA Y PINTADO (CP: 3054)
+--------------------------------------------------
+[2] FILIPPA
+    Dirección:   INDEPEDENCIA 126
+    Localidad:   VIDELA (CP: 3048)
+    Ubicación:   Lat: -30.94309084, Long: -60.65594064
+--------------------------------------------------
+[3] MENAPACE
+    Dirección:   ANTONIO NOSEDA 871
+    Localidad:   VIDELA (CP: 3048)
+--------------------------------------------------
+[4] PICCO
+    Dirección:   AV. SAN MARTIN 299
+    Localidad:   VIDELA (CP: 3048)
+    Ubicación:   Lat: -30.94484234, Long: -60.65447242
+--------------------------------------------------
+[5] DALLIA
+    Dirección:   2 DE ABRIL 510
+    Localidad:   LA CRIOLLA (CP: 3052)
+    Ubicación:   Lat: -30.22479569, Long: -60.36726923
+--------------------------------------------------
+[6] DODORICO
+    Dirección:   SANTA FE 397
+    Localidad:   LA CRIOLLA (CP: 3052)
+    Ubicación:   Lat: -30.22426635, Long: -60.36572955
+--------------------------------------------------
+[7] STRADA
+    Dirección:   ESTANISLAO LOPEZ 423
+    Localidad:   LA CRIOLLA (CP: 3052)
+--------------------------------------------------
+[8] BUSALINO
+    Dirección:   MAIPU 401
+    Localidad:   MARCELINO ESCALADA (CP: 3042)
+    Ubicación:   Lat: -30.57910096, Long: -60.46704598
+--------------------------------------------------
+[9] ALMADA
+    Dirección:   JUAN MANTOVANI 1725
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------
+[10] ARNAUDO
+    Dirección:   9 DE JULIO 2303
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78909927, Long: -60.58953696
+--------------------------------------------------
+[11] BOLLO
+    Dirección:   AV. GDOR IRIONDO 2364
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------
+[12] BOTTO
+    Dirección:   CABAL 2518
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78984761, Long: -60.59426881
+--------------------------------------------------
+[13] D¿ANTONI
+    Dirección:   SAN MARTIN 2298
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78656643, Long: -60.58891242
+--------------------------------------------------
+[14] DEL GIUDICE
+    Dirección:   BV.PELLEGRINI 2823
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.79303672, Long: -60.59838733
+--------------------------------------------------
+[15] BOTTA
+    Dirección:   ESTANISLAO ZEBALLO 201
+    Localidad:   GOBERNADOR CRESPO (CP: 3044)
+--------------------------------------------------
+[16] GONNET
+    Dirección:   COMBATE DE SAN LORENZO 325
+    Localidad:   GOBERNADOR CRESPO (CP: 3044)
+    Ubicación:   Lat: -30.36204556, Long: -60.40175892
+--------------------------------------------------
+[17] TROMBERT
+    Dirección:   AV. SAN MART N 204
+    Localidad:   GOBERNADOR CRESPO (CP: 3044)
+    Ubicación:   Lat: -30.36315356, Long: -60.40353372
+--------------------------------------------------
+[18] DERGHON
+    Dirección:   R.E. DE SAN MARTIN 2303
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------
+[19] DOMINGORENA
+    Dirección:   BELGRANO 2387
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78870303, Long: -60.5909264
+--------------------------------------------------
+[20] FILIPPA
+    Dirección:   INDEPENDENCIA 2693
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78939745, Long: -60.59558435
+--------------------------------------------------
+[21] LANZO
+    Dirección:   GOBERNADOR IRIONDO 2531
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------
+[22] LAZZARONI
+    Dirección:   NICOLÁS FIGUEREDO 2755
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------
+[23] MAGLIONI
+    Dirección:   9 DE JULIO 1728
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.79016267, Long: -60.58192917
+--------------------------------------------------
+[24] MUSURUANA
+    Dirección:   URQUIZA 2355
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78855384, Long: -60.58936951
+--------------------------------------------------
+[25] PERUSINI
+    Dirección:   BELGRANO 2331
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78798735, Long: -60.59076382
+--------------------------------------------------
+[26] RAGGIO
+    Dirección:   AV.IRIONDO 2246
+    Localidad:   SAN JUSTO (CP: 3040)
+    Ubicación:   Lat: -30.78666893, Long: -60.59199126
+--------------------------------------------------
+[27] ZANUTTINI
+    Dirección:   IRIONDO 3162
+    Localidad:   SAN JUSTO (CP: 3040)
+--------------------------------------------------

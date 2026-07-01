@@ -1,0 +1,2909 @@
+============================================================
+DEPARTAMENTO: ROSARIO
+Total Farmacias: 610
+============================================================
+
+[1] ROVAI
+    Dirección:   SAN LUIS 2101
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.946526, Long: -60.652946
+--------------------------------------------------
+[2] FERRAN
+    Dirección:   DOMINGO FAUSTINO SARMIENTO 3098
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.973194, Long: -60.644892
+--------------------------------------------------
+[3] PETRUZZI
+    Dirección:   Av PELLEGRINI 3770
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.950667, Long: -60.677472
+--------------------------------------------------
+[4] RODRIGO
+    Dirección:   JUAN JOSE PASO 5880
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91998, Long: -60.703994
+--------------------------------------------------
+[5] AZAR
+    Dirección:   Av Pte PERON
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96863543, Long: -60.71336746
+--------------------------------------------------
+[6] ARCO IRIS
+    Dirección:   27 DE FEBRERO 5302
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.958698, Long: -60.695347
+--------------------------------------------------
+[7] LUCARELLI
+    Dirección:   Juan Jose Paso 7800
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92079, Long: -60.730022
+--------------------------------------------------
+[8] COLLOMB
+    Dirección:   Cordoba 4313
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.938512, Long: -60.682064
+--------------------------------------------------
+[9] HERNANDEZ - CASSINI
+    Dirección:   MENDOZA 4298
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.943735, Long: -60.682987
+--------------------------------------------------
+[10] LASCURAIN
+    Dirección:   SAN JOSE 1519
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.920646, Long: -60.809737
+--------------------------------------------------
+[11] R. HERNANDEZ
+    Dirección:   Avda PELLEGRINI 3456
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.951424, Long: -60.673181
+--------------------------------------------------
+[12] DESMEDT
+    Dirección:   Nicaragua (B) 671
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.935685, Long: -60.72086
+--------------------------------------------------
+[13] ZUCCO
+    Dirección:   J.J. PASO 2364
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91971, Long: -60.69378
+--------------------------------------------------
+[14] FRONTONS
+    Dirección:   JUAN JOSE PASO 6045
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.920034, Long: -60.706311
+--------------------------------------------------
+[15] CIUCCI
+    Dirección:   Av. PROVINCIAS UNIDAS 3181
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.965395, Long: -60.711697
+--------------------------------------------------
+[16] BIRCHER
+    Dirección:   Av GENOVA 2363
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91547662, Long: -60.69684505
+--------------------------------------------------
+[17] CALACE
+    Dirección:   Av GENOVA 3229
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.915513, Long: -60.696956
+--------------------------------------------------
+[18] HERBAS
+    Dirección:   MENDOZA 4588
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.943032, Long: -60.687085
+--------------------------------------------------
+[19] BERTOLOTTI
+    Dirección:   INDEPENDENCIA 1911
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.91187392, Long: -60.80932617
+--------------------------------------------------
+[20] RENZ
+    Dirección:   CORDOBA 1392
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.92198021, Long: -60.80840764
+--------------------------------------------------
+[21] BARCHI
+    Dirección:   SANTA FE 1483
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94407686, Long: -60.64309359
+--------------------------------------------------
+[22] MOROSINI
+    Dirección:   JUNIN 1996
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.926914, Long: -60.689832
+--------------------------------------------------
+[23] GHIONE
+    Dirección:   Tomas Craig 195
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[24] BONACCI
+    Dirección:   CASTRO BARROS 5202
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.997092, Long: -60.629579
+--------------------------------------------------
+[25] FELCARO
+    Dirección:   CAFFERATA 835
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94089, Long: -60.671207
+--------------------------------------------------
+[26] VUKSICH
+    Dirección:   AZURMENDI 654
+    Localidad:   ACEBAL (CP: 2109)
+    Ubicación:   Lat: -33.241272, Long: -60.833759
+--------------------------------------------------
+[27] INCHAURZA
+    Dirección:   ALEM 1914
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.961506, Long: -60.631617
+--------------------------------------------------
+[28] FARMACIA MUTUAL FEDERADA  25 DE JUNIO
+    Dirección:   MORENO 1143
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.948525, Long: -60.651702
+--------------------------------------------------
+[29] GALENICA
+    Dirección:   ESPAÑA 2198
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.961218, Long: -60.650607
+--------------------------------------------------
+[30] LELLI
+    Dirección:   SALVAT 1562
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.882506, Long: -60.704359
+--------------------------------------------------
+[31] CALVIN
+    Dirección:   JUNIN 1794
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.926914, Long: -60.687429
+--------------------------------------------------
+[32] LUCARINI
+    Dirección:   MACIEL 881
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.904254, Long: -60.691999
+--------------------------------------------------
+[33] ORLANDI
+    Dirección:   SAN MARTIN 3110
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.973712, Long: -60.643483
+--------------------------------------------------
+[34] PUCCINI
+    Dirección:   Av FILIPPINI 1631
+    Localidad:   VILLA GOBERNADOR GALVEZ (CP: 2124)
+    Ubicación:   Lat: -33.020683, Long: -60.636767
+--------------------------------------------------
+[35] VILLAGGI
+    Dirección:   Bv OROÑO 1215
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.948957, Long: -60.654792
+--------------------------------------------------
+[36] ASTRAL
+    Dirección:   J. MANUEL DE ROSAS 1301
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95372825, Long: -60.63285828
+--------------------------------------------------
+[37] JUAN
+    Dirección:   JUNIN 5648
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.927283, Long: -60.70101
+--------------------------------------------------
+[38] PLACENTI
+    Dirección:   SAN JUAN 3501
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.944167, Long: -60.672323
+--------------------------------------------------
+[39] ARIAS
+    Dirección:   TUCUMAN 917
+    Localidad:   ALVAREZ (CP: 2107)
+    Ubicación:   Lat: -33.129214, Long: -60.80663
+--------------------------------------------------
+[40] LUMANI
+    Dirección:   SAN LUIS 2922
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.944473, Long: -60.663975
+--------------------------------------------------
+[41] LAGRECA
+    Dirección:   3 DE FEBRERO 2698
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.948795, Long: -60.661594
+--------------------------------------------------
+[42] PERDOMO
+    Dirección:   SAN LUIS 2566
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.945355, Long: -60.659083
+--------------------------------------------------
+[43] GAMULIN
+    Dirección:   RODRIGUEZ 714
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.941556, Long: -60.65859
+--------------------------------------------------
+[44] RODRIGUEZ SILVIA GUADALUPE
+    Dirección:   SAN LUIS 4570
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.940547, Long: -60.686291
+--------------------------------------------------
+[45] MENDOZA
+    Dirección:   AV. 27 DE FEBRERO 3946
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96057, Long: -60.682386
+--------------------------------------------------
+[46] BELLA VISTA
+    Dirección:   RIOBAMBA 3696
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95660906, Long: -60.67800522
+--------------------------------------------------
+[47] ALESSO
+    Dirección:   SARMIENTO 1296
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.952612, Long: -60.639707
+--------------------------------------------------
+[48] CASCIANI
+    Dirección:   ISLAS MALVINAS 195
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161697, Long: -60.513089
+--------------------------------------------------
+[49] CHOIHETTE
+    Dirección:   SAN MARTIN 4842
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.993061, Long: -60.64726
+--------------------------------------------------
+[50] BONDIEU
+    Dirección:   SAN MARTIN 621
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161589, Long: -60.513175
+--------------------------------------------------
+[51] CUBELLS
+    Dirección:   EVA PERON 8166
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.928553, Long: -60.738133
+--------------------------------------------------
+[52] LO MORO
+    Dirección:   SAN LORENZO 1888
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.942132, Long: -60.648526
+--------------------------------------------------
+[53] GRASSI
+    Dirección:   SARMIENTO 641
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161625, Long: -60.513217
+--------------------------------------------------
+[54] VIA CORDOBA
+    Dirección:   CORDOBA 5753 PB
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.934983, Long: -60.70202
+--------------------------------------------------
+[55] BIZZOTTO
+    Dirección:   COLON 1301
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.954905, Long: -60.627215
+--------------------------------------------------
+[56] LORENZINI
+    Dirección:   NECOCHEA 1687
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.959562, Long: -60.626854
+--------------------------------------------------
+[57] FARMACIA YASPARRA
+    Dirección:   MONTEVIDEO 1364
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.955403, Long: -60.644234
+--------------------------------------------------
+[58] OTTOLINI
+    Dirección:   MENDOZA 5151
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.941808, Long: -60.694059
+--------------------------------------------------
+[59] PERINETTI
+    Dirección:   H. Irigoyen 1078
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.884453, Long: -60.69908
+--------------------------------------------------
+[60] BOGGIONE
+    Dirección:   BALCARCE816
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.944149, Long: -60.652131
+--------------------------------------------------
+[61] IRIONDO
+    Dirección:   3 DE FEBRERO 3401
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.946994, Long: -60.671614
+--------------------------------------------------
+[62] GERVATTI
+    Dirección:   Bv AVELLANEDA 967 BIS
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.934469, Long: -60.677936
+--------------------------------------------------
+[63] MICA
+    Dirección:   CALLAO 301
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.936784, Long: -60.658783
+--------------------------------------------------
+[64] SAAVEDRA
+    Dirección:   PARAGUAY 3502
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.976952, Long: -60.651637
+--------------------------------------------------
+[65] RAGAZZO
+    Dirección:   CONSTITUCION 940
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94143, Long: -60.674168
+--------------------------------------------------
+[66] BERDINI
+    Dirección:   9 DE JULIO 845
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15796025, Long: -60.51200867
+--------------------------------------------------
+[67] LA FLORIDA
+    Dirección:   Bv. Rondeau 3302
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.884628, Long: -60.695306
+--------------------------------------------------
+[68] AGRELO
+    Dirección:   AGRELO 2364
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.890669, Long: -60.692257
+--------------------------------------------------
+[69] ANTONELLI
+    Dirección:   WILDE 508
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.934334, Long: -60.738691
+--------------------------------------------------
+[70] BABINI
+    Dirección:   MENDOZA 7735
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9406554, Long: -60.72748661
+--------------------------------------------------
+[71] INTILE
+    Dirección:   GUEMES 2499
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.932479, Long: -60.654706
+--------------------------------------------------
+[72] VIDAL
+    Dirección:   SAN NICOLAS 301
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.934659, Long: -60.671099
+--------------------------------------------------
+[73] RAMKIN
+    Dirección:   URQUIZA 5835
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.933164, Long: -60.703028
+--------------------------------------------------
+[74] HOSPITAL DR JUAN BAUTISTA ALBERDI
+    Dirección:   PUCCIO JOSE 575
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.894705, Long: -60.69172
+--------------------------------------------------
+[75] FERRARI
+    Dirección:   CRESPO 2102
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.956609, Long: -60.672323
+--------------------------------------------------
+[76] GALIZIA
+    Dirección:   Bv SEGUI 1701
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.977384, Long: -60.654899
+--------------------------------------------------
+[77] HOSPITAL DE NIÑO ZONA NORTE (FCIA INTERNA)
+    Dirección:   DE LOS TRABAJADORES 1331
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.911964, Long: -60.67921
+--------------------------------------------------
+[78] CAPPONE
+    Dirección:   Bv OROÑO
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9914565, Long: -60.66570658
+--------------------------------------------------
+[79] SANTA MONICA
+    Dirección:   OVIDIO LAGOS 3049
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.968329, Long: -60.667945
+--------------------------------------------------
+[80] CASA
+    Dirección:   BAIGORRIA 1710
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.893768, Long: -60.704938
+--------------------------------------------------
+[81] OVEID
+    Dirección:   JJ PASO 802
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.919115, Long: -60.675327
+--------------------------------------------------
+[82] LUCHETTA(dupl)
+    Dirección:   BUENOS AIRES 1654
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.957689, Long: -60.635244
+--------------------------------------------------
+[83] DI MONACO
+    Dirección:   PTE. ROCA 1462
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.953134, Long: -60.647131
+--------------------------------------------------
+[84] PARISI
+    Dirección:   Av FRANCIA 1501
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.950271, Long: -60.667816
+--------------------------------------------------
+[85] LA UNIVERSIDAD
+    Dirección:   SALTA 2801
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.935145, Long: -60.660113
+--------------------------------------------------
+[86] LA UNION
+    Dirección:   AYACUCHO 5576
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.001124, Long: -60.636038
+--------------------------------------------------
+[87] SAENZ PEÑA
+    Dirección:   Av ARIJON 702
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.002689, Long: -60.644985
+--------------------------------------------------
+[88] TORRESI
+    Dirección:   BUENOS AIRES 4271
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9875, Long: -60.642775
+--------------------------------------------------
+[89] SANTAMBROSIO
+    Dirección:   Av URIBURU 721
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.990362, Long: -60.643784
+--------------------------------------------------
+[90] CUBO
+    Dirección:   MONTEVIDEO 1983
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.953872, Long: -60.652796
+--------------------------------------------------
+[91] SCARAVAGLIONE
+    Dirección:   CORRIENTES 962
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94766, Long: -60.642883
+--------------------------------------------------
+[92] GABBI
+    Dirección:   SARMIENTO 1416
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95398, Long: -60.64005
+--------------------------------------------------
+[93] EXPRESS
+    Dirección:   Bv RONDEAU 4147
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.876361, Long: -60.698192
+--------------------------------------------------
+[94] SCARPIGNATO
+    Dirección:   BV. OROÑO 1509
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.952414, Long: -60.655586
+--------------------------------------------------
+[95] CICCONI
+    Dirección:   CERRITO 684
+    Localidad:   ALVAREZ (CP: 2107)
+    Ubicación:   Lat: -33.129789, Long: -60.806637
+--------------------------------------------------
+[96] MARINELLI
+    Dirección:   AYACUCHO 2097
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.963613, Long: -60.630716
+--------------------------------------------------
+[97] DESANO
+    Dirección:   MITRE 2078
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.961254, Long: -60.643312
+--------------------------------------------------
+[98] CARESTIA
+    Dirección:   PARAGUAY   2104
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.960948, Long: -60.647646
+--------------------------------------------------
+[99] SERGIO RODRIGUEZ
+    Dirección:   TUCUMAN 7782
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.933092, Long: -60.729207
+--------------------------------------------------
+[100] BERTERO
+    Dirección:   EVA PERON 7025
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93228128, Long: -60.71695089
+--------------------------------------------------
+[101] ORIOLI
+    Dirección:   CORDOBA 2275
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.943519, Long: -60.654427
+--------------------------------------------------
+[102] CAPOZZI
+    Dirección:   SAN MARTIN 2365
+    Localidad:   VILLA GOBERNADOR GALVEZ (CP: 2124)
+    Ubicación:   Lat: -33.027375, Long: -60.622399
+--------------------------------------------------
+[103] OESTE
+    Dirección:   CORDOBA 6694
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.933146, Long: -60.71262
+--------------------------------------------------
+[104] FRANZ
+    Dirección:   MENDOZA 5802
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.940223, Long: -60.702513
+--------------------------------------------------
+[105] PILAR
+    Dirección:   PUEYRREDON 353
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.937702, Long: -60.656272
+--------------------------------------------------
+[106] SCLOSA
+    Dirección:   MENDOZA 5567
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.940799, Long: -60.699488
+--------------------------------------------------
+[107] BELGRANO
+    Dirección:   MENDOZA 6998
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94034927, Long: -60.71619987
+--------------------------------------------------
+[108] BENITEZ
+    Dirección:   Bv Avellaneda 735 Bis
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91843072, Long: -60.67418575
+--------------------------------------------------
+[109] BIZZARRI
+    Dirección:   JOSE INGENIEROS 876
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.847902, Long: -60.6976
+--------------------------------------------------
+[110] BONICCHI
+    Dirección:   LISANDRO DE LA TORRE 55
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161697, Long: -60.513089
+--------------------------------------------------
+[111] RIVERO
+    Dirección:   JUAN B. JUSTO 658
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161625, Long: -60.513217
+--------------------------------------------------
+[112] VEGA
+    Dirección:   PASTEUR 2298
+    Localidad:   VILLA GOBERNADOR GALVEZ (CP: 2124)
+    Ubicación:   Lat: -33.027735, Long: -60.624021
+--------------------------------------------------
+[113] MILATICH
+    Dirección:   BUENOS AIRES 2398
+    Localidad:   VILLA GOBERNADOR GALVEZ (CP: 2124)
+    Ubicación:   Lat: -33.029067, Long: -60.638484
+--------------------------------------------------
+[114] COBELLI
+    Dirección:   CORDOBA 5973
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.934514, Long: -60.704509
+--------------------------------------------------
+[115] PISTACCHIA
+    Dirección:   EVA PERON 8055
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.928985, Long: -60.735794
+--------------------------------------------------
+[116] DE PAOLA
+    Dirección:   SANTIAGO 1499
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.951568, Long: -60.658182
+--------------------------------------------------
+[117] DEL BARRIO
+    Dirección:   Bv RONDEAU 3411
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.883822, Long: -60.695934
+--------------------------------------------------
+[118] DEL PRETE
+    Dirección:   MORENO 295
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.161697, Long: -60.513346
+--------------------------------------------------
+[119] LORENZETTI
+    Dirección:   NECOCHEA 1795
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.960696, Long: -60.627154
+--------------------------------------------------
+[120] GENCIANA
+    Dirección:   MAESTROS SANTAFESINOS 4885
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99307623, Long: -60.62298424
+--------------------------------------------------
+[121] GRILLI
+    Dirección:   SAN JUAN 601
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95137, Long: -60.632604
+--------------------------------------------------
+[122] ALEJANDRA PORTA
+    Dirección:   BAIGORRIA 1477
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.893444, Long: -60.701848
+--------------------------------------------------
+[123] HAUPTMANN
+    Dirección:   GRAL PAZ 5467
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99992454, Long: -60.62723311
+--------------------------------------------------
+[124] CECCARELLI
+    Dirección:   AYACUCHO 5380
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.999036, Long: -60.636274
+--------------------------------------------------
+[125] MARCHETTI
+    Dirección:   SANTA FE 1631
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.918305, Long: -60.810574
+--------------------------------------------------
+[126] MAMMANA
+    Dirección:   Av CORDOBA 4790
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.937396, Long: -60.688566
+--------------------------------------------------
+[127] CHIMENTON
+    Dirección:   PELLEGRINI 4460
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.948993, Long: -60.686828
+--------------------------------------------------
+[128] ARAUJO
+    Dirección:   RIOJA 701
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94877599, Long: -60.63305473
+--------------------------------------------------
+[129] AMBAY
+    Dirección:   SAN JUAN 2296
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94719692, Long: -60.65558048
+--------------------------------------------------
+[130] AQUINO
+    Dirección:   SAN LUIS 2348
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.945877, Long: -60.655935
+--------------------------------------------------
+[131] ARGENTA
+    Dirección:   SE SAN MARTIN JOSE GRL AV 4515
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[132] ACEOLAZA
+    Dirección:   SUPERI JOSE 996
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[133] ALEMA
+    Dirección:   TUCUMAN 1099
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94183776, Long: -60.63706169
+--------------------------------------------------
+[134] ANUNZIATO
+    Dirección:   DE URQUIZA JUSTO JOSE 2597
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[135] ACHIDIAK
+    Dirección:   VELEZ SARSFIELD 1582
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92518195, Long: -60.68617172
+--------------------------------------------------
+[136] BONEL
+    Dirección:   ARIJON AV 1337
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00311707, Long: -60.65236462
+--------------------------------------------------
+[137] BAHA
+    Dirección:   BAHIA BLANCA BIS 388
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.923865, Long: -60.68876932
+--------------------------------------------------
+[138] BAIGORRIA
+    Dirección:   BAIGORRIA JUAN BAUTISTA 957
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[139] BOGGIONE
+    Dirección:   BALCARCE 816
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94411923, Long: -60.65197402
+--------------------------------------------------
+[140] BERMEJO
+    Dirección:   AYACUCHO 1650
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95868957, Long: -60.62946844
+--------------------------------------------------
+[141] BINI
+    Dirección:   SEGUI JUAN FRANCISCO BV 5341
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[142] BRUFAL
+    Dirección:   SEGUI JUAN FRANCISCO BV 5203
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[143] BUSTAMANTE
+    Dirección:   CASIANO CASAS 1502
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90184214, Long: -60.70412519
+--------------------------------------------------
+[144] BATALLA
+    Dirección:   DUARTE DE PERON EVA AV 4997
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[145] BARTONAGIOLLI
+    Dirección:   DE ROSAS JUAN MANUEL 2448
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[146] BONETTO
+    Dirección:   PASO JUAN JOSE 5669
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[147] BARBAGALLO
+    Dirección:   TUCUMAN 7607
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93287501, Long: -60.72493294
+--------------------------------------------------
+[148] BECCARIA
+    Dirección:   PROVINCIAS UNIDAS AV 864
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93763432, Long: -60.71285078
+--------------------------------------------------
+[149] BUSALACCHI
+    Dirección:   LAMADRID 1987
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99750945, Long: -60.66203649
+--------------------------------------------------
+[150] BOZAZ
+    Dirección:   MENDOZA AV 7940
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[151] BEDETTI
+    Dirección:   MITRE BARTOLOME 4408
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[152] BERGERO
+    Dirección:   MONTEVIDEO 1732
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95454503, Long: -60.64938909
+--------------------------------------------------
+[153] BAVASTRO
+    Dirección:   NECOCHEA 3118
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97606064, Long: -60.63099451
+--------------------------------------------------
+[154] BOSCO
+    Dirección:   PARAGUAY 1159
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9499885, Long: -60.64486452
+--------------------------------------------------
+[155] BACHIARRI
+    Dirección:   ROCA JULIO ARGENTINO PTE 2508
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[156] BIANCHI
+    Dirección:   RIOBAMBA 3595
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9568899, Long: -60.67646951
+--------------------------------------------------
+[157] BERGONZI
+    Dirección:   SALTA AV 1975
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9372715, Long: -60.64850429
+--------------------------------------------------
+[158] BITTAR
+    Dirección:   SAN JUAN 3292
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94479042, Long: -60.669133
+--------------------------------------------------
+[159] BONO
+    Dirección:   SAN LORENZO 1130
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94409848, Long: -60.63804599
+--------------------------------------------------
+[160] BENDINELLI
+    Dirección:   DE URQUIZA JUSTO JOSE 2373
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[161] CASADEI
+    Dirección:   9 DE JULIO 1768
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95216008, Long: -60.64931272
+--------------------------------------------------
+[162] CASTINI
+    Dirección:   9 DE JULIO 414
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95558009, Long: -60.63038733
+--------------------------------------------------
+[163] CATAUDELLA
+    Dirección:   9 DE JULIO 504
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9553667, Long: -60.63164912
+--------------------------------------------------
+[164] CONCARI
+    Dirección:   9 DE JULIO 764
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95469178, Long: -60.63554236
+--------------------------------------------------
+[165] CHIAPPERO
+    Dirección:   9 DE JULIO 2499
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95038317, Long: -60.65923875
+--------------------------------------------------
+[166] CASTELLI
+    Dirección:   ARIJON AV 302
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00262066, Long: -60.6360759
+--------------------------------------------------
+[167] CARLOS SOLARI
+    Dirección:   ARIJON AV 1645
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00325454, Long: -60.65695565
+--------------------------------------------------
+[168] CLADERA
+    Dirección:   NTRA SRA DEL ROSARIO AV 3189
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00098161, Long: -60.6790995
+--------------------------------------------------
+[169] CAPRIOGLIO
+    Dirección:   FRANCIA AV 2581
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96240524, Long: -60.67091692
+--------------------------------------------------
+[170] CUCA
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 1756
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[171] COTUGNO
+    Dirección:   BUENOS AIRES 3569
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97964304, Long: -60.64080504
+--------------------------------------------------
+[172] CATIVIELA
+    Dirección:   AVELLANEDA BV 2655
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96092216, Long: -60.68474998
+--------------------------------------------------
+[173] CARLOS LAURINO
+    Dirección:   OROO NICASIO BV 6000
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[174] CRISTIAN HERNANDEZ
+    Dirección:   OROO NICASIO BV 3436
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[175] CRUZ DEL SUR
+    Dirección:   OROO NICASIO BV 2875
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[176] CARRA
+    Dirección:   RONDEAU BV 1029
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9047576, Long: -60.68947261
+--------------------------------------------------
+[177] CORIASCO
+    Dirección:   CAFFERATA 1242
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94620398, Long: -60.6724107
+--------------------------------------------------
+[178] CORDOBA
+    Dirección:   Córdoba 2394
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9431329, Long: -60.655991
+--------------------------------------------------
+[179] CENTENARIO
+    Dirección:   CORRIENTES AV 501
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94220125, Long: -60.64149956
+--------------------------------------------------
+[180] CORRIENTES
+    Dirección:   CORRIENTES AV 785
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94548113, Long: -60.64231123
+--------------------------------------------------
+[181] CENTINEO
+    Dirección:   JUNIN 650
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92655934, Long: -60.67282576
+--------------------------------------------------
+[182] CHIABRANDO
+    Dirección:   ENTRE RIOS 1121
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94995048, Long: -60.64196475
+--------------------------------------------------
+[183] CULLA
+    Dirección:   DUARTE DE PERON EVA AV 5401
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93588653, Long: -60.69754779
+--------------------------------------------------
+[184] CANTONI
+    Dirección:   IGR LAPORTE 3732
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.88044258, Long: -60.69354899
+--------------------------------------------------
+[185] CECCONI
+    Dirección:   JUSTO JUAN BAUTISTA 7235
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[186] CRUZ DEL OESTE
+    Dirección:   PASO JUAN JOSE 6674
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[187] FALCONE
+    Dirección:   SE SAN MARTIN JOSE GRL AV 658
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94527209, Long: -60.63638806
+--------------------------------------------------
+[188] FEIOCK
+    Dirección:   SAN NICOLAS 3798
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97524145, Long: -60.6811602
+--------------------------------------------------
+[189] FARINA
+    Dirección:   SANTA FE 3304
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9396481, Long: -60.6679487
+--------------------------------------------------
+[190] FERRETO
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 4301
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[191] FENOGLIO
+    Dirección:   ZEBALLOS ESTANISLAO 1901
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95300516, Long: -60.65140615
+--------------------------------------------------
+[192] GIMENEZ
+    Dirección:   24 DE SETIEMBRE 1362
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97955255, Long: -60.6503551
+--------------------------------------------------
+[193] GONZALEZ C.
+    Dirección:   27 DE FEBRERO 1499
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96668417, Long: -60.64909676
+--------------------------------------------------
+[194] GRANDOLI
+    Dirección:   GRANDOLI ABANDERADO 4043
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.98765471, Long: -60.62840809
+--------------------------------------------------
+[195] GOMEZ
+    Dirección:   ALBERDI 243
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92988843, Long: -60.67402491
+--------------------------------------------------
+[196] GARCIA
+    Dirección:   FRANCIA AV 2788
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96483755, Long: -60.67153618
+--------------------------------------------------
+[197] GENOVA
+    Dirección:   GENOVA 1199
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91504655, Long: -60.68036203
+--------------------------------------------------
+[198] GUARINO
+    Dirección:   AYACUCHO 6147
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00793987, Long: -60.63582598
+--------------------------------------------------
+[199] GIUDICI
+    Dirección:   AYALA GAUNA 7887
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91247397, Long: -60.73266374
+--------------------------------------------------
+[200] GOMEZ VALLE
+    Dirección:   BAIGORRIA JUAN BAUTISTA 2350
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[201] GARIN
+    Dirección:   BROWN GUILLERMO 1774
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[202] GERVATTI
+    Dirección:   AVELLANEDA BIS BV 967
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91631494, Long: -60.6734659
+--------------------------------------------------
+[203] GALIGANI
+    Dirección:   OROO NICASIO BV 3714
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[204] GONZALEZ
+    Dirección:   SEGUI JUAN FRANCISCO BV 3903
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[205] GIOVINAZO
+    Dirección:   CASIANO CASAS 1284
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90380296, Long: -60.70070616
+--------------------------------------------------
+[206] G. GARCIA
+    Dirección:   CORRIENTES AV 4799
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9930564, Long: -60.65364977
+--------------------------------------------------
+[207] CAPPETINI
+    Dirección:   MATIENZO 2002
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95172246, Long: -60.69425024
+--------------------------------------------------
+[208] CUPELLINO
+    Dirección:   MAZA JUAN AGUSTIN 3302
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[209] CAPPONI
+    Dirección:   MENDOZA AV 6035
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[210] COLLA
+    Dirección:   MENDOZA AV 5357
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[211] CRUZ DEL PORTAL
+    Dirección:   NANSEN 248
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.909068, Long: -60.682969
+--------------------------------------------------
+[212] CONDE
+    Dirección:   NECOCHEA 1245
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95438318, Long: -60.62559029
+--------------------------------------------------
+[213] COXHEAD
+    Dirección:   NECOCHEA 1483
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95733229, Long: -60.62631052
+--------------------------------------------------
+[214] CARDINI
+    Dirección:   LAGOS OVIDIO AV 421
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93786096, Long: -60.66035067
+--------------------------------------------------
+[215] CARUSO
+    Dirección:   PELLEGRINI CARLOS AV 5935
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[216] CALVAGNA
+    Dirección:   PROVINCIAS UNIDAS AV 1723
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94896898, Long: -60.71230108
+--------------------------------------------------
+[217] CERRITO
+    Dirección:   PROVINCIAS UNIDAS AV 2102
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95334542, Long: -60.71212838
+--------------------------------------------------
+[218] CAMPO
+    Dirección:   RODRIGUEZ 1601
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95246632, Long: -60.66119783
+--------------------------------------------------
+[219] CHIMINELLO
+    Dirección:   SAN JUAN 2010
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94790537, Long: -60.65167532
+--------------------------------------------------
+[220] CURTO
+    Dirección:   SAN LORENZO 2290
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94119164, Long: -60.65398959
+--------------------------------------------------
+[221] FARMACIA CEMAR
+    Dirección:   SAN LUIS 2020
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9465819, Long: -60.6514756
+--------------------------------------------------
+[222] CAVATORTA
+    Dirección:   SE SAN MARTIN JOSE GRL AV 5023
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[223] CHOIETTE
+    Dirección:   SE SAN MARTIN JOSE GRL AV 4842
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[224] CEBALLOS
+    Dirección:   SAN NICOLAS 1899
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95344678, Long: -60.67565101
+--------------------------------------------------
+[225] CORSI
+    Dirección:   TEJEDA 2666
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.88731548, Long: -60.71700827
+--------------------------------------------------
+[226] FARMACIA DEL CENTRO
+    Dirección:   Corrientes 872
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9464169, Long: -60.642604
+--------------------------------------------------
+[227] DEL PARQUE
+    Dirección:   CORRIENTES AV 1801
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95769396, Long: -60.64538136
+--------------------------------------------------
+[228] DONADO
+    Dirección:   DONADO 672
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93577843, Long: -60.72727933
+--------------------------------------------------
+[229] DURINI
+    Dirección:   PASO JUAN JOSE 1602
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[230] DEL BARCO
+    Dirección:   JUNIN 1298
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92679116, Long: -60.68193267
+--------------------------------------------------
+[231] DE LA PLAZA
+    Dirección:   LAPRIDA NARCISO 772
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[232] DORREGO
+    Dirección:   MENDOZA AV 1903
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[233] DUFOUR
+    Dirección:   MENDOZA AV 2839
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[234] DESMEDT
+    Dirección:   NICARAGUA BIS 671
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92098532, Long: -60.72157699
+--------------------------------------------------
+[235] DEL SOL
+    Dirección:   PARAGUAY 952
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9473459, Long: -60.644287
+--------------------------------------------------
+[236] DEL SUR
+    Dirección:   PARAGUAY 6220
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00917806, Long: -60.65443739
+--------------------------------------------------
+[237] DEL AGUILA
+    Dirección:   RIOJA 883
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94829932, Long: -60.63536223
+--------------------------------------------------
+[238] DADAMO
+    Dirección:   RUEDA MIGUEL DR 1851
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[239] DI SIMONE
+    Dirección:   TARRAGONA BIS 1228
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91491228, Long: -60.73518321
+--------------------------------------------------
+[240] EDGARDO YAFFE
+    Dirección:   1 DE MAYO 908
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94943186, Long: -60.63016985
+--------------------------------------------------
+[241] EL TREBOL
+    Dirección:   BRASIL 2196
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95467735, Long: -60.71896409
+--------------------------------------------------
+[242] ENTRE ROS
+    Dirección:   ENTRE RIOS 1916
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95925585, Long: -60.64430528
+--------------------------------------------------
+[243] EUROPEA
+    Dirección:   ENTRE RIOS 401
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94131251, Long: -60.63980373
+--------------------------------------------------
+[244] ESCOBAR
+    Dirección:   FRAGATA SARMIENTO 3019
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9881214, Long: -60.67612859
+--------------------------------------------------
+[245] ESTRADA
+    Dirección:   MARTINEZ ESTRADA 7960
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91127883, Long: -60.73422843
+--------------------------------------------------
+[246] EL CIRCULO
+    Dirección:   MENDOZA AV 742
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[247] GASTIAZORO
+    Dirección:   MENDOZA AV 4901
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[248] GUGLIELMINO
+    Dirección:   MENDOZA AV 1595
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[249] GUGLIOTTA
+    Dirección:   NTRA SRA DEL ROSARIO AV 1401
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99998294, Long: -60.65339441
+--------------------------------------------------
+[250] GINI
+    Dirección:   ROCA JULIO ARGENTINO PTE 2298
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[251] GARIS
+    Dirección:   Urquiza 1605
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9417777, Long: -60.644353
+--------------------------------------------------
+[252] GHEZZI
+    Dirección:   VIRASORO 1304
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96939911, Long: -60.64692797
+--------------------------------------------------
+[253] GONZALEZ LALLONI
+    Dirección:   ZEBALLOS ESTANISLAO 650
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95620173, Long: -60.63417711
+--------------------------------------------------
+[254] HANONO
+    Dirección:   1 DE MAYO 1698
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9586196, Long: -60.6324716
+--------------------------------------------------
+[255] HERNANDEZ
+    Dirección:   BAIGORRIA JUAN BAUTISTA 2131
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[256] HIPOLITO
+    Dirección:   OROO NICASIO BV 5397
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[257] HAMANN
+    Dirección:   ENTRE RIOS 3431
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97665152, Long: -60.64869976
+--------------------------------------------------
+[258] HAUPTMANN
+    Dirección:   PAZ J M 5467
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99992454, Long: -60.62723311
+--------------------------------------------------
+[259] HUGO CRESPO
+    Dirección:   GRANDOLI ABANDERADO 4707
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99218346, Long: -60.62868296
+--------------------------------------------------
+[260] HOMEOS
+    Dirección:   DE URQUIZA JUSTO JOSE 1802
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[261] IGLESIAS
+    Dirección:   AVELLANEDA BV 3215
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96728302, Long: -60.68634263
+--------------------------------------------------
+[262] ITALIA
+    Dirección:   CATAMARCA 1803
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93885188, Long: -60.6464647
+--------------------------------------------------
+[263] INGER
+    Dirección:   CORRIENTES AV 4201
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.98521262, Long: -60.65232702
+--------------------------------------------------
+[264] IVARZ
+    Dirección:   MENDOZA AV 6255
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[265] ITALIANA
+    Dirección:   SE SAN MARTIN JOSE GRL AV 1902
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[266] INGLESA
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 641
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[267] IRIQUIN
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 2380
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[268] ARROYITO
+    Dirección:   ALBERDI 423
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93227965, Long: -60.67210745
+--------------------------------------------------
+[269] AMIGO
+    Dirección:   GORRITI 299
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92312273, Long: -60.66748775
+--------------------------------------------------
+[270] AZAR
+    Dirección:   PERON JUAN DOMINGO PRES AV 6389
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[271] APOTEKA
+    Dirección:   PELLEGRINI CARLOS AV 1760
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[272] ARIAS
+    Dirección:   PELLEGRINI CARLOS AV 4099
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[273] FRANCHINI
+    Dirección:   MONTEVIDEO 4660
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9474404, Long: -60.68923534
+--------------------------------------------------
+[274] ENTRECONTI
+    Dirección:   LAGOS OVIDIO AV 5106
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99796409, Long: -60.67495156
+--------------------------------------------------
+[275] EMBON
+    Dirección:   TUCUMAN 1902
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93979255, Long: -60.64809945
+--------------------------------------------------
+[276] FORT
+    Dirección:   NTRA SRA DEL ROSARIO BIS AV 569
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.998468, Long: -60.61958172
+--------------------------------------------------
+[277] FARMA 4
+    Dirección:   OROO NICASIO BV 2609
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[278] F. CERRUTTI
+    Dirección:   SEGUI JUAN FRANCISCO BV 372
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[279] FLAVIO ROSSI
+    Dirección:   DORREGO MANUEL 91
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[280] FERNANDEZ SAVIOLI
+    Dirección:   IRIGOYEN HIPOLITO AV 1407
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[281] FRONTONS
+    Dirección:   PASO JUAN JOSE 6045
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[282] FESSIA
+    Dirección:   MARTIN FIERRO 245
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.876391, Long: -60.68969842
+--------------------------------------------------
+[283] AYACUCHO
+    Dirección:   AYACUCHO 5196
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99737372, Long: -60.63650906
+--------------------------------------------------
+[284] AIRES
+    Dirección:   BUENOS AIRES 2296
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96511286, Long: -60.63714803
+--------------------------------------------------
+[285] AGUILA
+    Dirección:   CAFFERATA 564
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93783717, Long: -60.67031645
+--------------------------------------------------
+[286] AURORA
+    Dirección:   CONSTITUCION 480
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93637248, Long: -60.67276923
+--------------------------------------------------
+[287] ABRIATA
+    Dirección:   CORDOBA 2999
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94175967, Long: -60.66417918
+--------------------------------------------------
+[288] ALQUIMIA
+    Dirección:   CORRIENTES AV 2670
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9676841, Long: -60.64790837
+--------------------------------------------------
+[289] AMAT
+    Dirección:   FUNES DEAN 5785
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96716364, Long: -60.70107811
+--------------------------------------------------
+[290] ARNESI
+    Dirección:   MOSCONI ENRIQUE GRL 3735
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[291] AGOSTI
+    Dirección:   GUEMES 2141
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93337987, Long: -60.64981378
+--------------------------------------------------
+[292] AGUIRRE
+    Dirección:   GUEMES 2098
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93347497, Long: -60.64929782
+--------------------------------------------------
+[293] ABRUZZO
+    Dirección:   IRIONDO 2998
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96655437, Long: -60.67611444
+--------------------------------------------------
+[294] ATLANTICA
+    Dirección:   MAIPU 1498
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95551355, Long: -60.63753411
+--------------------------------------------------
+[295] ANTARTIDA
+    Dirección:   MENDOZA AV 7702
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[296] AVILA
+    Dirección:   MENDOZA AV 3762
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[297] JELUSICH
+    Dirección:   BUENOS AIRES 1612
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95723713, Long: -60.6351809
+--------------------------------------------------
+[298] KLEES
+    Dirección:   MENDOZA AV 2599
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[299] KENNEDY
+    Dirección:   LAGOS OVIDIO AV 2598
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96337279, Long: -60.66665115
+--------------------------------------------------
+[300] KNOBEL
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 4590
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[301] LOPEZ TEMPORELLI
+    Dirección:   ARIJON AV 494
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00274415, Long: -60.64011801
+--------------------------------------------------
+[302] LAFRANCHI
+    Dirección:   PELLEGRINI CARLOS AV 1909
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[303] LURASCHI
+    Dirección:   PELLEGRINI CARLOS AV 3995
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[304] LOMBARTE
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 2576
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[305] LA FE
+    Dirección:   AVELLANEDA 1199
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9441948, Long: -60.6803608
+--------------------------------------------------
+[306] LEYENDEKER
+    Dirección:   AYOLAS 396
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.978547, Long: -60.63591107
+--------------------------------------------------
+[307] LAURA GOMEZ
+    Dirección:   RONDEAU BV 125
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9140885, Long: -60.68665378
+--------------------------------------------------
+[308] LA CAPITAL
+    Dirección:   CORRIENTES AV 1402
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95309561, Long: -60.64422806
+--------------------------------------------------
+[309] LA SALUD
+    Dirección:   CORRIENTES AV 2198
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96225682, Long: -60.6465295
+--------------------------------------------------
+[310] LAMBAS
+    Dirección:   IRIONDO 1820
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95302843, Long: -60.67270924
+--------------------------------------------------
+[311] LAPRIDA
+    Dirección:   Laprida 1401
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.954733, Long: -60.6359
+--------------------------------------------------
+[312] LUCARINI
+    Dirección:   MACIEL COSME 881
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[313] LOURDES
+    Dirección:   MENDOZA AV 2354
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[314] LAURINO
+    Dirección:   MORENO MARIANO 4497
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[315] ANTONIOTTI
+    Dirección:   PARAGUAY 1609
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95522648, Long: -60.64621312
+--------------------------------------------------
+[316] ALEMANA
+    Dirección:   RIOBAMBA 1814
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96123332, Long: -60.65224953
+--------------------------------------------------
+[317] COLON
+    Dirección:   DE URQUIZA JUSTO JOSE 2147
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[318] DEL ALTO
+    Dirección:   LAMAS INTENDENTE 270
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91117231, Long: -60.69261619
+--------------------------------------------------
+[319] DE GIORGIO
+    Dirección:   RONDEAU BV 711
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90848268, Long: -60.68833538
+--------------------------------------------------
+[320] DEL LEON
+    Dirección:   CORDOBA 1704
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94491692, Long: -60.64657611
+--------------------------------------------------
+[321] DEL SIGLO
+    Dirección:   CORDOBA 1469
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94549389, Long: -60.64332206
+--------------------------------------------------
+[322] ARISTIDES
+    Dirección:   RIOBAMBA 99
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96551437, Long: -60.62835914
+--------------------------------------------------
+[323] ROSARIO
+    Dirección:   SAN LORENZO 1315
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9435729, Long: -60.64059899
+--------------------------------------------------
+[324] RESTA
+    Dirección:   BIEDMA CNL 3086
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[325] ROMERO
+    Dirección:   OROO NICASIO BV 3207
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[326] RODRIGUEZ IRAMAIN
+    Dirección:   ITUZAINGO 901
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96120678, Long: -60.6390422
+--------------------------------------------------
+[327] RODRIGO
+    Dirección:   PASO JUAN JOSE 5880
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[328] RABOZZI
+    Dirección:   LEIVA 6007
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00604529, Long: -60.63778057
+--------------------------------------------------
+[329] ROUVIERE
+    Dirección:   MATIENZO 2350
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95581175, Long: -60.69408562
+--------------------------------------------------
+[330] ROATTA
+    Dirección:   MENDOZA AV 3989
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[331] RIDAO
+    Dirección:   MORENO MARIANO BIS 40
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[332] REYNA
+    Dirección:   LAGOS OVIDIO AV 2794
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96585692, Long: -60.66701236
+--------------------------------------------------
+[333] RICCOBENE
+    Dirección:   LAGOS OVIDIO BIS AV 52
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93230025, Long: -60.65896247
+--------------------------------------------------
+[334] RUPEL
+    Dirección:   SALTA AV 3079
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93459695, Long: -60.66340609
+--------------------------------------------------
+[335] RINCIC
+    Dirección:   SAN NICOLAS 3302
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96952467, Long: -60.67971027
+--------------------------------------------------
+[336] ROSSI
+    Dirección:   SANTA FE 7101
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93582073, Long: -60.71752325
+--------------------------------------------------
+[337] R. MOREALE
+    Dirección:   SORRENTO AV 1072
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90724917, Long: -60.69374866
+--------------------------------------------------
+[338] SILVIA BARATO
+    Dirección:   ALSINA 1398
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9469675, Long: -60.67830726
+--------------------------------------------------
+[339] SAENZ PEA
+    Dirección:   ARIJON AV 702
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00289474, Long: -60.64496801
+--------------------------------------------------
+[340] SANDILO
+    Dirección:   ARIJON AV 1899
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00336214, Long: -60.66053138
+--------------------------------------------------
+[341] SAN JORGE
+    Dirección:   PELLEGRINI CARLOS AV 809
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[342] SAN JOSE
+    Dirección:   PELLEGRINI CARLOS AV 1395
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[343] SANTAMBROSIO
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 721
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[344] SANTA RITA
+    Dirección:   BIEDMA CNL 3317
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[345] SAN CAYETANO
+    Dirección:   BUENOS AIRES 2556
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96803463, Long: -60.63786471
+--------------------------------------------------
+[346] SDRIGOTTI
+    Dirección:   RONDEAU BV 2398
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.89069107, Long: -60.69376693
+--------------------------------------------------
+[347] STIEFEL REANO
+    Dirección:   RONDEAU BV 1642
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.89782177, Long: -60.69159026
+--------------------------------------------------
+[348] SANTINO
+    Dirección:   CALLAO 699
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94114292, Long: -60.6597583
+--------------------------------------------------
+[349] STRIEBECK
+    Dirección:   CORDOBA 2719
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94244229, Long: -60.66035635
+--------------------------------------------------
+[350] SANTA ROSA
+    Dirección:   ITALIA 2707
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96708514, Long: -60.65351655
+--------------------------------------------------
+[351] SAGRIPANTI
+    Dirección:   JUJUY 2248
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93540634, Long: -60.65197228
+--------------------------------------------------
+[352] SIMONETTI
+    Dirección:   LA PAZ 1196
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96391587, Long: -60.64399934
+--------------------------------------------------
+[353] SOCIAL
+    Dirección:   MENDOZA AV 6573
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[354] SOLDANO
+    Dirección:   MENDOZA AV 5151
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[355] SALK
+    Dirección:   PROVINCIAS UNIDAS AV 642
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93504232, Long: -60.7129598
+--------------------------------------------------
+[356] STRELUK
+    Dirección:   PROVINCIAS UNIDAS AV 2398
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95688313, Long: -60.7119921
+--------------------------------------------------
+[357] SARTOR
+    Dirección:   RIOJA 1909
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94556021, Long: -60.64962997
+--------------------------------------------------
+[358] SAN JUAN
+    Dirección:   SAN JUAN 1784
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9484435, Long: -60.64862044
+--------------------------------------------------
+[359] SAN LUIS
+    Dirección:   SAN LUIS 1095
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94902777, Long: -60.63880627
+--------------------------------------------------
+[360] S. SOLARI
+    Dirección:   SE SAN MARTIN JOSE GRL AV 3701
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[361] SOLARI
+    Dirección:   Avenida San Martín 5602
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.0020169, Long: -60.649338
+--------------------------------------------------
+[362] SUIZA
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 865
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[363] SAN MARTINO
+    Dirección:   SORRENTO AV 774
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90714665, Long: -60.68987715
+--------------------------------------------------
+[364] S. RODRIGUEZ
+    Dirección:   TUCUMAN 7782
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93298893, Long: -60.72924479
+--------------------------------------------------
+[365] SALTA
+    Dirección:   DE URQUIZA JUSTO JOSE 3299
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[366] SCHINDLER
+    Dirección:   DE URQUIZA JUSTO JOSE 1990
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[367] BARTOLACCI
+    Dirección:   1° DE MAYO 2346
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -33.0016185, Long: -60.78098448
+--------------------------------------------------
+[368] GUALTIERI
+    Dirección:   9 DE JULIO 1403
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -33.00078419, Long: -60.76779561
+--------------------------------------------------
+[369] TASSELLI
+    Dirección:   9 DE JULIO 762
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99487973, Long: -60.77202778
+--------------------------------------------------
+[370] CICCONOFRI
+    Dirección:   B. MITRE  846
+    Localidad:   PEREZ (CP: 2121)
+--------------------------------------------------
+[371] NAZARET
+    Dirección:   DR. BORZONE 1614
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -33.00298089, Long: -60.76770458
+--------------------------------------------------
+[372] CARLOS ORIOL
+    Dirección:   EL JILGUERO 124
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.96926211, Long: -60.73389268
+--------------------------------------------------
+[373] GAMBOSO
+    Dirección:   ESTANISLAO LOPEZ 1154
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99627767, Long: -60.76477431
+--------------------------------------------------
+[374] ALVAREZ LOISA
+    Dirección:   IRIGOYEN 1898
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99600744, Long: -60.77746724
+--------------------------------------------------
+[375] FARMACENTER
+    Dirección:   J. MEDRANO 1808
+    Localidad:   PEREZ (CP: 2121)
+--------------------------------------------------
+[376] BESANA
+    Dirección:   RIVADAVIA 1303
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99936593, Long: -60.76735445
+--------------------------------------------------
+[377] CHITARRONI
+    Dirección:   SAN MARTIN 1765
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99949524, Long: -60.77259174
+--------------------------------------------------
+[378] DE LA PLAZA
+    Dirección:   YAPEYU 1612
+    Localidad:   PEREZ (CP: 2121)
+    Ubicación:   Lat: -32.99960976, Long: -60.77028697
+--------------------------------------------------
+[379] BACLINI
+    Dirección:   ALBERDI 1007
+    Localidad:   PUEBLO ESTHER (CP: 2126)
+    Ubicación:   Lat: -33.07095136, Long: -60.58105344
+--------------------------------------------------
+[380] SANCHEZ
+    Dirección:   CORDOBA 1994
+    Localidad:   PUEBLO ESTHER (CP: 2126)
+    Ubicación:   Lat: -33.07481331, Long: -60.57750876
+--------------------------------------------------
+[381] GHERARDI
+    Dirección:   J.B. ALBERDI 1345
+    Localidad:   PUEBLO ESTHER (CP: 2126)
+--------------------------------------------------
+[382] FILIPINI
+    Dirección:   J.D. PERON 1848
+    Localidad:   PUEBLO ESTHER (CP: 2126)
+--------------------------------------------------
+[383] SCHLIETTER
+    Dirección:   DE URQUIZA JUSTO JOSE 3146
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[384] SILVANA LORENZETTI
+    Dirección:   VIAMONTE 88
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96782638, Long: -60.62878187
+--------------------------------------------------
+[385] TERMINAL
+    Dirección:   CAFFERATA 702
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93920597, Long: -60.67065254
+--------------------------------------------------
+[386] TONEGUZZO
+    Dirección:   3 DE FEBRERO 2366
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94965454, Long: -60.65718387
+--------------------------------------------------
+[387] TURIN
+    Dirección:   SE SAN MARTIN JOSE GRL AV 5386
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[388] TARICCO
+    Dirección:   AVELLANEDA BV 1945
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95274649, Long: -60.68271744
+--------------------------------------------------
+[389] TANTERA
+    Dirección:   RONDEAU BV 2052
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.8938134, Long: -60.69281396
+--------------------------------------------------
+[390] TARTARELLI
+    Dirección:   RONDEAU BV 1350
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90059682, Long: -60.69074205
+--------------------------------------------------
+[391] TERRAZINO
+    Dirección:   CALLAO 935
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.944247, Long: -60.660409
+--------------------------------------------------
+[392] TORCHIO
+    Dirección:   CASTRO BARROS AV 4828
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99355244, Long: -60.62981042
+--------------------------------------------------
+[393] TUMINI
+    Dirección:   ITALIA 1898
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95782805, Long: -60.65118173
+--------------------------------------------------
+[394] TORTI
+    Dirección:   PROVINCIAS UNIDAS BIS AV 538
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92264695, Long: -60.71343824
+--------------------------------------------------
+[395] TREPAT
+    Dirección:   PROVINCIAS UNIDAS AV 1414
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91174544, Long: -60.71402523
+--------------------------------------------------
+[396] TARALLO
+    Dirección:   SAN JUAN 3716
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94373804, Long: -60.67484891
+--------------------------------------------------
+[397] TOSCA
+    Dirección:   SANTA FE 4340
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93713861, Long: -60.6820723
+--------------------------------------------------
+[398] TRONCOSO
+    Dirección:   SANTA FE 2076
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94265563, Long: -60.65127956
+--------------------------------------------------
+[399] ULRICH
+    Dirección:   RIVAROLA 7969
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9665278, Long: -60.7301128
+--------------------------------------------------
+[400] UMANSKY
+    Dirección:   SE SAN MARTIN JOSE GRL AV 3998
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[401] VALLES
+    Dirección:   ALSINA 2020
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9541076, Long: -60.68008587
+--------------------------------------------------
+[402] VASALLO
+    Dirección:   PERON JUAN DOMINGO PRES AV 4067
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[403] VERONICA LAZARTE
+    Dirección:   CASIANO CASAS AV 1870
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90172037, Long: -60.70812549
+--------------------------------------------------
+[404] VILAGGI
+    Dirección:   OROO NICASIO BV 1215
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[405] VECELLIO
+    Dirección:   RONDEAU BV 774
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90767857, Long: -60.6885731
+--------------------------------------------------
+[406] VITANTONIO
+    Dirección:   MITRE BARTOLOME 984
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[407] VARELA
+    Dirección:   MORENO MARIANO 3096
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[408] VIDA
+    Dirección:   PROVINCIAS UNIDAS AV 174
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93037717, Long: -60.71315729
+--------------------------------------------------
+[409] VALLECILLO
+    Dirección:   ROUILLON 2520
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9579895, Long: -60.70156873
+--------------------------------------------------
+[410] FARMACIA RUCCI
+    Dirección:   SAN JUAN 497
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.951814, Long: -60.6306598
+--------------------------------------------------
+[411] VILETTO
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 1416
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[412] VESCIO
+    Dirección:   VELEZ SARSFIELD 369
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92473816, Long: -60.66878233
+--------------------------------------------------
+[413] VIAMONTE
+    Dirección:   VIAMONTE 906
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96577595, Long: -60.64026155
+--------------------------------------------------
+[414] VAZQUEZ
+    Dirección:   VIRASORO 1554
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96877479, Long: -60.65041178
+--------------------------------------------------
+[415] YOCCO
+    Dirección:   SEGUI JUAN FRANCISCO BV 3659
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[416] ZANNI
+    Dirección:   AMENABAR 5391
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96353712, Long: -60.69626494
+--------------------------------------------------
+[417] ZALVIDEA NAVARRO
+    Dirección:   PROVINCIAS UNIDAS BIS AV 984
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91725486, Long: -60.71383933
+--------------------------------------------------
+[418] ZAETA
+    Dirección:   MENDOZA AV 847
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[419] AMARILLA
+    Dirección:   ALVAREZ CONDARCO BIS 790
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92065071, Long: -60.75612231
+--------------------------------------------------
+[420] ALBERDI
+    Dirección:   ALBERDI 669
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91981871, Long: -60.68209901
+--------------------------------------------------
+[421] AVENIDA
+    Dirección:   ALBERDI 1098
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91524395, Long: -60.68575895
+--------------------------------------------------
+[422] AVELLANEDA
+    Dirección:   CORDOBA 4101
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[423] AYOLAS
+    Dirección:   ESPAÐA 3407
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97536454, Long: -60.65415971
+--------------------------------------------------
+[424] ALMA
+    Dirección:   MATIENZO 997
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93857341, Long: -60.69475327
+--------------------------------------------------
+[425] BIRCHER
+    Dirección:   GENOVA 2363
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[426] CHIOVOLONI
+    Dirección:   CALLAO 5044
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99714345, Long: -60.67181882
+--------------------------------------------------
+[427] COLLOMB
+    Dirección:   CORDOBA 4313
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[428] DIMARCO
+    Dirección:   OROÐO NICASIO BV 5831
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[429] DOSOUTO
+    Dirección:   25 DE MAYO AV CIRCUNVALACION 1965
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[430] ESPAÐA
+    Dirección:   ESPAÐA 1795
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95689887, Long: -60.64953072
+--------------------------------------------------
+[431] FAGGI
+    Dirección:   ALBERDI 750
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91873377, Long: -60.68294793
+--------------------------------------------------
+[432] FRANZETTI
+    Dirección:   ESPAÐA 470
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94112688, Long: -60.64556606
+--------------------------------------------------
+[433] GIRAUDO
+    Dirección:   ESPAÐA 1372
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95204498, Long: -60.64830278
+--------------------------------------------------
+[434] JUAN CANALS
+    Dirección:   ESPAÐA 4496
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.98787879, Long: -60.65731338
+--------------------------------------------------
+[435] LILJESTHROM
+    Dirección:   ARIJON AV 2757
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00383254, Long: -60.67554569
+--------------------------------------------------
+[436] MOSET
+    Dirección:   CORDOBA 8285
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[437] MARTINEZ
+    Dirección:   URUGUAY 110
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[438] PEREZ
+    Dirección:   ESPAÐA 5580
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.0020856, Long: -60.65767595
+--------------------------------------------------
+[439] PILLIOD
+    Dirección:   GUATEMALA 1170
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94119078, Long: -60.71723313
+--------------------------------------------------
+[440] PAGANI
+    Dirección:   JUNIN 2402
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[441] ROBIN
+    Dirección:   ALBERDI 951
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91678483, Long: -60.68452411
+--------------------------------------------------
+[442] ROMEO
+    Dirección:   CORDOBA 7695
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[443] SCOLARI
+    Dirección:   DUARTE DE PERON EVA AV 3458
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[444] TREIDE
+    Dirección:   DORREGO MANUEL 5899
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[445] VICTORIA
+    Dirección:   ESPAÐA 620
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94282356, Long: -60.64599543
+--------------------------------------------------
+[446] CARATOLLI
+    Dirección:   ASURMENDI 501
+    Localidad:   ACEBAL (CP: 2109)
+    Ubicación:   Lat: -33.24126894, Long: -60.83568168
+--------------------------------------------------
+[447] VUKSICH
+    Dirección:   ASURMENDI 654
+    Localidad:   ACEBAL (CP: 2109)
+    Ubicación:   Lat: -33.24298066, Long: -60.83612491
+--------------------------------------------------
+[448] BARBERO
+    Dirección:   BV. CENTENARIO 352
+    Localidad:   ACEBAL (CP: 2109)
+    Ubicación:   Lat: -33.23987408, Long: -60.83393318
+--------------------------------------------------
+[449] MANSILLA
+    Dirección:   MA. SAN PEREYRA 603
+    Localidad:   ACEBAL (CP: 2109)
+--------------------------------------------------
+[450] RIOS
+    Dirección:   PTE. ROCA 371
+    Localidad:   ACEBAL (CP: 2109)
+--------------------------------------------------
+[451] DE CRISTOFANO
+    Dirección:   GARIBALDI 295
+    Localidad:   ALBARELLOS (CP: 2101)
+    Ubicación:   Lat: -33.23762478, Long: -60.63724265
+--------------------------------------------------
+[452] PLACENTI
+    Dirección:   BELGRANO 632
+    Localidad:   ALVAREZ (CP: 2107)
+    Ubicación:   Lat: -33.13019972, Long: -60.80305727
+--------------------------------------------------
+[453] NENCIONI
+    Dirección:   ITUZAIGO 347
+    Localidad:   ALVAREZ (CP: 2107)
+    Ubicación:   Lat: -33.12657776, Long: -60.80684719
+--------------------------------------------------
+[454] CIPRIANI
+    Dirección:   SAN MARTIN 603
+    Localidad:   ALVAREZ (CP: 2107)
+    Ubicación:   Lat: -33.13056092, Long: -60.80103546
+--------------------------------------------------
+[455] MANGIONE
+    Dirección:   PELLEGRINI 2198
+    Localidad:   ALVEAR (CP: 2126)
+    Ubicación:   Lat: -33.05988477, Long: -60.6173524
+--------------------------------------------------
+[456] PIGHIN
+    Dirección:   SAN MARTIN 2396
+    Localidad:   ALVEAR (CP: 2126)
+    Ubicación:   Lat: -33.06015482, Long: -60.62025019
+--------------------------------------------------
+[457] GAUDIO
+    Dirección:   GRAL LOPEZ 43
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15514131, Long: -60.51750221
+--------------------------------------------------
+[458] BRACCIO
+    Dirección:   H. IRIGOYEN 230
+    Localidad:   ARROYO SECO (CP: 2128)
+--------------------------------------------------
+[459] DELVECCHIO
+    Dirección:   HUMBERTO PRIMO 655
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15627234, Long: -60.50469447
+--------------------------------------------------
+[460] GRASSO
+    Dirección:   INT. CONSTANTINI 53
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15714805, Long: -60.50079439
+--------------------------------------------------
+[461] ARGUTTI
+    Dirección:   J. B .JUSTO 374
+    Localidad:   ARROYO SECO (CP: 2128)
+--------------------------------------------------
+[462] DE LUCA
+    Dirección:   LIBERTAD 231
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15527714, Long: -60.51363809
+--------------------------------------------------
+[463] TAGLIARINO
+    Dirección:   LIBERTAD 576
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15274424, Long: -60.5105735
+--------------------------------------------------
+[464] DIMAURO
+    Dirección:   MORENO 31
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.16291925, Long: -60.50732528
+--------------------------------------------------
+[465] MALUCCHI
+    Dirección:   SAN MARTIN 98
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.16065152, Long: -60.50594971
+--------------------------------------------------
+[466] TOGNETTI
+    Dirección:   SAN MARTIN 337
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.15863636, Long: -60.50830968
+--------------------------------------------------
+[467] NIEVAS
+    Dirección:   YRIGOYEN 443 bis
+    Localidad:   ARROYO SECO (CP: 2128)
+    Ubicación:   Lat: -33.16058794, Long: -60.51922954
+--------------------------------------------------
+[468] GIUNTOLI
+    Dirección:   BELGRANO 588
+    Localidad:   CORONEL BOGADO (CP: 2103)
+    Ubicación:   Lat: -33.31521456, Long: -60.60260465
+--------------------------------------------------
+[469] DERICO
+    Dirección:   MORENO 571
+    Localidad:   CORONEL BOGADO (CP: 2103)
+    Ubicación:   Lat: -33.31580531, Long: -60.60368243
+--------------------------------------------------
+[470] DALESIO
+    Dirección:   SAN MARTIN 190
+    Localidad:   CORONEL BOGADO (CP: 2103)
+    Ubicación:   Lat: -33.3160927, Long: -60.60205535
+--------------------------------------------------
+[471] MARCELA VENTOLA
+    Dirección:   MAIPU 170
+    Localidad:   CORONEL RODOLFO S. DOMINGUEZ (CP: 2105)
+    Ubicación:   Lat: -33.18074619, Long: -60.71727837
+--------------------------------------------------
+[472] LILA
+    Dirección:   OCAMPO 1880
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96450676, Long: -60.65403394
+--------------------------------------------------
+[473] LIBERATORE
+    Dirección:   LAGOS OVIDIO AV 5436
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00116431, Long: -60.67560997
+--------------------------------------------------
+[474] LA CRUZ
+    Dirección:   RIVAROLA RODOLFO AV 7014
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[475] LA UNIVERSIDAD
+    Dirección:   SALTA AV 2801
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93525742, Long: -60.65971258
+--------------------------------------------------
+[476] LA INTERNACIONAL
+    Dirección:   SAN JUAN 3014
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94546605, Long: -60.66528619
+--------------------------------------------------
+[477] LAZARTE
+    Dirección:   SUPERI JOSE 1466
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[478] LA GUARDIA
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 1462
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[479] MAZZARA
+    Dirección:   27 DE FEBRERO 3302
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96229153, Long: -60.67362524
+--------------------------------------------------
+[480] MEROI
+    Dirección:   ALEM LEANDRO N 1298
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[481] MILITELLO
+    Dirección:   AMENABAR 1773
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9705054, Long: -60.65399154
+--------------------------------------------------
+[482] MASAROTTO
+    Dirección:   ARIJON AV 2199
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00350162, Long: -60.66482874
+--------------------------------------------------
+[483] MORONI
+    Dirección:   PELLEGRINI CARLOS AV 1571
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[484] MENONI
+    Dirección:   AYACUCHO 1392
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95578176, Long: -60.6287819
+--------------------------------------------------
+[485] MAHLIER
+    Dirección:   BALCARCE 298
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93813495, Long: -60.650476
+--------------------------------------------------
+[486] MATTIOLI
+    Dirección:   BALCARCE 3601
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97669938, Long: -60.66018042
+--------------------------------------------------
+[487] MIRETTI
+    Dirección:   AVELLANEDA BV 1433
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94686232, Long: -60.6812447
+--------------------------------------------------
+[488] MOLEDO
+    Dirección:   RONDEAU BV 3695
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.88047121, Long: -60.69688225
+--------------------------------------------------
+[489] MONDO
+    Dirección:   CORDOBA 977
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94681437, Long: -60.63641412
+--------------------------------------------------
+[490] MONTERO
+    Dirección:   DONADO BIS 714
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92037002, Long: -60.72773546
+--------------------------------------------------
+[491] MURO
+    Dirección:   ENTRE RIOS 845
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94645266, Long: -60.6410994
+--------------------------------------------------
+[492] M. A. GARCIA
+    Dirección:   GUATEMALA 1403
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9447415, Long: -60.71706962
+--------------------------------------------------
+[493] MASSARA
+    Dirección:   IRIONDO 2848
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9648345, Long: -60.67568955
+--------------------------------------------------
+[494] MIRABET
+    Dirección:   JUJUY 1598
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93701014, Long: -60.64306844
+--------------------------------------------------
+[495] MARIN
+    Dirección:   LA PAZ 3093
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95929977, Long: -60.66980946
+--------------------------------------------------
+[496] DE MICHELI
+    Dirección:   AMEGHINO 644
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.19422688, Long: -60.46908053
+--------------------------------------------------
+[497] FIGHIERA
+    Dirección:   MARCONI 827
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.19059803, Long: -60.47023645
+--------------------------------------------------
+[498] CRESTA
+    Dirección:   MORENO 803
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.19528042, Long: -60.46857806
+--------------------------------------------------
+[499] CARASSAI
+    Dirección:   PUYRREDON 1070
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.19250699, Long: -60.47014625
+--------------------------------------------------
+[500] DEL PUEBLO
+    Dirección:   SAN MARTIN 1125
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.19139871, Long: -60.46980483
+--------------------------------------------------
+[501] MARCUCCI
+    Dirección:   SAN MARTIN 671
+    Localidad:   FIGHIERA (CP: 2126)
+    Ubicación:   Lat: -33.1948604, Long: -60.4656544
+--------------------------------------------------
+[502] MARKS
+    Dirección:   MITRE BARTOLOME 3598
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[503] MASSARO
+    Dirección:   MONTEVIDEO 6387
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94733547, Long: -60.70865916
+--------------------------------------------------
+[504] MENDEZ
+    Dirección:   NECOCHEA 2945
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97406984, Long: -60.63051369
+--------------------------------------------------
+[505] MOLLARDO
+    Dirección:   OLIVE 1982
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.91318232, Long: -60.69084626
+--------------------------------------------------
+[506] MURUA
+    Dirección:   LAGOS OVIDIO AV 3798
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97724031, Long: -60.67001272
+--------------------------------------------------
+[507] MILANI STRA
+    Dirección:   LAGOS OVIDIO AV 3298
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.97149535, Long: -60.6685948
+--------------------------------------------------
+[508] MUSI
+    Dirección:   LAGOS OVIDIO AV 7570
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.02641781, Long: -60.68112984
+--------------------------------------------------
+[509] MANDRILE
+    Dirección:   ROCA JULIO ARGENTINO PTE 195
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[510] MONTES
+    Dirección:   ROCA JULIO ARGENTINO PTE 901
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[511] MANISCALCO
+    Dirección:   Avenida Rivarola 7801
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9662032, Long: -60.7247854
+--------------------------------------------------
+[512] MARCOLINI
+    Dirección:   RUEDA MIGUEL DR 2480
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[513] MC CLYMONT
+    Dirección:   SALTA AV 2398
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93623518, Long: -60.65426864
+--------------------------------------------------
+[514] M.S. HERNANDEZ
+    Dirección:   SAN JUAN 681
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95126932, Long: -60.63341533
+--------------------------------------------------
+[515] FARMACIA MAIPU
+    Dirección:   San Luis 902
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9494739, Long: -60.635964
+--------------------------------------------------
+[516] MAMELUCO
+    Dirección:   SAN LUIS 3039
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94426553, Long: -60.66538055
+--------------------------------------------------
+[517] MIR
+    Dirección:   SE SAN MARTIN JOSE GRL AV 4315
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[518] MARTA PIATTI
+    Dirección:   SAN NICOLAS 485
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93667277, Long: -60.67142266
+--------------------------------------------------
+[519] MERCURIO
+    Dirección:   SANTA FE 1813
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94328597, Long: -60.64770254
+--------------------------------------------------
+[520] MINA
+    Dirección:   SANTIAGO 1499
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95180884, Long: -60.65818523
+--------------------------------------------------
+[521] MOSCATO
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 456
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[522] M. GONZALEZ
+    Dirección:   VELEZ SARSFIELD 731
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92490545, Long: -60.67419589
+--------------------------------------------------
+[523] NOBILE
+    Dirección:   27 DE FEBRERO 6016
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9592374, Long: -60.70392648
+--------------------------------------------------
+[524] NOGUERA
+    Dirección:   GRANDOLI ABANDERADO 3697
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9835012, Long: -60.62817039
+--------------------------------------------------
+[525] NUEVO ALBERDI
+    Dirección:   GRAVEL JOAQUIN DR 2826
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.88883697, Long: -60.72602455
+--------------------------------------------------
+[526] N. RODRIGUEZ
+    Dirección:   CARRIEGO 1366
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94444818, Long: -60.69043762
+--------------------------------------------------
+[527] DEL COUNTRY
+    Dirección:   AVDA. ARGENTINA 2191
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[528] SABIN
+    Dirección:   AVDA. FUERZA AEREA 1990
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[529] DEL PUEBLO
+    Dirección:   AVDA. ILLIA 911
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[530] LUCHETTA
+    Dirección:   BUENOS AIRES 1654
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.91262892, Long: -60.80950748
+--------------------------------------------------
+[531] ORCELLET
+    Dirección:   BUENOS AIRES  646
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.91499055, Long: -60.79615533
+--------------------------------------------------
+[532] DELLA LONGA
+    Dirección:   COCHET 2095
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.92238498, Long: -60.80607005
+--------------------------------------------------
+[533] MARCELO MARCHETTI
+    Dirección:   CORDOBA 1901
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.92086339, Long: -60.81474146
+--------------------------------------------------
+[534] BASANO
+    Dirección:   ELORZA 1215 LOC. 4
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[535] SPLENDIANI
+    Dirección:   GRAL PAZ 1441
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.91517472, Long: -60.80737201
+--------------------------------------------------
+[536] JOSE DANIEL CARNEVALE
+    Dirección:   INDEPENDENCIA 1721
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[537] VAZQUEZ
+    Dirección:   J. ELORZA 1623
+    Localidad:   FUNES (CP: 2132)
+--------------------------------------------------
+[538] SCOZZIERO
+    Dirección:   SAN MARTIN 716
+    Localidad:   FUNES (CP: 2132)
+    Ubicación:   Lat: -32.92281732, Long: -60.79919354
+--------------------------------------------------
+[539] NORMA SOLARI
+    Dirección:   RIVAS DR 1382
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.98293906, Long: -60.65149797
+--------------------------------------------------
+[540] NUEZ
+    Dirección:   FRANCIA AV 1717
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9526248, Long: -60.66844145
+--------------------------------------------------
+[541] NOVISKI
+    Dirección:   SE SAN MARTIN JOSE GRL AV 3399
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[542] OCAMPO
+    Dirección:   NTRA SRA DEL ROSARIO AV 801
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99979468, Long: -60.64711815
+--------------------------------------------------
+[543] OLDANI
+    Dirección:   AVELLANEDA BIS BV 384
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92359475, Long: -60.6753197
+--------------------------------------------------
+[544] ORELLANO
+    Dirección:   COLOMBIA BIS 954
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9176465, Long: -60.71753155
+--------------------------------------------------
+[545] ORIOL
+    Dirección:   JUNIN 498
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92649582, Long: -60.67069377
+--------------------------------------------------
+[546] OROO
+    Dirección:   OROO NICASIO BV 3071
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[547] OVIDIO LAGOS
+    Dirección:   LAGOS OVIDIO AV 1399
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94966273, Long: -60.66332927
+--------------------------------------------------
+[548] PAOLINO
+    Dirección:   27 DE FEBRERO 3946
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96071892, Long: -60.68240468
+--------------------------------------------------
+[549] PALMILI
+    Dirección:   ALEM LEANDRO N 1509
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[550] PEDRO F. GONZALEZ
+    Dirección:   ALEM LEANDRO N 2402
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[551] PEYRE
+    Dirección:   LITUANIA 5496
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00053877, Long: -60.62174963
+--------------------------------------------------
+[552] PELLEGRINI
+    Dirección:   PELLEGRINI CARLOS AV 1195
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[553] PENNACCHIETTI
+    Dirección:   PELLEGRINI CARLOS AV 3266
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[554] PETRUZZI
+    Dirección:   PELLEGRINI CARLOS AV 3770
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[555] PATRICIA HERNANDEZ
+    Dirección:   URIBURU JOSE EVARISTO PRES AV 2049
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[556] PRARIZZI
+    Dirección:   BERUTI 4058
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.98755413, Long: -60.62963524
+--------------------------------------------------
+[557] PASTEUR
+    Dirección:   SEGUI JUAN FRANCISCO BV 2809
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[558] PARDO
+    Dirección:   CAFFERATA 397
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93587492, Long: -60.66980457
+--------------------------------------------------
+[559] PRIETO
+    Dirección:   SADI CARNOT 6193
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00884621, Long: -60.64848154
+--------------------------------------------------
+[560] RUSTICI
+    Dirección:   HILARIO LAGOS 190
+    Localidad:   GENERAL LAGOS (CP: 2126)
+    Ubicación:   Lat: -33.11034071, Long: -60.56633407
+--------------------------------------------------
+[561] RICCI
+    Dirección:   SAN MARTIN 509
+    Localidad:   GENERAL LAGOS (CP: 2126)
+    Ubicación:   Lat: -33.11102924, Long: -60.56397834
+--------------------------------------------------
+[562] SCHROPP
+    Dirección:   ARENALES 250
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.85906194, Long: -60.70751785
+--------------------------------------------------
+[563] PERRETA
+    Dirección:   AV. SAN MARTIN 3157
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.83992981, Long: -60.70916149
+--------------------------------------------------
+[564] BARATTO
+    Dirección:   BELGRANO 98
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.86407471, Long: -60.70330079
+--------------------------------------------------
+[565] GRANADERO BAIGORRIA
+    Dirección:   EVA PERON 603
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.85840318, Long: -60.71402031
+--------------------------------------------------
+[566] BERNAUS
+    Dirección:   IBARLUCEA 92
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.84101765, Long: -60.70768931
+--------------------------------------------------
+[567] MUTUAL PERSONAL JHON DEERE ARG.
+    Dirección:   JUAN ORSETTI 506
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+--------------------------------------------------
+[568] VINDEROLA
+    Dirección:   JUAN ORSETTI 746
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+--------------------------------------------------
+[569] MARCONI KARPYSZYN
+    Dirección:   LOS AROMOS 76
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.8633125, Long: -60.7011997
+--------------------------------------------------
+[570] MINIELLO
+    Dirección:   NEUQUEN 11
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.86180061, Long: -60.70214623
+--------------------------------------------------
+[571] VALIA
+    Dirección:   RIVADAVIA 201
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.86219885, Long: -60.70561851
+--------------------------------------------------
+[572] HOSPITAL EVA PERON
+    Dirección:   RUTA 11 Y EVA PERON 0
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+--------------------------------------------------
+[573] MEOLI
+    Dirección:   SAENZ 17
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.86053752, Long: -60.70316166
+--------------------------------------------------
+[574] FARMACIA BIANCHI
+    Dirección:   SAN MARTIN 1217
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.8590761, Long: -60.7033324
+--------------------------------------------------
+[575] PALANA
+    Dirección:   SAN MARTIN 2542
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.844472, Long: -60.70773129
+--------------------------------------------------
+[576] ROMANO
+    Dirección:   SAN MARTIN 2371
+    Localidad:   GRANADERO BAIGORRIA (CP: 2152)
+    Ubicación:   Lat: -32.84721499, Long: -60.70690107
+--------------------------------------------------
+[577] GARCIA
+    Dirección:   MITRE 44
+    Localidad:   IBARLUCEA (CP: 2142)
+    Ubicación:   Lat: -32.85290163, Long: -60.78489994
+--------------------------------------------------
+[578] FEDYSZYN
+    Dirección:   SAN MARTIN 1032
+    Localidad:   IBARLUCEA (CP: 2142)
+    Ubicación:   Lat: -32.85238421, Long: -60.78694547
+--------------------------------------------------
+[579] PARQUE BRITANIA
+    Dirección:   CORRIENTES AV 198
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9386286, Long: -60.6406676
+--------------------------------------------------
+[580] PERINETTI
+    Dirección:   IRIGOYEN HIPOLITO AV 1078
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[581] PENSA
+    Dirección:   IGUAZU 175
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.92950639, Long: -60.68572736
+--------------------------------------------------
+[582] PUTIGNANI
+    Dirección:   DE ROSAS JUAN MANUEL 2096
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[583] PUIGDOMENECH
+    Dirección:   MARTIN FIERRO 666
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.87760111, Long: -60.69537544
+--------------------------------------------------
+[584] PENOTTI
+    Dirección:   MENDOZA AV 7211
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[585] PATRIS
+    Dirección:   MONTEVIDEO 5602
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94711237, Long: -60.69962142
+--------------------------------------------------
+[586] PASCUAL
+    Dirección:   LAGOS OVIDIO AV 5692
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -33.00377895, Long: -60.67618151
+--------------------------------------------------
+[587] PECCHIO
+    Dirección:   LAGOS OVIDIO AV 4601
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.99160443, Long: -60.67347768
+--------------------------------------------------
+[588] PARLATORE
+    Dirección:   PARAGUAY 387
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94066426, Long: -60.64254326
+--------------------------------------------------
+[589] PERRONE
+    Dirección:   PELLEGRINI CARLOS AV 5315
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[590] PARQUE ESPAA
+    Dirección:   SALTA AV 1222
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93912583, Long: -60.63811415
+--------------------------------------------------
+[591] PESADO
+    Dirección:   SAN JUAN 1701
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9487139, Long: -60.64753
+--------------------------------------------------
+[592] PERDOMO
+    Dirección:   SAN LUIS 2492
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94560292, Long: -60.6579592
+--------------------------------------------------
+[593] PARRA
+    Dirección:   SARMIENTO DOMINGO FAUSTINO PRES 1637
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[594] PIERISTEI
+    Dirección:   SARMIENTO 3202
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9745015, Long: -60.645337
+--------------------------------------------------
+[595] PARIZZIA
+    Dirección:   WHEELWRIGHT AV 1475
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93686733, Long: -60.64124599
+--------------------------------------------------
+[596] PEDRETTI
+    Dirección:   ZUVIRIA 7202
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93709574, Long: -60.71860409
+--------------------------------------------------
+[597] QUIROS
+    Dirección:   IRURTIA 7476
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.96690996, Long: -60.72115316
+--------------------------------------------------
+[598] RONCHI
+    Dirección:   3 DE FEBRERO 1283
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.95229899, Long: -60.64233126
+--------------------------------------------------
+[599] ROTGER
+    Dirección:   FRANCIA AV 1173
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.94626644, Long: -60.66682928
+--------------------------------------------------
+[600] ROLDAN
+    Dirección:   BALCARCE 162
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.93653666, Long: -60.65007827
+--------------------------------------------------
+[601] RABITO
+    Dirección:   BERRINI FRANCISCO JOSE 2275
+    Localidad:   ROSARIO (CP: 2000)
+--------------------------------------------------
+[602] FARMACIA CRUZ DEL PORTAL
+    Dirección:   V mercante 431
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.90958275, Long: -60.68442911
+--------------------------------------------------
+[603] HOSPITAL PROVINCIAL DEL CENTENARIO
+    Dirección:   urquiza 3101
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9380541, Long: -60.6647192
+--------------------------------------------------
+[604] FARMACIA PARQUE ESPAÑA
+    Dirección:   salta 1222
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9390785, Long: -60.6381211
+--------------------------------------------------
+[605] FARMACIA SANATORIO BRITANICO S A
+    Dirección:   paraguay 40
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.936865, Long: -60.641824
+--------------------------------------------------
+[606] FARMACIA SINDICAL LUZ Y FUERZA DE ROSARIO
+    Dirección:   Entre rios 982
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9482055, Long: -60.64160965
+--------------------------------------------------
+[607] ASOCIACION EMPLEADOS DE COMERCIO DE ROSARIO
+    Dirección:   Corrientes 450
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.941624, Long: -60.6414338
+--------------------------------------------------
+[608] FARMACIA MUTUAL AMUR
+    Dirección:   PRESIDENTE  ROCA 835
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9456988, Long: -60.6451751
+--------------------------------------------------
+[609] FARMACIA GEREMIA
+    Dirección:   Av. Gral. San Martín 2030
+    Localidad:   VILLA GOBERNADOR GALVEZ (CP: 2124)
+    Ubicación:   Lat: -33.02498268, Long: -60.62543392
+--------------------------------------------------
+[610] EMBON (SUC TUCUMAN 1902)
+    Dirección:   Tucuman 1902
+    Localidad:   ROSARIO (CP: 2000)
+    Ubicación:   Lat: -32.9397322, Long: -60.6481582
+--------------------------------------------------

@@ -1,0 +1,246 @@
+============================================================
+DEPARTAMENTO: IRIONDO
+Total Farmacias: 49
+============================================================
+
+[1] CERINO
+    Dirección:   AV. SAN MARTIN 1222
+    Localidad:   TOTORAS (CP: 2144)
+    Ubicación:   Lat: -32.585797, Long: -61.167799
+--------------------------------------------------
+[2] SANCHEZ
+    Dirección:   CENTENARIO 505
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.815393, Long: -61.388344
+--------------------------------------------------
+[3] URQUIZA
+    Dirección:   SAN MARTIN 212
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.818441, Long: -61.397806
+--------------------------------------------------
+[4] HISPANO ARGENTINA
+    Dirección:   OCAMPO 698
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.819694, Long: -61.391586
+--------------------------------------------------
+[5] GALFRE
+    Dirección:   BALCARCE 801
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.821912, Long: -61.393754
+--------------------------------------------------
+[6] MARCELO GARCIA
+    Dirección:   LAVALLE 1301
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.819397, Long: -61.40066
+--------------------------------------------------
+[7] ASOCIACION MUTUAL FERROVIARIA
+    Dirección:   LAVALLE 472
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.821452, Long: -61.38888
+--------------------------------------------------
+[8] SALVUCCI
+    Dirección:   9 DE JULIO 1253
+    Localidad:   TOTORAS (CP: 2144)
+    Ubicación:   Lat: -32.5857972, Long: -61.167799
+--------------------------------------------------
+[9] EL SOL
+    Dirección:   LAVALLE 939
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.820244, Long: -61.395746
+--------------------------------------------------
+[10] YOCCO
+    Dirección:   SAN MARTIN 901
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81139, Long: -61.396025
+--------------------------------------------------
+[11] AMERICA
+    Dirección:   EDISON 73
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.822913, Long: -61.396648
+--------------------------------------------------
+[12] MUTUAL DE AYUDA ENTRE ASOCIADOS DE LA ASOCIACION DEPORTIVA EVERTON OLIMPIA (ADEO)
+    Dirección:   LAVALLE 1304
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81936, Long: -61.400961
+--------------------------------------------------
+[13] COLONIA PSIQUIATRICO OLIVERO  DR ABELARDO FREYRE
+    Dirección:   Ruta 11 km. 356.5
+    Localidad:   OLIVEROS (CP: 2206)
+    Ubicación:   Lat: -32.574736, Long: -60.849974
+--------------------------------------------------
+[14] SIMONE
+    Dirección:   OCAMPO 1501
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.817665, Long: -61.403514
+--------------------------------------------------
+[15] MUTUAL
+    Dirección:   LAS HERAS 1164
+    Localidad:   TOTORAS (CP: 2144)
+    Ubicación:   Lat: -32.585874, Long: -61.16802
+--------------------------------------------------
+[16] NOVA FARM
+    Dirección:   SAN MARTIN 387
+    Localidad:   LUCIO V. LOPEZ (CP: 2142)
+    Ubicación:   Lat: -32.71267377, Long: -61.02348586
+--------------------------------------------------
+[17] RASPO
+    Dirección:   BUENOS AIRES 376
+    Localidad:   OLIVEROS (CP: 2206)
+    Ubicación:   Lat: -32.57476108, Long: -60.85086338
+--------------------------------------------------
+[18] SANTA ROSA
+    Dirección:   Buenos Aires 251
+    Localidad:   OLIVEROS (CP: 2206)
+    Ubicación:   Lat: -32.57289085, Long: -60.85131347
+--------------------------------------------------
+[19] CHINELLATO
+    Dirección:   SANTA FE  349
+    Localidad:   OLIVEROS (CP: 2206)
+    Ubicación:   Lat: -32.57470717, Long: -60.85190748
+--------------------------------------------------
+[20] STELLA CICCONI
+    Dirección:   EL PLATA 333
+    Localidad:   SALTO GRANDE (CP: 2142)
+    Ubicación:   Lat: -32.66915018, Long: -61.08680863
+--------------------------------------------------
+[21] MILANESE
+    Dirección:   PORTEÑA 130
+    Localidad:   SALTO GRANDE (CP: 2142)
+--------------------------------------------------
+[22] LUPO
+    Dirección:   25 DE MAYO 770
+    Localidad:   PUEBLO ANDINO (CP: 2214)
+    Ubicación:   Lat: -32.67093604, Long: -60.87701686
+--------------------------------------------------
+[23] GIUDICE
+    Dirección:   LISANDRO DE LA TORRE 672
+    Localidad:   PUEBLO ANDINO (CP: 2214)
+    Ubicación:   Lat: -32.66603648, Long: -60.87790316
+--------------------------------------------------
+[24] TABORDA
+    Dirección:   SAN MARTIN 862
+    Localidad:   BUSTINZA (CP: 2501)
+    Ubicación:   Lat: -32.73994052, Long: -61.29190223
+--------------------------------------------------
+[25] BARBIERO
+    Dirección:   AVELLANEDA  498
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.80982399, Long: -61.38652445
+--------------------------------------------------
+[26] MEZZANO
+    Dirección:   BV. CENTENARIO 802
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81477818, Long: -61.39205763
+--------------------------------------------------
+[27] RACCA
+    Dirección:   BV. CENTENARIO 1474
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81302827, Long: -61.40178757
+--------------------------------------------------
+[28] GIRI
+    Dirección:   INDEPENDENCIA 506
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81332288, Long: -61.40654005
+--------------------------------------------------
+[29] TAULAMET
+    Dirección:   LAPRIDA 802
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81121307, Long: -61.4016815
+--------------------------------------------------
+[30] ADEO
+    Dirección:   LAVALLE 1304
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81929731, Long: -61.40090114
+--------------------------------------------------
+[31] ASOC. MUT. FERROVIARIA
+    Dirección:   LAVALLE 472
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.82136144, Long: -61.38893616
+--------------------------------------------------
+[32] GRAVIER
+    Dirección:   LAVALLE 1102
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81977926, Long: -61.39812671
+--------------------------------------------------
+[33] SIMARA (AMAS)
+    Dirección:   LAVALLE 1044 loc. 8 y 9
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+--------------------------------------------------
+[34] GARCIA
+    Dirección:   MARCONI 396
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81887889, Long: -61.38167649
+--------------------------------------------------
+[35] TORRE
+    Dirección:   Moreno 356
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81689, Long: -61.396161
+--------------------------------------------------
+[36] TERZONI
+    Dirección:   MORENO  302
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81755543, Long: -61.39617459
+--------------------------------------------------
+[37] LOVATO
+    Dirección:   OROÑO 821
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81256693, Long: -61.3886182
+--------------------------------------------------
+[38] PALAZZESI
+    Dirección:   PELLEGRINI 16
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.82054297, Long: -61.39975018
+--------------------------------------------------
+[39] IADANZA
+    Dirección:   RIVADAVIA 503
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.81885335, Long: -61.38874546
+--------------------------------------------------
+[40] GALFRE
+    Dirección:   SARMIENTO 25
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.82172688, Long: -61.39224625
+--------------------------------------------------
+[41] BARONIO
+    Dirección:   URQUIZA 801
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.8294994, Long: -61.39556952
+--------------------------------------------------
+[42] HOSPITAL PROVINCIAL SAN JOSE
+    Dirección:   URQUIZA 750
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.82962019, Long: -61.39488486
+--------------------------------------------------
+[43] ZONA DE SALUD VI
+    Dirección:   URQUIZA 750
+    Localidad:   CAÑADA DE GOMEZ (CP: 2500)
+    Ubicación:   Lat: -32.82962019, Long: -61.39488486
+--------------------------------------------------
+[44] BIROCCO
+    Dirección:   CENTENARIO  561
+    Localidad:   CARRIZALES (EST. CLARKE) (CP: 2218)
+--------------------------------------------------
+[45] CERVETTO
+    Dirección:   ESPAÑA 860
+    Localidad:   CLASSON (CP: 2146)
+    Ubicación:   Lat: -32.463121, Long: -61.29204038
+--------------------------------------------------
+[46] MAZZONE
+    Dirección:   25 DE MAYO 1150
+    Localidad:   CORREA (CP: 2506)
+    Ubicación:   Lat: -32.8481907, Long: -61.25442855
+--------------------------------------------------
+[47] DON GUILLERMO
+    Dirección:   25 DE MAYO Y BELGRANO 1026
+    Localidad:   CORREA (CP: 2506)
+--------------------------------------------------
+[48] VIOLA
+    Dirección:   RIVADAVIA 1278
+    Localidad:   CORREA (CP: 2506)
+    Ubicación:   Lat: -32.84910695, Long: -61.25531111
+--------------------------------------------------
+[49] SANTECCHIA
+    Dirección:   SARMIENTO 1148
+    Localidad:   CORREA (CP: 2506)
+    Ubicación:   Lat: -32.84769368, Long: -61.25358712
+--------------------------------------------------
