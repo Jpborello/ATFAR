@@ -11,7 +11,7 @@ interface Pharmacy {
   lat: number;
   lng: number;
   registered: boolean;
-  hasDebt?: boolean;
+  paymentStatus: 'al_dia' | 'con_deuda' | 'pendiente';
 }
 
 interface PharmacyMapProps {
@@ -82,12 +82,28 @@ export default function PharmacyMap({
 
     const registeredCleanIcon = createCustomIcon('#10b981'); // Green for registered & al dia
     const registeredDebtIcon = createCustomIcon('#ef4444');  // Red for registered & con deuda
+    const registeredPendingIcon = createCustomIcon('#f59e0b'); // Yellow/Orange for registered & pendiente de aprobacion
     const unregisteredIcon = createCustomIcon('#8b5cf6');      // Purple for unregistered
 
     pharmacies.forEach((pharmacy) => {
       let icon = unregisteredIcon;
+      let badgeColor = '#8b5cf6'; // Purple
+      let badgeText = 'No Registrada';
+
       if (pharmacy.registered) {
-        icon = pharmacy.hasDebt ? registeredDebtIcon : registeredCleanIcon;
+        if (pharmacy.paymentStatus === 'con_deuda') {
+          icon = registeredDebtIcon;
+          badgeColor = '#ef4444'; // Red
+          badgeText = 'Con Deuda';
+        } else if (pharmacy.paymentStatus === 'pendiente') {
+          icon = registeredPendingIcon;
+          badgeColor = '#f59e0b'; // Yellow/Orange
+          badgeText = 'Pendiente de Aprobación';
+        } else {
+          icon = registeredCleanIcon;
+          badgeColor = '#10b981'; // Green
+          badgeText = 'Al Día';
+        }
       }
 
       const marker = L.marker([pharmacy.lat, pharmacy.lng], {
@@ -96,15 +112,15 @@ export default function PharmacyMap({
 
       marker.addTo(leafletMap.current!);
       
-      const badgeColor = !pharmacy.registered ? '#8b5cf6' : (pharmacy.hasDebt ? '#ef4444' : '#10b981');
-      const badgeText = !pharmacy.registered ? 'No Registrada' : (pharmacy.hasDebt ? 'Con Deuda' : 'Al Día');
+      const badgeColorVal = badgeColor;
+      const badgeTextVal = badgeText;
 
       // Popup with basic details
       marker.bindPopup(`
         <div style="font-family: sans-serif; font-size: 13px; line-height: 1.4;">
           <strong style="display: block; font-size: 14px;">${pharmacy.name}</strong>
           <span style="color: #64748b; display: block; margin-bottom: 6px;">${pharmacy.address}</span>
-          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: bold; color: white; background-color: ${badgeColor};">${badgeText}</span>
+          <span style="display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 10px; font-weight: bold; color: white; background-color: ${badgeColorVal};">${badgeTextVal}</span>
         </div>
       `);
 
@@ -138,12 +154,16 @@ export default function PharmacyMap({
           <span className="text-muted-foreground font-medium">Registrada (Al Día)</span>
         </div>
         <div className="flex items-center gap-2">
+          <div className="w-3.5 h-3.5 rounded-full bg-amber-500 border border-white" />
+          <span className="text-muted-foreground font-medium">Registrada (Pendiente)</span>
+        </div>
+        <div className="flex items-center gap-2">
           <div className="w-3.5 h-3.5 rounded-full bg-red-500 border border-white" />
           <span className="text-muted-foreground font-medium">Registrada (Con Deuda)</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3.5 h-3.5 rounded-full bg-violet-500 border border-white" />
-          <span className="text-muted-foreground font-medium">No Registrada / Alerta</span>
+          <span className="text-muted-foreground font-medium">No Registrada</span>
         </div>
         <div className="text-[10px] text-muted-foreground/80 pt-1">
           * Hacé clic en cualquier punto del mapa para geolocalizar una alerta.

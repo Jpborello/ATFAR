@@ -200,7 +200,8 @@ export default function FarmaciasPanelPage() {
               address: p.address || p.city,
               lat: p.lat,
               lng: p.lng,
-              registered: p.paymentStatus !== 'con_deuda'
+              registered: p.status === 'activa',
+              paymentStatus: p.paymentStatus
             }))}
             selectedPharmacyId={null}
             onMapClick={() => {}}
