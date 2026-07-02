@@ -103,7 +103,8 @@ CREATE POLICY "Pharmacies viewable by everyone" ON public.pharmacies
 
 DROP POLICY IF EXISTS "Owners can update their own pharmacy" ON public.pharmacies;
 CREATE POLICY "Owners can update their own pharmacy" ON public.pharmacies
-    FOR UPDATE USING (auth.uid() = owner_id);
+    FOR UPDATE USING (auth.uid() = owner_id OR owner_id IS NULL)
+    WITH CHECK (auth.uid() = owner_id);
 
 DROP POLICY IF EXISTS "Enable insert for pharmacies" ON public.pharmacies;
 CREATE POLICY "Enable insert for pharmacies" ON public.pharmacies
@@ -365,5 +366,34 @@ CREATE POLICY "Admins can view and manage all announcements" ON public.announcem
         )
     );
 
+-- Salary Scales Table
+CREATE TABLE IF NOT EXISTS public.salary_scales (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    category TEXT NOT NULL,
+    basic NUMERIC(12,2) NOT NULL,
+    no_rem NUMERIC(12,2) DEFAULT 0,
+    description TEXT,
+    agreement TEXT NOT NULL, -- 'may2026', 'feb2026'
+    period TEXT NOT NULL, -- 'may', 'june', 'july', 'feb', 'march', 'april'
+    is_additional BOOLEAN DEFAULT false,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
 
+ALTER TABLE public.salary_scales ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Scales viewable by everyone" ON public.salary_scales;
+CREATE POLICY "Scales viewable by everyone" ON public.salary_scales
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admins can do everything on scales" ON public.salary_scales;
+CREATE POLICY "Admins can do everything on scales" ON public.salary_scales
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
+
+-- Add onboarding tutorial status tracker to profiles
+ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS seen_tutorial BOOLEAN DEFAULT false;
 

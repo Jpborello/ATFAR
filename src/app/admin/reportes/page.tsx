@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   FileText, 
@@ -11,21 +11,71 @@ import {
   Download,
   AlertCircle
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 export default function AdminReportesPage() {
   const [reportPeriod, setReportPeriod] = useState('2026');
-  
-  const annualSummary = {
-    totalRevenue: 52400000,
-    registeredPharmacies: 142,
-    activeEmployees: 1240,
-    growthRate: '+14.2%',
-  };
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const [registeredPharmacies, setRegisteredPharmacies] = useState(0);
+  const [activeEmployees, setActiveEmployees] = useState(0);
+  const [pendingCount, setPendingCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadReportStats() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        // 1. Total revenue
+        const { data: paid } = await supabase
+          .from('payments')
+          .select('amount')
+          .eq('status', 'paid');
+        
+        if (paid) {
+          const sum = paid.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+          setTotalRevenue(sum);
+        }
+
+        // 2. Count registered pharmacies
+        const { count: regCount } = await supabase
+          .from('pharmacies')
+          .select('*', { count: 'exact', head: true })
+          .eq('registered', true);
+        
+        setRegisteredPharmacies(regCount || 0);
+
+        // 3. Count employees
+        const { count: empCount } = await supabase
+          .from('employees')
+          .select('*', { count: 'exact', head: true });
+        
+        setActiveEmployees(empCount || 0);
+
+        // 4. Count pending payments
+        const { count: pendCount } = await supabase
+          .from('payments')
+          .select('*', { count: 'exact', head: true })
+          .eq('status', 'pending');
+        
+        setPendingCount(pendCount || 0);
+      } catch (err) {
+        console.error("Error loading report stats:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadReportStats();
+  }, []);
 
   const revenueBreakdown = [
-    { source: 'Aportes Gremiales Obligatorios (CCT 659/13)', amount: 28500000, percent: 54, color: 'bg-primary' },
-    { source: 'Aportes Obra Social (OSPF)', amount: 16200000, percent: 31, color: 'bg-secondary' },
-    { source: 'Otros Seguros y Convenios', amount: 7700000, percent: 15, color: 'bg-teal-500' },
+    { source: 'Aportes Gremiales Obligatorios (CCT 659/13)', amount: totalRevenue * 0.54, percent: 54, color: 'bg-primary' },
+    { source: 'Aportes Obra Social (OSPF)', amount: totalRevenue * 0.31, percent: 31, color: 'bg-secondary' },
+    { source: 'Otros Seguros y Convenios', amount: totalRevenue * 0.15, percent: 15, color: 'bg-teal-500' },
   ];
 
   const handleExport = (format: 'pdf' | 'excel') => {
@@ -70,29 +120,37 @@ export default function AdminReportesPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Recaudación Acumulada</span>
-          <span className="text-2xl font-black text-primary">${annualSummary.totalRevenue.toLocaleString('es-AR')}</span>
-          <span className="text-[10px] text-emerald-500 font-semibold flex items-center gap-0.5">
-            <TrendingUp className="w-3.5 h-3.5" />
-            <span>{annualSummary.growthRate} vs anterior</span>
+          <span className="text-2xl font-black text-primary">${totalRevenue.toLocaleString('es-AR')}</span>
+          <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-0.5">
+            <span>Aportes gremiales cobrados</span>
           </span>
         </div>
         
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Aportantes Registrados</span>
-          <span className="text-2xl font-black text-foreground">{annualSummary.registeredPharmacies} locales</span>
+          <span className="text-2xl font-black text-foreground">{registeredPharmacies} locales</span>
           <span className="text-[10px] text-muted-foreground font-semibold">Declaraciones activas al mes</span>
         </div>
 
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Trabajadores Activos</span>
-          <span className="text-2xl font-black text-foreground">{annualSummary.activeEmployees} personas</span>
+          <span className="text-2xl font-black text-foreground">{activeEmployees} personas</span>
           <span className="text-[10px] text-muted-foreground font-semibold">Nóminas del convenio CCT</span>
         </div>
 
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Auditoría del Período</span>
-          <span className="text-2xl font-black text-emerald-600">Al Día</span>
-          <span className="text-[10px] text-muted-foreground font-semibold">Cuentas conciliadas</span>
+          {pendingCount > 0 ? (
+            <>
+              <span className="text-2xl font-black text-amber-500">Conciliando</span>
+              <span className="text-[10px] text-amber-500 font-semibold">{pendingCount} pendientes de validación</span>
+            </>
+          ) : (
+            <>
+              <span className="text-2xl font-black text-emerald-600">Al Día</span>
+              <span className="text-[10px] text-muted-foreground font-semibold">Cuentas conciliadas</span>
+            </>
+          )}
         </div>
       </div>
 

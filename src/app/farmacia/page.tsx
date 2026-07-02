@@ -9,6 +9,7 @@ import {
   CreditCard, 
   LogOut, 
   CheckCircle2, 
+  AlertTriangle,
   ArrowRight,
   MapPin,
   Calendar,
@@ -40,6 +41,12 @@ export default function FarmaciaDashboard() {
   const [pharmacyName, setPharmacyName] = useState('...');
   const [pharmacyCuit, setPharmacyCuit] = useState('...');
   const [pharmacyAddress, setPharmacyAddress] = useState('...');
+  const [hasDebt, setHasDebt] = useState(false);
+  
+  // Tutorial states
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(1);
+  const [userId, setUserId] = useState<string | null>(null);
   
   // Modals state
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -117,15 +124,21 @@ export default function FarmaciaDashboard() {
         return;
       }
 
+      setUserId(session.user.id);
+
       const { data: profile } = await supabase
         .from('profiles')
-        .select('role')
+        .select('role, seen_tutorial')
         .eq('id', session.user.id)
         .single();
 
       if (profile?.role !== 'pharmacy_owner' && profile?.role !== 'admin') {
         window.location.href = '/login';
         return;
+      }
+
+      if (profile?.role === 'pharmacy_owner' && !profile?.seen_tutorial) {
+        setShowTutorial(true);
       }
 
       let { data: pharmacy } = await supabase
@@ -158,6 +171,7 @@ export default function FarmaciaDashboard() {
         setPharmacyName(pharmacy.nombre_fantasia || pharmacy.name || pharmacy.razon_social);
         setPharmacyCuit(pharmacy.cuit);
         setPharmacyAddress(pharmacy.declared_addresses || pharmacy.address);
+        setHasDebt(!!pharmacy.has_debt);
         
         setProfileData({
           cuit: pharmacy.cuit || '',
@@ -186,7 +200,7 @@ export default function FarmaciaDashboard() {
           .select('*')
           .eq('pharmacy_id', pharmacy.id);
 
-        if (list && list.length > 0) {
+        if (list) {
           setEmployees(list.map(emp => ({
             id: emp.id,
             fullName: emp.full_name,
@@ -195,6 +209,8 @@ export default function FarmaciaDashboard() {
             entryDate: emp.entry_date,
             active: emp.active
           })));
+        } else {
+          setEmployees([]);
         }
 
         // Fetch announcements
@@ -426,10 +442,17 @@ export default function FarmaciaDashboard() {
               <Building2 className="w-4 h-4 text-primary" />
               <span>Editar Perfil</span>
             </button>
-            <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold shadow-sm">
-              <CheckCircle2 className="w-4 h-4" />
-              <span>Al Día</span>
-            </span>
+            {hasDebt ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-red-500/10 text-red-600 text-xs font-bold shadow-sm animate-pulse">
+                <AlertTriangle className="w-4 h-4" />
+                <span>Con Deuda</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold shadow-sm">
+                <CheckCircle2 className="w-4 h-4" />
+                <span>Al Día</span>
+              </span>
+            )}
           </div>
         </div>
 
@@ -494,7 +517,11 @@ export default function FarmaciaDashboard() {
               </div>
               <div className="flex justify-between">
                 <span>Estado de Pago Aportes:</span>
-                <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded">Al Día</span>
+                {hasDebt ? (
+                  <span className="text-red-600 font-bold bg-red-500/10 px-2.5 py-0.5 rounded">Con Deuda</span>
+                ) : (
+                  <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded">Al Día</span>
+                )}
               </div>
             </div>
             <div className="pt-3 border-t border-border/80">
@@ -983,6 +1010,142 @@ export default function FarmaciaDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Onboarding Tutorial Modal */}
+      {showTutorial && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-premium-lg relative animate-scaleIn space-y-6">
+            
+            {/* Header info */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">
+                Paso {tutorialStep} de 4
+              </span>
+              
+              <button 
+                onClick={async () => {
+                  try {
+                    if (userId) {
+                      await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
+                    }
+                  } catch (e) {
+                    console.error(e);
+                  }
+                  setShowTutorial(false);
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground font-bold cursor-pointer"
+              >
+                Omitir guía
+              </button>
+            </div>
+
+            {/* Step content */}
+            <div className="space-y-4 text-foreground">
+              {tutorialStep === 1 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">¡Bienvenido al Portal de Farmacias de ATFAR!</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Esta guía te asistirá en los primeros pasos necesarios para habilitar tu cuenta y comenzar a utilizar el sistema de liquidaciones de aportes obligatorios.
+                  </p>
+                </div>
+              )}
+
+              {tutorialStep === 2 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 mb-2">
+                    <MapPin className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 1: Mi Farmacia y Ubicación</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Antes que nada, verificá los datos de tu sucursal en el mapa de ATFAR. Hacé clic en "Ver / Editar Perfil" en el panel principal para completar tu razón social, CUIT y datos de contacto actualizados.
+                  </p>
+                </div>
+              )}
+
+              {tutorialStep === 3 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 mb-2">
+                    <Users className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 2: Nómina de Empleados</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Cargá a tus empleados en la nómina activa ingresando su Nombre, CUIL, Categoría Profesional del CCT 659/13 y Fecha de Ingreso.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Mantener esta lista al día es obligatorio y sirve para calcular de forma transparente el básico de las declaraciones mensuales.
+                  </p>
+                </div>
+              )}
+
+              {tutorialStep === 4 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-600 mb-2">
+                    <FileText className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 3: Declaraciones y Reportar Pago</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Todos los meses debés generar tu Declaración Jurada, descargar la boleta de pago y realizar el depósito o transferencia bancaria.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Una vez realizado el pago, recordá subir el comprobante de transferencia desde la sección de "Declaraciones y Pagos" para que el sindicato concilie y apruebe tu estado de cuenta.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Step indicators */}
+            <div className="flex gap-1.5 justify-center py-2">
+              {[1, 2, 3, 4].map((step) => (
+                <div 
+                  key={step} 
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    step === tutorialStep ? 'w-8 bg-primary' : 'w-2 bg-slate-200'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="pt-4 border-t border-border flex justify-between items-center">
+              <button
+                disabled={tutorialStep === 1}
+                onClick={() => setTutorialStep(prev => prev - 1)}
+                className="px-4 py-2 rounded-xl border border-border text-xs font-bold text-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-50 cursor-pointer bg-white transition-all"
+              >
+                Anterior
+              </button>
+
+              {tutorialStep < 4 ? (
+                <button
+                  onClick={() => setTutorialStep(prev => prev + 1)}
+                  className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer hover:bg-primary/95 transition-all shadow-premium"
+                >
+                  Siguiente
+                </button>
+              ) : (
+                <button
+                  onClick={async () => {
+                    try {
+                      if (userId) {
+                        await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
+                      }
+                    } catch (e) {
+                      console.error(e);
+                    }
+                    setShowTutorial(false);
+                  }}
+                  className="px-6 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold cursor-pointer hover:bg-emerald-700 transition-all shadow-premium"
+                >
+                  ¡Comenzar!
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

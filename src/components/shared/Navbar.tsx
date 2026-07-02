@@ -119,7 +119,7 @@ export default function Navbar() {
                   ATFAR
                 </span>
                 <span className="text-xs text-slate-700 block font-bold mt-1">
-                  Federación de Trabajadores de Farmacia
+                  Asociación de Trabajadores de Farmacia de Rosario
                 </span>
               </div>
             </Link>

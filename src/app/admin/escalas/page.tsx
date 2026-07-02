@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   FileText, 
@@ -21,18 +21,15 @@ interface CategorySalary {
 }
 
 export default function AdminEscalasPage() {
-  const [salaries, setSalaries] = useState<CategorySalary[]>([
-    { id: '1', name: 'Farmacéutico (Director Técnico)', basicSalary: 820000 },
-    { id: '2', name: 'Auxiliar de Farmacia', basicSalary: 640000 },
-    { id: '3', name: 'Cajero de Farmacia', basicSalary: 590000 },
-    { id: '4', name: 'Personal de Salón (Vendedor)', basicSalary: 585000 },
-    { id: '5', name: 'Personal Administrativo', basicSalary: 570000 },
-    { id: '6', name: 'Cadete / Auxiliar de Portería', basicSalary: 520000 },
-  ]);
+  const [agreement, setAgreement] = useState<'may2026' | 'feb2026'>('may2026');
+  const [period, setPeriod] = useState<string>('july');
+  const [scales, setScales] = useState<any[]>([]);
+  const [loadingScales, setLoadingScales] = useState(true);
 
   // Salary editing states
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [editValue, setEditValue] = useState<number>(0);
+  const [editBasic, setEditBasic] = useState<number>(0);
+  const [editNoRem, setEditNoRem] = useState<number>(0);
 
   // News states
   const [newsTitle, setNewsTitle] = useState('');
@@ -48,12 +45,59 @@ export default function AdminEscalasPage() {
   const [pdfPeriod, setPdfPeriod] = useState('');
   const [publishedPdfsCount, setPublishedPdfsCount] = useState(3);
 
-  const handleSaveSalary = (id: string) => {
-    setSalaries((prev) =>
-      prev.map((sal) => (sal.id === id ? { ...sal, basicSalary: editValue } : sal))
-    );
-    setEditingId(null);
-    alert('Básico de categoría actualizado con éxito.');
+  useEffect(() => {
+    async function loadScales() {
+      setLoadingScales(true);
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        const { data, error } = await supabase
+          .from('salary_scales')
+          .select('*')
+          .eq('agreement', agreement)
+          .eq('period', period)
+          .order('is_additional', { ascending: true })
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        setScales(data || []);
+      } catch (err) {
+        console.error("Error loading scales:", err);
+      } finally {
+        setLoadingScales(false);
+      }
+    }
+    loadScales();
+  }, [agreement, period]);
+
+  const handleAgreementChange = (val: 'may2026' | 'feb2026') => {
+    setAgreement(val);
+    setPeriod(val === 'may2026' ? 'july' : 'may');
+  };
+
+  const handleSaveSalary = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('salary_scales')
+        .update({
+          basic: editBasic,
+          no_rem: editNoRem
+        })
+        .eq('id', id);
+
+      if (error) throw error;
+
+      setScales(prev => prev.map(s => s.id === id ? { ...s, basic: editBasic, no_rem: editNoRem } : s));
+      setEditingId(null);
+      alert('Escala salarial actualizada con éxito y aplicada al sistema.');
+    } catch (err) {
+      console.error(err);
+      alert('Error al actualizar la escala salarial.');
+    }
   };
 
   const handlePublishNews = async (e: React.FormEvent) => {
@@ -119,68 +163,149 @@ export default function AdminEscalasPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Edit Salaries Grid */}
         <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-lg glass space-y-6">
-          <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-4">
             <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
               <DollarSign className="w-5 h-5 text-secondary" />
-              Sueldos Básicos por Convenio
+              Básicos y No Remunerativos
             </h2>
-            <span className="text-xs text-muted-foreground">Mes vigente: Junio 2026</span>
+            
+            {/* Agreement & Period Selectors */}
+            <div className="flex gap-2">
+              <select
+                value={agreement}
+                onChange={(e) => handleAgreementChange(e.target.value as any)}
+                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground"
+              >
+                <option value="may2026">Acuerdo Mayo 2026</option>
+                <option value="feb2026">Acuerdo Febrero 2026</option>
+              </select>
+
+              <select
+                value={period}
+                onChange={(e) => setPeriod(e.target.value)}
+                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground"
+              >
+                {agreement === 'may2026' ? (
+                  <>
+                    <option value="may">Mayo 2026</option>
+                    <option value="june">Junio 2026</option>
+                    <option value="july">Julio 2026</option>
+                  </>
+                ) : (
+                  <>
+                    <option value="feb">Febrero 2026</option>
+                    <option value="march">Marzo 2026</option>
+                    <option value="april">Abril 2026</option>
+                    <option value="may">Mayo 2026</option>
+                  </>
+                )}
+              </select>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {salaries.map((cat) => (
-              <div 
-                key={cat.id}
-                className="border border-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card/60 hover:bg-muted/10 transition-all"
-              >
-                <div className="space-y-0.5">
-                  <h3 className="text-sm font-semibold text-foreground">{cat.name}</h3>
-                  <span className="text-[10px] text-muted-foreground">Adicionales aplicables por ley</span>
-                </div>
+          {loadingScales ? (
+            <div className="h-60 w-full flex items-center justify-center text-xs font-semibold text-muted-foreground">
+              Cargando grilla salarial...
+            </div>
+          ) : scales.length === 0 ? (
+            <div className="h-60 w-full flex flex-col items-center justify-center text-xs text-muted-foreground border border-dashed border-border rounded-2xl">
+              No se encontraron escalas para este período.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {scales.map((cat) => (
+                <div 
+                  key={cat.id}
+                  className="border border-border rounded-xl p-4 flex flex-col bg-card/60 hover:bg-muted/10 transition-all gap-4"
+                >
+                  <div className="flex items-start justify-between w-full">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="text-xs font-bold text-foreground">{cat.category}</h3>
+                        <span className={`inline-flex px-1.5 py-0.5 rounded text-[8px] font-black uppercase ${
+                          cat.is_additional 
+                            ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' 
+                            : 'bg-emerald-500/10 text-emerald-600 border border-emerald-500/20'
+                        }`}>
+                          {cat.is_additional ? 'Adicional' : 'Básico'}
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground font-semibold leading-relaxed max-w-md">{cat.description || '---'}</p>
+                    </div>
 
-                <div className="flex items-center gap-3 justify-between sm:justify-end">
+                    <div className="flex-shrink-0">
+                      {editingId !== cat.id && (
+                        <button
+                          onClick={() => {
+                            setEditingId(cat.id);
+                            setEditBasic(Number(cat.basic));
+                            setEditNoRem(Number(cat.no_rem));
+                          }}
+                          className="text-[10px] text-secondary hover:underline font-bold"
+                        >
+                          Editar valores
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   {editingId === cat.id ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-foreground">$</span>
-                      <input
-                        type="number"
-                        value={editValue}
-                        onChange={(e) => setEditValue(Number(e.target.value))}
-                        className="w-28 px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs font-semibold focus:outline-none"
-                      />
-                      <button
-                        onClick={() => handleSaveSalary(cat.id)}
-                        className="px-3 py-1.5 rounded-lg bg-secondary text-secondary-foreground text-xs font-bold"
-                      >
-                        Guardar
-                      </button>
-                      <button
-                        onClick={() => setEditingId(null)}
-                        className="px-2.5 py-1.5 rounded-lg border border-border text-xs text-muted-foreground"
-                      >
-                        X
-                      </button>
+                    <div className="flex flex-wrap items-center gap-4 bg-muted/20 border border-border/80 p-3 rounded-xl w-full">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-700 dark:text-slate-350 uppercase">Básico:</span>
+                        <span className="text-[10px] font-bold">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editBasic}
+                          onChange={(e) => setEditBasic(Number(e.target.value))}
+                          className="w-24 px-2 py-1 rounded-lg border border-border bg-background text-xs font-semibold focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-700 dark:text-slate-350 uppercase">No Rem:</span>
+                        <span className="text-[10px] font-bold">$</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={editNoRem}
+                          onChange={(e) => setEditNoRem(Number(e.target.value))}
+                          className="w-24 px-2 py-1 rounded-lg border border-border bg-background text-xs font-semibold focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="flex gap-1.5 ml-auto">
+                        <button
+                          onClick={() => handleSaveSalary(cat.id)}
+                          className="px-2.5 py-1 rounded-lg bg-secondary text-secondary-foreground text-[10px] font-bold cursor-pointer hover:bg-secondary/90 transition-all"
+                        >
+                          Guardar
+                        </button>
+                        <button
+                          onClick={() => setEditingId(null)}
+                          className="px-2 py-1 rounded-lg border border-border text-[10px] text-muted-foreground cursor-pointer hover:bg-muted transition-all bg-white"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <>
-                      <span className="text-sm font-black text-foreground">
-                        ${cat.basicSalary.toLocaleString('es-AR')}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setEditingId(cat.id);
-                          setEditValue(cat.basicSalary);
-                        }}
-                        className="text-xs text-secondary hover:underline font-semibold"
-                      >
-                        Editar
-                      </button>
-                    </>
+                    <div className="flex items-center gap-6 border-t border-border/40 pt-2.5 text-xs font-bold text-slate-700 dark:text-slate-300">
+                      <div>
+                        <span className="text-[9px] text-muted-foreground uppercase mr-1">Básico:</span>
+                        <span className="text-foreground font-extrabold">${Number(cat.basic).toLocaleString('es-AR')}</span>
+                      </div>
+                      <div>
+                        <span className="text-[9px] text-muted-foreground uppercase mr-1">No Rem:</span>
+                        <span className="text-foreground font-extrabold">${Number(cat.no_rem).toLocaleString('es-AR')}</span>
+                      </div>
+                    </div>
                   )}
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right Column: News and PDF tools */}

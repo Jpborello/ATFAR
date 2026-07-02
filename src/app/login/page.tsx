@@ -58,6 +58,10 @@ function LoginContent() {
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null);
+  
+  // Registration Guide states
+  const [showRegisterGuide, setShowRegisterGuide] = useState(false);
+  const [guideStep, setGuideStep] = useState(1);
 
   // Leaflet refs for coordinate sync
   const [mapRef, setMapRef] = useState<any>(null);
@@ -164,6 +168,18 @@ function LoginContent() {
 
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
+
+  const handleRoleSelect = (role: 'employee' | 'pharmacy_owner') => {
+    setRegisterRole(role);
+    if (role === 'pharmacy_owner') {
+      const alreadySeen = localStorage.getItem('seen_register_guide');
+      if (!alreadySeen) {
+        setShowRegisterGuide(true);
+        setGuideStep(1);
+        localStorage.setItem('seen_register_guide', 'true');
+      }
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -528,7 +544,7 @@ function LoginContent() {
                 </label>
                 <div className="grid grid-cols-2 gap-3">
                   <div
-                    onClick={() => setRegisterRole('employee')}
+                    onClick={() => handleRoleSelect('employee')}
                     className={`border p-4 rounded-xl text-center cursor-pointer transition-all ${
                       registerRole === 'employee'
                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
@@ -539,7 +555,7 @@ function LoginContent() {
                     <span className="block text-xs font-bold text-foreground">Empleado / Afiliado</span>
                   </div>
                   <div
-                    onClick={() => setRegisterRole('pharmacy_owner')}
+                    onClick={() => handleRoleSelect('pharmacy_owner')}
                     className={`border p-4 rounded-xl text-center cursor-pointer transition-all ${
                       registerRole === 'pharmacy_owner'
                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
@@ -645,9 +661,21 @@ function LoginContent() {
               ) : (
                 /* Pharmacy Owner Fields */
                 <div className="space-y-3.5 p-4 bg-muted/40 rounded-xl border border-border/80">
-                  <span className="text-xs font-bold text-secondary uppercase tracking-wider block border-b border-border/60 pb-1">
-                    Datos de la Farmacia
-                  </span>
+                  <div className="flex items-center justify-between border-b border-border/60 pb-1">
+                    <span className="text-xs font-bold text-secondary uppercase tracking-wider block">
+                      Datos de la Farmacia
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowRegisterGuide(true);
+                        setGuideStep(1);
+                      }}
+                      className="text-[10px] text-secondary hover:underline font-bold flex items-center gap-1 cursor-pointer bg-transparent border-0"
+                    >
+                      💡 Ver Guía de Registro
+                    </button>
+                  </div>
 
                   {/* Search / Autocomplete */}
                   <div className="space-y-1 relative">
@@ -665,7 +693,7 @@ function LoginContent() {
                         }
                       }}
                       placeholder="Escribí el nombre de la farmacia..."
-                      className="w-full px-3 py-2.5 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                     />
                     {searching && (
                       <span className="absolute right-3.5 top-8 text-xs text-muted-foreground animate-pulse">
@@ -715,7 +743,7 @@ function LoginContent() {
                         value={pharmacyName}
                         onChange={(e) => setPharmacyName(e.target.value)}
                         placeholder="Ej. Farmacia Centro"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                       />
                     </div>
                     <div className="space-y-1">
@@ -728,7 +756,7 @@ function LoginContent() {
                         value={pharmacyRazonSocial}
                         onChange={(e) => setPharmacyRazonSocial(e.target.value)}
                         placeholder="Ej. Farmacia Centro S.H."
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                       />
                     </div>
                   </div>
@@ -744,7 +772,7 @@ function LoginContent() {
                         value={pharmacyCuit}
                         onChange={(e) => setPharmacyCuit(e.target.value)}
                         placeholder="Ej. 30777888990"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-mono font-bold"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-mono font-bold"
                       />
                     </div>
                     <div className="space-y-1">
@@ -756,7 +784,7 @@ function LoginContent() {
                         value={pharmacyPhoneAlt}
                         onChange={(e) => setPharmacyPhoneAlt(e.target.value)}
                         placeholder="Ej. 03414445555"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                       />
                     </div>
                   </div>
@@ -772,7 +800,7 @@ function LoginContent() {
                         value={pharmacyAddress}
                         onChange={(e) => setPharmacyAddress(e.target.value)}
                         placeholder="Ej. San Martin 1234"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                       />
                     </div>
                     <div className="space-y-1">
@@ -785,7 +813,7 @@ function LoginContent() {
                         value={pharmacyCrossStreets}
                         onChange={(e) => setPharmacyCrossStreets(e.target.value)}
                         placeholder="Ej. Entre Mendoza y 3 de Febrero"
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-semibold"
+                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-semibold"
                       />
                     </div>
                   </div>
@@ -856,6 +884,133 @@ function LoginContent() {
           )}
         </div>
       </div>
+      {/* Registration Guide Modal Overlay */}
+      {showRegisterGuide && (
+        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-premium-lg relative animate-scaleIn space-y-6">
+            
+            {/* Header info */}
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-black text-secondary uppercase tracking-widest bg-secondary/5 px-2.5 py-1 rounded-lg border border-secondary/10">
+                Paso {guideStep} de 4
+              </span>
+              
+              <button 
+                type="button"
+                onClick={() => setShowRegisterGuide(false)}
+                className="text-xs text-muted-foreground hover:text-foreground font-bold cursor-pointer bg-transparent border-0"
+              >
+                Cerrar guía
+              </button>
+            </div>
+
+            {/* Step content */}
+            <div className="space-y-4 text-foreground text-left">
+              {guideStep === 1 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-2">
+                    <Building2 className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 1: Buscar mi Farmacia Pre-registrada</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Para evitar crear registros duplicados, escribí el nombre de tu farmacia en el buscador. El sistema buscará en la base de datos oficial.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Si tu farmacia aparece en la lista desplegable, seleccionala. Esto autocompletará gran parte de los datos y la asociará correctamente.
+                  </p>
+                </div>
+              )}
+
+              {guideStep === 2 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-2">
+                    <FileCheck className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 2: Completar Nombre, Razón Social y CUIT</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Ingresá el Nombre de Fantasía, Razón Social (ej. "Farmacia Centro S.H.") y CUIT Comercial (11 dígitos, sin guiones ni espacios).
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Estos datos comerciales deben ser exactos ya que aparecerán impresos en las boletas y comprobantes de aportes del sindicato.
+                  </p>
+                </div>
+              )}
+
+              {guideStep === 3 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-2">
+                    <UserCheck className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 3: Dirección y Calles de Cruce</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Colocá la dirección postal de tu farmacia y especificá las calles entre las cuales se encuentra (ej. "Entre Mendoza y 3 de Febrero").
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Esto asegura la correcta categorización por departamentos y facilita la fiscalización de aportes por parte del sindicato.
+                  </p>
+                </div>
+              )}
+
+              {guideStep === 4 && (
+                <div className="space-y-3">
+                  <div className="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary mb-2">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 4: Posicionamiento en el Mapa (Geolocalización)</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
+                    Hacé clic en el mapa o arrastrá el marcador azul para señalar la ubicación exacta de tu sucursal.
+                  </p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed">
+                    Este paso es de suma importancia. De este modo, tu local se ubicará de forma exacta en el mapa de control de farmacias del sindicato.
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Step indicators */}
+            <div className="flex gap-1.5 justify-center py-2">
+              {[1, 2, 3, 4].map((step) => (
+                <div 
+                  key={step} 
+                  className={`h-1.5 rounded-full transition-all duration-300 ${
+                    step === guideStep ? 'w-8 bg-secondary' : 'w-2 bg-slate-200'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Navigation buttons */}
+            <div className="pt-4 border-t border-border flex justify-between items-center">
+              <button
+                type="button"
+                disabled={guideStep === 1}
+                onClick={() => setGuideStep(prev => prev - 1)}
+                className="px-4 py-2 rounded-xl border border-border text-xs font-bold text-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-50 cursor-pointer bg-white transition-all"
+              >
+                Anterior
+              </button>
+
+              {guideStep < 4 ? (
+                <button
+                  type="button"
+                  onClick={() => setGuideStep(prev => prev + 1)}
+                  className="px-5 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold cursor-pointer hover:bg-secondary/95 transition-all shadow-premium"
+                >
+                  Siguiente
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterGuide(false)}
+                  className="px-6 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold cursor-pointer hover:bg-emerald-700 transition-all shadow-premium"
+                >
+                  ¡Entendido!
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

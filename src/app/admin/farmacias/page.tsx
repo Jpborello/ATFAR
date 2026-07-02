@@ -57,43 +57,60 @@ export default function FarmaciasPanelPage() {
   useEffect(() => {
     async function fetchPharmacies() {
       try {
-        const { data, error } = await supabase
-          .from('pharmacies')
-          .select(`
-            id,
-            name,
-            cuit,
-            address,
-            latitude,
-            longitude,
-            registered,
-            has_debt,
-            owner_id,
-            profiles:owner_id (full_name)
-          `);
+        let allPharmacies: any[] = [];
+        let from = 0;
+        let to = 999;
+        let hasMore = true;
 
-        if (error) throw error;
+        while (hasMore) {
+          const { data, error } = await supabase
+            .from('pharmacies')
+            .select(`
+              id,
+              name,
+              cuit,
+              address,
+              latitude,
+              longitude,
+              registered,
+              has_debt,
+              owner_id,
+              profiles:owner_id (full_name)
+            `)
+            .range(from, to);
 
-        if (data) {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const mapped = data.map((p: any) => ({
-            id: p.id,
-            razonSocial: p.name,
-            cuit: p.cuit,
-            address: p.address,
-            city: 'Rosario',
-            responsible: p.profiles?.full_name || 'Sin Responsable',
-            employeeCount: 0,
-            status: p.registered ? ('activa' as const) : ('inactiva' as const),
-            lastDeclaration: '-',
-            paymentStatus: !p.registered 
-              ? ('pendiente' as const) 
-              : (p.has_debt ? ('con_deuda' as const) : ('al_dia' as const)),
-            lat: p.latitude || -32.9511,
-            lng: p.longitude || -60.6663
-          }));
-          setPharmacies(mapped);
+          if (error) throw error;
+
+          if (data && data.length > 0) {
+            allPharmacies = [...allPharmacies, ...data];
+            from += 1000;
+            to += 1000;
+            if (data.length < 1000) {
+              hasMore = false;
+            }
+          } else {
+            hasMore = false;
+          }
         }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const mapped = allPharmacies.map((p: any) => ({
+          id: p.id,
+          razonSocial: p.name,
+          cuit: p.cuit,
+          address: p.address,
+          city: 'Rosario',
+          responsible: p.profiles?.full_name || 'Sin Responsable',
+          employeeCount: 0,
+          status: p.registered ? ('activa' as const) : ('inactiva' as const),
+          lastDeclaration: '-',
+          paymentStatus: !p.registered 
+            ? ('pendiente' as const) 
+            : (p.has_debt ? ('con_deuda' as const) : ('al_dia' as const)),
+          lat: p.latitude || -32.9511,
+          lng: p.longitude || -60.6663
+        }));
+        setPharmacies(mapped);
       } catch (err) {
         console.error("Error loading pharmacies from Supabase:", err);
       } finally {

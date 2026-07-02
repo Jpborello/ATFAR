@@ -10,6 +10,7 @@ export default function BolsaPage() {
     email: '',
     phone: '',
     message: '',
+    position: 'Personal en Gestión de Farmacia',
   });
   const [cvFile, setCvFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -57,7 +58,7 @@ export default function BolsaPage() {
         // Simulate upload delay
         await new Promise((resolve) => setTimeout(resolve, 2000));
         setStatus('success');
-        setFormData({ fullName: '', email: '', phone: '', message: '' });
+        setFormData({ fullName: '', email: '', phone: '', message: '', position: 'Personal en Gestión de Farmacia' });
         setCvFile(null);
         setLoading(false);
         return;
@@ -88,12 +89,13 @@ export default function BolsaPage() {
           phone: formData.phone,
           message: formData.message,
           cv_url: publicUrl,
+          position: formData.position,
         });
 
       if (insertError) throw new Error(`Error al guardar los datos: ${insertError.message}`);
 
       setStatus('success');
-      setFormData({ fullName: '', email: '', phone: '', message: '' });
+      setFormData({ fullName: '', email: '', phone: '', message: '', position: 'Personal en Gestión de Farmacia' });
       setCvFile(null);
     } catch (error: any) {
       console.error(error);
@@ -197,6 +199,29 @@ export default function BolsaPage() {
                     className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
                   />
                 </div>
+              </div>
+
+              <div className="space-y-2">
+                <label htmlFor="position" className="text-sm font-semibold text-foreground">
+                  Puesto / Categoría al que se postula *
+                </label>
+                <select
+                  id="position"
+                  name="position"
+                  required
+                  value={formData.position}
+                  onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
+                  className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all font-semibold text-foreground"
+                >
+                  <option value="Cadetes">Cadetes</option>
+                  <option value="Aprendiz Ayudante">Aprendiz Ayudante</option>
+                  <option value="Personal Auxiliar Interno y Externo">Personal Auxiliar Interno y Externo</option>
+                  <option value="Personal con Asignación Específica">Personal con Asignación Específica</option>
+                  <option value="Ayudante en Gestión de Farmacia">Ayudante en Gestión de Farmacia</option>
+                  <option value="Personal en Gestión de Farmacia">Personal en Gestión de Farmacia</option>
+                  <option value="Farmacéutico">Farmacéutico</option>
+                  <option value="Otros / Administrativo">Otros / Administrativo</option>
+                </select>
               </div>
 
               <div className="space-y-2">

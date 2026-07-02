@@ -36,6 +36,8 @@ export default function PagosPage() {
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
+  const [ddjjFile, setDdjjFile] = useState<File | null>(null);
+  const [ddjjFileName, setDdjjFileName] = useState('');
 
   const [checkoutInvoice, setCheckoutInvoice] = useState<Invoice | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
@@ -146,6 +148,8 @@ export default function PagosPage() {
     setTransactionCode('');
     setTransferDate('');
     setReceiptFile(null);
+    setDdjjFile(null);
+    setDdjjFileName('');
   };
 
   const handleCopyCbu = () => {
@@ -203,7 +207,7 @@ export default function PagosPage() {
   const handleProcessTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transactionCode || !transferDate || !transactionFileName || !checkoutInvoice || !receiptFile) {
-      alert('Por favor complete todos los campos y adjunte el comprobante.');
+      alert('Por favor complete todos los campos y adjunte el comprobante de pago.');
       return;
     }
 
@@ -215,6 +219,7 @@ export default function PagosPage() {
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
       let publicUrl = '';
+      let ddjjPublicUrl = '';
 
       if (isConfigured) {
         // 1. Upload receipt to storage bucket 'receipts'
@@ -235,6 +240,25 @@ export default function PagosPage() {
 
         publicUrl = url;
 
+        // 2b. Upload DDJJ if provided
+        if (ddjjFile) {
+          const ddjjExt = ddjjFile.name.split('.').pop();
+          const ddjjName = `${Date.now()}-ddjj-${Math.random().toString(36).substring(2, 15)}.${ddjjExt}`;
+          const ddjjPath = `receipts/${ddjjName}`;
+
+          const { error: ddjjUploadError } = await supabase.storage
+            .from('receipts')
+            .upload(ddjjPath, ddjjFile);
+
+          if (ddjjUploadError) throw new Error(`Error al subir declaración jurada: ${ddjjUploadError.message}`);
+
+          const { data: { publicUrl: dUrl } } = supabase.storage
+            .from('receipts')
+            .getPublicUrl(ddjjPath);
+
+          ddjjPublicUrl = dUrl;
+        }
+
         // 3. Update payment in database
         const { error: updateError } = await supabase
           .from('payments')
@@ -242,7 +266,8 @@ export default function PagosPage() {
             status: 'en_revision',
             pay_date: transferDate,
             transaction_code: transactionCode,
-            receipt_url: publicUrl
+            receipt_url: publicUrl,
+            ddjj_url: ddjjPublicUrl || null
           })
           .eq('id', checkoutInvoice.id);
 
@@ -601,12 +626,11 @@ export default function PagosPage() {
                         </div>
                       </div>
                     </div>
-
+                    {/* File uploads */}
                     <div className="space-y-3">
-                      {/* File upload */}
                       <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Comprobante (Imagen o PDF)</label>
-                        <div className="relative border border-dashed border-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10 rounded-xl p-4 text-center cursor-pointer transition-all">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Comprobante de Pago *</label>
+                        <div className="relative border border-dashed border-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10 rounded-xl p-3.5 text-center cursor-pointer transition-all">
                           <input
                             type="file"
                             accept="image/*,.pdf"
@@ -620,9 +644,31 @@ export default function PagosPage() {
                             }}
                             className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
                           />
-                          <Upload className="w-6 h-6 text-emerald-600 mx-auto mb-1.5" />
+                          <Upload className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
                           <span className="text-[10px] font-bold text-slate-700 block truncate">
-                            {transactionFileName || 'Adjuntar archivo (PDF, JPG, PNG)'}
+                            {transactionFileName || 'Adjuntar Comprobante de Pago'}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Declaración Jurada (DDJJ) Firmada</label>
+                        <div className="relative border border-dashed border-emerald-300 bg-emerald-500/5 hover:bg-emerald-500/10 rounded-xl p-3.5 text-center cursor-pointer transition-all">
+                          <input
+                            type="file"
+                            accept="image/*,.pdf"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                setDdjjFileName(file.name);
+                                setDdjjFile(file);
+                              }
+                            }}
+                            className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                          />
+                          <Upload className="w-5 h-5 text-emerald-600 mx-auto mb-1" />
+                          <span className="text-[10px] font-bold text-slate-700 block truncate">
+                            {ddjjFileName || 'Adjuntar Declaración Jurada (Opcional)'}
                           </span>
                         </div>
                       </div>
@@ -636,7 +682,7 @@ export default function PagosPage() {
                           value={transactionCode}
                           onChange={(e) => setTransactionCode(e.target.value)}
                           placeholder="Ej: TX-948273"
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-semibold"
+                          className="w-full px-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-[#0f172a]"
                         />
                       </div>
 
@@ -648,7 +694,7 @@ export default function PagosPage() {
                           required
                           value={transferDate}
                           onChange={(e) => setTransferDate(e.target.value)}
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-emerald-500 text-xs font-semibold"
+                          className="w-full px-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-semibold text-[#0f172a]"
                         />
                       </div>
                     </div>

@@ -24,12 +24,14 @@ interface JobApplication {
   message: string;
   cv_url: string;
   created_at: string;
+  position?: string;
 }
 
 export default function FarmaciaPostulantesPage() {
   const [applications, setApplications] = useState<JobApplication[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [filterPosition, setFilterPosition] = useState<string>('all');
 
   useEffect(() => {
     async function fetchApplications() {
@@ -51,12 +53,17 @@ export default function FarmaciaPostulantesPage() {
     fetchApplications();
   }, []);
 
-  const filteredApplications = applications.filter(app => 
-    app.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    app.phone.includes(searchQuery) ||
-    (app.message && app.message.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
+  const filteredApplications = applications.filter(app => {
+    const matchesSearch = 
+      app.full_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      app.phone.includes(searchQuery) ||
+      (app.message && app.message.toLowerCase().includes(searchQuery.toLowerCase())) ||
+      (app.position && app.position.toLowerCase().includes(searchQuery.toLowerCase()));
+
+    const matchesPosition = filterPosition === 'all' || app.position === filterPosition;
+    return matchesSearch && matchesPosition;
+  });
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-[#1e293b] font-sans">
@@ -100,15 +107,34 @@ export default function FarmaciaPostulantesPage() {
 
         {/* Filter Bar */}
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between bg-card border border-border p-4 rounded-2xl shadow-premium glass">
-          <div className="relative w-full sm:max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Buscar por nombre, correo, teléfono o presentación..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
-            />
+          <div className="flex flex-col sm:flex-row gap-3 w-full">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar por nombre, correo, teléfono o presentación..."
+                className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+              />
+            </div>
+            <div className="w-full sm:w-64">
+              <select
+                value={filterPosition}
+                onChange={(e) => setFilterPosition(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs font-bold transition-all text-foreground"
+              >
+                <option value="all">Todos los puestos / categorías</option>
+                <option value="Cadetes">Cadetes</option>
+                <option value="Aprendiz Ayudante">Aprendiz Ayudante</option>
+                <option value="Personal Auxiliar Interno y Externo">Personal Auxiliar Interno y Externo</option>
+                <option value="Personal con Asignación Específica">Personal con Asignación Específica</option>
+                <option value="Ayudante en Gestión de Farmacia">Ayudante en Gestión de Farmacia</option>
+                <option value="Personal en Gestión de Farmacia">Personal en Gestión de Farmacia</option>
+                <option value="Farmacéutico">Farmacéutico</option>
+                <option value="Otros / Administrativo">Otros / Administrativo</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -140,7 +166,14 @@ export default function FarmaciaPostulantesPage() {
                       {app.full_name.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <h2 className="text-xs font-extrabold text-foreground">{app.full_name}</h2>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-xs font-extrabold text-foreground">{app.full_name}</h2>
+                        {app.position && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[8px] font-black uppercase bg-primary/10 text-primary border border-primary/20">
+                            {app.position}
+                          </span>
+                        )}
+                      </div>
                       <span className="text-[9px] text-muted-foreground flex items-center gap-1 font-semibold mt-0.5">
                         <Calendar className="w-3.5 h-3.5 text-secondary" />
                         Registrado: {new Date(app.created_at).toLocaleDateString('es-AR')}

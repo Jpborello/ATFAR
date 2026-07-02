@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
 import { 
   Building2, 
   CheckCircle2, 
@@ -21,6 +22,7 @@ import {
 
 interface Activity {
   id: number;
+  dbId: string;
   pharmacy: string;
   action: string;
   date: string;
@@ -30,24 +32,119 @@ interface Activity {
   period: string;
   transCode: string;
   fileName: string;
+  receiptUrl: string;
+  ddjjUrl: string;
+  ddjjFileName: string;
 }
 
 export default function AdminDashboardPage() {
-  const [activities, setActivities] = useState<Activity[]>([
-    { id: 1, pharmacy: 'Farmacia del Centro', action: 'Declaración mensual presentada (Junio)', date: 'Hace 15 min', status: 'pending', amount: 45000, cuit: '30-71122334-9', period: 'Junio 2026', transCode: 'TX-948273', fileName: 'comprobante_junio.pdf' },
-    { id: 2, pharmacy: 'Farmacia Alberdi', action: 'Pago de aportes procesado con éxito', date: 'Hace 2 horas', status: 'paid', amount: 38200, cuit: '30-65554443-1', period: 'Mayo 2026', transCode: 'TX-910283', fileName: 'transferencia_alberdi.jpg' },
-    { id: 3, pharmacy: 'Farmacia Rosario Norte', action: 'Generación de deuda por período vencido', date: 'Ayer', status: 'unpaid', amount: 12500, cuit: '30-88877766-2', period: 'Abril 2026', transCode: '---', fileName: '---' },
-    { id: 4, pharmacy: 'Farmacia Belgrano', action: 'Declaración mensual validada por administración', date: 'Ayer', status: 'paid', amount: 41000, cuit: '30-55544433-8', period: 'Mayo 2026', transCode: 'TX-897120', fileName: 'pago_belgrano.pdf' },
-  ]);
-
-  const [monthlyRevenue, setMonthlyRevenue] = useState(4850000);
-  const [activePharmaciesCount, setActivePharmaciesCount] = useState(130);
-  const [debtPharmaciesCount, setDebtPharmaciesCount] = useState(12);
-  const [pendingDeclarationsCount, setPendingDeclarationsCount] = useState(8);
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [monthlyRevenue, setMonthlyRevenue] = useState(0);
+  const [activePharmaciesCount, setActivePharmaciesCount] = useState(0);
+  const [debtPharmaciesCount, setDebtPharmaciesCount] = useState(0);
+  const [pendingDeclarationsCount, setPendingDeclarationsCount] = useState(0);
+  const [totalPharmacies, setTotalPharmacies] = useState(0);
 
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        // Fetch all pharmacies count
+        const { count: totalCount } = await supabase
+          .from('pharmacies')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch registered pharmacies
+        const { data: regData } = await supabase
+          .from('pharmacies')
+          .select('registered, has_debt')
+          .eq('registered', true);
+
+        // Fetch pending payments
+        const { data: pendingPayments } = await supabase
+          .from('payments')
+          .select('id')
+          .eq('status', 'pending');
+
+        // Fetch paid payments
+        const { data: paidPayments } = await supabase
+          .from('payments')
+          .select('amount')
+          .eq('status', 'paid');
+
+        // Fetch recent payments activity
+        const { data: recentPayments } = await supabase
+          .from('payments')
+          .select(`
+            id,
+            amount,
+            status,
+            period,
+            transaction_code,
+            receipt_url,
+            ddjj_url,
+            created_at,
+            pharmacies (
+              name,
+              cuit
+            )
+          `)
+          .order('created_at', { ascending: false })
+          .limit(4);
+
+        setTotalPharmacies(totalCount || 0);
+        
+        if (regData) {
+          const active = regData.filter(p => !p.has_debt).length;
+          const debt = regData.filter(p => p.has_debt).length;
+          setActivePharmaciesCount(active);
+          setDebtPharmaciesCount(debt);
+        }
+
+        setPendingDeclarationsCount(pendingPayments?.length || 0);
+
+        if (paidPayments) {
+          const totalRev = paidPayments.reduce((acc, curr) => acc + (curr.amount || 0), 0);
+          setMonthlyRevenue(totalRev);
+        }
+
+        if (recentPayments) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const mapped: Activity[] = recentPayments.map((p: any, idx: number) => ({
+            id: idx + 1,
+            dbId: p.id,
+            pharmacy: p.pharmacies?.name || 'Farmacia Desconocida',
+            action: p.status === 'paid' 
+              ? 'Declaración mensual validada por administración'
+              : (p.status === 'pending' ? `Declaración mensual presentada (${p.period || 'Período'})` : 'Pago rechazado / con deuda'),
+            date: new Date(p.created_at).toLocaleDateString('es-AR'),
+            status: p.status,
+            amount: p.amount || 0,
+            cuit: p.pharmacies?.cuit || '---',
+            period: p.period || '---',
+            transCode: p.transaction_code || '---',
+            fileName: p.receipt_url ? p.receipt_url.split('/').pop() || 'comprobante.pdf' : '---',
+            receiptUrl: p.receipt_url || '',
+            ddjjUrl: p.ddjj_url || '',
+            ddjjFileName: p.ddjj_url ? p.ddjj_url.split('/').pop() || 'ddjj.pdf' : '---'
+          }));
+          setActivities(mapped);
+        }
+      } catch (err) {
+        console.error("Error loading admin stats:", err);
+      }
+    }
+    loadStats();
+  }, []);
 
   const handleOpenAudit = (activity: Activity) => {
     if (activity.status === 'pending') {
@@ -58,35 +155,67 @@ export default function AdminDashboardPage() {
 
   const handleApprovePayment = async (activityId: number) => {
     setAuditLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    const activity = activities.find(a => a.id === activityId);
-    if (activity) {
-      setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'paid', action: 'Declaración mensual validada por administración' } : a));
-      setMonthlyRevenue(prev => prev + activity.amount);
-      setActivePharmaciesCount(prev => prev + 1);
-      setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+    try {
+      const act = activities.find(a => a.id === activityId);
+      if (act && act.dbId) {
+        const { error } = await supabase
+          .from('payments')
+          .update({ status: 'paid' })
+          .eq('id', act.dbId);
+
+        if (error) throw error;
+        
+        // Recargar el estado local
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'paid', action: 'Declaración mensual validada por administración' } : a));
+        setMonthlyRevenue(prev => prev + act.amount);
+        setActivePharmaciesCount(prev => prev + 1);
+        setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al aprobar el pago.');
+    } finally {
+      setAuditLoading(false);
+      setIsAuditModalOpen(false);
     }
-    setAuditLoading(false);
-    setIsAuditModalOpen(false);
   };
 
   const handleRejectPayment = async (activityId: number) => {
     setAuditLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    
-    setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'unpaid', action: 'Pago rechazado por administración' } : a));
-    setDebtPharmaciesCount(prev => prev + 1);
-    setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
-    
-    setAuditLoading(false);
-    setIsAuditModalOpen(false);
+    try {
+      const act = activities.find(a => a.id === activityId);
+      if (act && act.dbId) {
+        const { error } = await supabase
+          .from('payments')
+          .update({ status: 'unpaid' })
+          .eq('id', act.dbId);
+
+        if (error) throw error;
+
+        if (act.cuit) {
+          await supabase
+            .from('pharmacies')
+            .update({ has_debt: true })
+            .eq('cuit', act.cuit);
+        }
+
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'unpaid', action: 'Pago rechazado por administración' } : a));
+        setDebtPharmaciesCount(prev => prev + 1);
+        setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Error al rechazar el pago.');
+    } finally {
+      setAuditLoading(false);
+      setIsAuditModalOpen(false);
+    }
   };
 
   const cards = [
     { 
       label: 'Farmacias Registradas', 
-      value: '142', 
+      value: totalPharmacies.toString(), 
       detail: 'Padrón total comercial', 
       color: 'text-primary bg-primary/5 border-primary/10',
       icon: Building2 
@@ -299,21 +428,44 @@ export default function AdminDashboardPage() {
 
               <div className="space-y-2.5">
                 <span className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-wider block">Datos del Depósito</span>
-                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-2">
-                  <div className="flex justify-between">
+                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-2xl p-4 text-xs font-semibold text-slate-700 space-y-2.5">
+                  <div className="flex justify-between border-b border-emerald-500/10 pb-1.5">
                     <span>Nro. Operación:</span>
                     <span className="font-mono font-bold text-emerald-950">{selectedActivity.transCode}</span>
                   </div>
+                  
                   <div className="flex justify-between items-center">
-                    <span>Archivo Adjunto:</span>
-                    <a
-                      href="#"
-                      onClick={(e) => { e.preventDefault(); alert(`Simulando descarga de comprobante: ${selectedActivity.fileName}`); }}
-                      className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 underline font-bold"
-                    >
-                      <FileText className="w-3.5 h-3.5" />
-                      <span>{selectedActivity.fileName}</span>
-                    </a>
+                    <span>Comprobante de Pago:</span>
+                    {selectedActivity.receiptUrl ? (
+                      <a
+                        href={selectedActivity.receiptUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 underline font-bold"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Ver Archivo</span>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground text-[10px] italic">No cargado</span>
+                    )}
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <span>Declaración Jurada:</span>
+                    {selectedActivity.ddjjUrl ? (
+                      <a
+                        href={selectedActivity.ddjjUrl}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-emerald-700 hover:text-emerald-800 underline font-bold"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>Ver DDJJ</span>
+                      </a>
+                    ) : (
+                      <span className="text-muted-foreground text-[10px] italic font-medium">No cargada</span>
+                    )}
                   </div>
                 </div>
               </div>

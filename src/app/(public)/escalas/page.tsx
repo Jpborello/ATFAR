@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { 
   FileText, 
   Calculator, 
@@ -11,6 +11,7 @@ import {
   Briefcase,
   Percent
 } from 'lucide-react';
+import { supabase } from '@/lib/supabase';
 
 interface ScaleRow {
   category: string;
@@ -25,6 +26,117 @@ interface AdditionalRow {
   noRem: number;
   description: string;
 }
+
+// Paritaria Mayo 2026 data
+const DEFAULT_PARITARIA_MAYO = {
+  may: [
+    { category: 'Cadetes', basic: 1293737.56, noRem: 43675.21, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1293737.56, noRem: 43675.21, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1366186.84, noRem: 46121.02, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1452737.87, noRem: 49042.89, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1452737.87, noRem: 49042.89, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1777306.78, noRem: 60000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1962632.78, noRem: 66256.41, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ],
+  june: [
+    { category: 'Cadetes', basic: 1293737.56, noRem: 87350.43 + 14558.40, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1293737.56, noRem: 87350.43 + 14558.40, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1366186.84, noRem: 92242.05 + 15373.67, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1452737.87, noRem: 98085.79 + 16347.63, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1452737.87, noRem: 98085.79 + 16347.63, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1777306.78, noRem: 120000.00 + 20000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1962632.78, noRem: 132512.82 + 22085.47, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ],
+  july: [
+    { category: 'Cadetes', basic: 1381087.99, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1381087.99, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1458428.89, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1550823.66, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1550823.66, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1897306.78, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 2095145.60, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ]
+};
+
+const DEFAULT_PARITARIA_MAYO_ADICIONALES = {
+  may: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1517179.99, noRem: 51218.39, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1213743.92, noRem: 40974.71, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 910307.94, noRem: 30731.03, description: 'Adicional por título para auxiliares o idóneos.' }
+  ],
+  june: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1517179.99, noRem: 102436.78 + 19045.13, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1213743.92, noRem: 81949.43 + 15236.10, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 910307.94, noRem: 61462.07 + 11427.08, description: 'Adicional por título para auxiliares o idóneos.' }
+  ],
+  july: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1619616.69, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1295693.35, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 971770.01, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
+  ]
+};
+
+const DEFAULT_PARITARIA_FEBRERO = {
+  feb: [
+    { category: 'Cadetes', basic: 1169991.12, noRem: 43675.21, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 43675.21, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 46121.03, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 49042.90, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 49042.90, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 60000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1774906.29, noRem: 66256.41, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ],
+  mar: [
+    { category: 'Cadetes', basic: 1169991.12, noRem: 87350.43, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 87350.43, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 92242.05, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 98085.79, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 98085.79, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 120000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1774906.29, noRem: 132512.82, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ],
+  apr: [
+    { category: 'Cadetes', basic: 1169991.12, noRem: 109188.04, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 109188.04, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 115302.56, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 122607.24, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 122607.24, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 150000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1774906.29, noRem: 165641.03, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ],
+  may: [
+    { category: 'Cadetes', basic: 1279179.16, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1279179.16, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1350813.17, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1436390.25, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1436390.25, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1757306.76, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 1.94054732, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
+  ]
+};
+
+const DEFAULT_PARITARIA_FEBRERO_ADICIONALES = {
+  feb: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 51218.39, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 40974.71, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 30731.04, description: 'Adicional por título para auxiliares o idóneos.' }
+  ],
+  mar: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 102436.78, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 81949.43, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 61462.07, description: 'Adicional por título para auxiliares o idóneos.' }
+  ],
+  apr: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 128045.98, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 102436.78, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 76827.59, description: 'Adicional por título para auxiliares o idóneos.' }
+  ],
+  may: [
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1500107.12, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1200085.69, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 900064.27, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
+  ]
+};
 
 export default function PublicEscalasPage() {
   const [activeTab, setActiveTab] = useState<'scales' | 'calculator'>('scales');
@@ -48,117 +160,67 @@ export default function PublicEscalasPage() {
   const [daysWorked, setDaysWorked] = useState<number>(30);
   const [partTimeHours, setPartTimeHours] = useState<number>(4);
 
-  // Paritaria Mayo 2026 data
-  const paritariaMayo = {
-    may: [
-      { category: 'Cadetes', basic: 1293737.56, noRem: 43675.21, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1293737.56, noRem: 43675.21, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1366186.84, noRem: 46121.02, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1452737.87, noRem: 49042.89, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1452737.87, noRem: 49042.89, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1777306.78, noRem: 60000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1962632.78, noRem: 66256.41, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ],
-    june: [
-      { category: 'Cadetes', basic: 1293737.56, noRem: 87350.43 + 14558.40, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1293737.56, noRem: 87350.43 + 14558.40, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1366186.84, noRem: 92242.05 + 15373.67, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1452737.87, noRem: 98085.79 + 16347.63, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1452737.87, noRem: 98085.79 + 16347.63, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1777306.78, noRem: 120000.00 + 20000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1962632.78, noRem: 132512.82 + 22085.47, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ],
-    july: [
-      { category: 'Cadetes', basic: 1381087.99, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1381087.99, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1458428.89, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1550823.66, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1550823.66, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1897306.78, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 2095145.60, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ]
-  };
+  const [paritariaMayo, setParitariaMayo] = useState(DEFAULT_PARITARIA_MAYO);
+  const [paritariaMayoAdicionales, setParitariaMayoAdicionales] = useState(DEFAULT_PARITARIA_MAYO_ADICIONALES);
+  const [paritariaFebrero, setParitariaFebrero] = useState(DEFAULT_PARITARIA_FEBRERO);
+  const [paritariaFebreroAdicionales, setParitariaFebreroAdicionales] = useState(DEFAULT_PARITARIA_FEBRERO_ADICIONALES);
 
-  const paritariaMayoAdicionales = {
-    may: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1517179.99, noRem: 51218.39, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1213743.92, noRem: 40974.71, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 910307.94, noRem: 30731.03, description: 'Adicional por título para auxiliares o idóneos.' }
-    ],
-    june: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1517179.99, noRem: 102436.78 + 19045.13, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1213743.92, noRem: 81949.43 + 15236.10, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 910307.94, noRem: 61462.07 + 11427.08, description: 'Adicional por título para auxiliares o idóneos.' }
-    ],
-    july: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1619616.69, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1295693.35, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 971770.01, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
-    ]
-  };
+  useEffect(() => {
+    async function loadScales() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-  // Paritaria Febrero 2026 data
-  const paritariaFebrero = {
-    feb: [
-      { category: 'Cadetes', basic: 1169991.12, noRem: 43675.21, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 43675.21, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 46121.03, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 49042.90, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 49042.90, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 60000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1774906.29, noRem: 66256.41, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ],
-    mar: [
-      { category: 'Cadetes', basic: 1169991.12, noRem: 87350.43, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 87350.43, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 92242.05, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 98085.79, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 98085.79, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 120000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1774906.29, noRem: 132512.82, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ],
-    apr: [
-      { category: 'Cadetes', basic: 1169991.12, noRem: 109188.04, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1169991.12, noRem: 109188.04, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1235510.61, noRem: 115302.56, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1313783.01, noRem: 122607.24, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1313783.01, noRem: 122607.24, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1607306.76, noRem: 150000.00, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1774906.29, noRem: 165641.03, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ],
-    may: [
-      { category: 'Cadetes', basic: 1279179.16, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-      { category: 'Aprendiz Ayudante', basic: 1279179.16, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
-      { category: 'Personal Auxiliar Interno y Externo', basic: 1350813.17, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
-      { category: 'Personal con Asignación Específica', basic: 1436390.25, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-      { category: 'Ayudante en Gestión de Farmacia', basic: 1436390.25, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
-      { category: 'Personal en Gestión de Farmacia', basic: 1757306.76, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-      { category: 'Farmacéutico', basic: 1.94054732, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
-    ]
-  };
+        if (!isConfigured) return;
 
-  const paritariaFebreroAdicionales = {
-    feb: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 51218.39, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 40974.71, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 30731.04, description: 'Adicional por título para auxiliares o idóneos.' }
-    ],
-    mar: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 102436.78, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 81949.43, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 61462.07, description: 'Adicional por título para auxiliares o idóneos.' }
-    ],
-    apr: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1372061.14, noRem: 128045.98, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1097648.91, noRem: 102436.78, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 823236.68, noRem: 76827.59, description: 'Adicional por título para auxiliares o idóneos.' }
-    ],
-    may: [
-      { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1500107.12, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
-      { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1200085.69, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-      { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 900064.27, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
-    ]
-  };
+        const { data, error } = await supabase
+          .from('salary_scales')
+          .select('*');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const categories = data.filter(s => !s.is_additional);
+          const additionals = data.filter(s => s.is_additional);
+
+          const newMayo = {
+            may: categories.filter(s => s.agreement === 'may2026' && s.period === 'may').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            june: categories.filter(s => s.agreement === 'may2026' && s.period === 'june').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            july: categories.filter(s => s.agreement === 'may2026' && s.period === 'july').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+          };
+
+          const newMayoAdicionales = {
+            may: additionals.filter(s => s.agreement === 'may2026' && s.period === 'may').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            june: additionals.filter(s => s.agreement === 'may2026' && s.period === 'june').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            july: additionals.filter(s => s.agreement === 'may2026' && s.period === 'july').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+          };
+
+          const newFebrero = {
+            feb: categories.filter(s => s.agreement === 'feb2026' && s.period === 'feb').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            mar: categories.filter(s => s.agreement === 'feb2026' && s.period === 'march').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            apr: categories.filter(s => s.agreement === 'feb2026' && s.period === 'april').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            may: categories.filter(s => s.agreement === 'feb2026' && s.period === 'may').map(s => ({ category: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+          };
+
+          const newFebreroAdicionales = {
+            feb: additionals.filter(s => s.agreement === 'feb2026' && s.period === 'feb').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            mar: additionals.filter(s => s.agreement === 'feb2026' && s.period === 'march').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            apr: additionals.filter(s => s.agreement === 'feb2026' && s.period === 'april').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+            may: additionals.filter(s => s.agreement === 'feb2026' && s.period === 'may').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
+          };
+
+          if (newMayo.may.length > 0) setParitariaMayo(newMayo as any);
+          if (newMayoAdicionales.may.length > 0) setParitariaMayoAdicionales(newMayoAdicionales as any);
+          if (newFebrero.feb.length > 0) setParitariaFebrero(newFebrero as any);
+          if (newFebreroAdicionales.feb.length > 0) setParitariaFebreroAdicionales(newFebreroAdicionales as any);
+        }
+      } catch (err) {
+        console.error("Error loading scales from Supabase:", err);
+      }
+    }
+    loadScales();
+  }, []);
 
   const getActiveGrid = (): ScaleRow[] => {
     if (agreement === 'may2026') {
