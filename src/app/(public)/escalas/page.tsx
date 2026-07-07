@@ -9,7 +9,8 @@ import {
   Calendar,
   Clock,
   Briefcase,
-  Percent
+  Percent,
+  Printer
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -164,6 +165,7 @@ export default function PublicEscalasPage() {
   const [paritariaMayoAdicionales, setParitariaMayoAdicionales] = useState(DEFAULT_PARITARIA_MAYO_ADICIONALES);
   const [paritariaFebrero, setParitariaFebrero] = useState(DEFAULT_PARITARIA_FEBRERO);
   const [paritariaFebreroAdicionales, setParitariaFebreroAdicionales] = useState(DEFAULT_PARITARIA_FEBRERO_ADICIONALES);
+  const [historicalDocs, setHistoricalDocs] = useState<any[]>([]);
 
   useEffect(() => {
     async function loadScales() {
@@ -173,6 +175,16 @@ export default function PublicEscalasPage() {
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured) return;
+
+        // Load historical docs
+        const { data: docsData, error: docsError } = await supabase
+          .from('salary_scales_docs')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (!docsError && docsData) {
+          setHistoricalDocs(docsData);
+        }
 
         const { data, error } = await supabase
           .from('salary_scales')
@@ -273,7 +285,7 @@ export default function PublicEscalasPage() {
 
       <div className="max-w-7xl mx-auto space-y-10 relative">
         {/* Header */}
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
+        <div className="text-center space-y-4 max-w-2xl mx-auto no-print">
           <span className="text-[10px] font-bold text-primary uppercase tracking-widest block">Paritarias y Grillas Salariales</span>
           <h1 className="text-4xl font-extrabold tracking-tight text-foreground sm:text-5xl">
             {activeTab === 'scales' ? 'Grillas Salariales de Convenio' : 'Simulador de Horas y Haberes'}
@@ -287,7 +299,7 @@ export default function PublicEscalasPage() {
         </div>
 
         {/* Tab Selector */}
-        <div className="flex justify-center">
+        <div className="flex justify-center no-print">
           <div className="flex bg-slate-100 p-1 rounded-xl border border-border">
             <button
               onClick={() => setActiveTab('scales')}
@@ -316,263 +328,438 @@ export default function PublicEscalasPage() {
 
         {/* Tab 1: Scales List */}
         {activeTab === 'scales' && (
-          <div className="space-y-8 animate-fadeIn">
-            {/* Paritaria Agreement Switcher */}
-            <div className="flex flex-col sm:flex-row items-center justify-between border border-border bg-card p-6 rounded-3xl shadow-premium glass gap-4">
-              <div className="space-y-1 text-center sm:text-left">
-                <span className="text-[10px] font-bold text-secondary uppercase tracking-wider block">Acuerdo de Negociación Paritaria</span>
-                <span className="text-sm font-extrabold text-foreground">Seleccioná el acuerdo paritario a consultar:</span>
-              </div>
-              <div className="flex bg-slate-100 p-1 rounded-2xl border border-border/60">
-                <button
-                  onClick={() => handleAgreementChange('may2026')}
-                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-                    agreement === 'may2026' 
-                      ? 'bg-primary text-white shadow-premium' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Acuerdo Mayo 2026 (Vigente)
-                  {agreement === 'may2026' && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
-                </button>
-                <button
-                  onClick={() => handleAgreementChange('feb2026')}
-                  className={`px-4 py-2 rounded-xl text-xs font-black transition-all cursor-pointer ${
-                    agreement === 'feb2026' 
-                      ? 'bg-primary text-white shadow-premium' 
-                      : 'text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  Acuerdo Febrero 2026
-                </button>
-              </div>
+          <div className="space-y-6 animate-fadeIn">
+            {/* Action Bar */}
+            <div className="flex justify-end gap-3 no-print">
+              <button
+                onClick={() => window.print()}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
+              >
+                <Printer className="w-4 h-4" />
+                Imprimir Planilla / Guardar PDF
+              </button>
             </div>
 
-            {/* Filters and Period Selectors */}
-            <div className="bg-card border border-border rounded-2xl p-5 shadow-premium glass flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
-                {/* Search */}
-                <div className="relative w-full sm:w-64">
-                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-muted-foreground" />
-                  <input
-                    type="text"
-                    placeholder="Buscar por categoría CCT..."
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-primary/50 text-xs transition-all"
+            {/* Document sheet */}
+            <div 
+              id="printable-document" 
+              className="bg-white text-black p-4 sm:p-10 border border-slate-300 shadow-xl rounded-2xl mx-auto max-w-5xl font-sans print-full-width relative space-y-6"
+            >
+              {/* Printable stylesheet to override layout only during print */}
+              <style dangerouslySetInnerHTML={{ __html: `
+                @media print {
+                  body {
+                    background: white !important;
+                    color: black !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                  }
+                  /* Hide non-printable elements */
+                  header, nav, footer, .no-print, [role="navigation"] {
+                    display: none !important;
+                  }
+                  /* Force page container to occupy full width/height */
+                  .print-full-width {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                    background: transparent !important;
+                  }
+                  /* Ensure page breaks don't split the content awkwardly */
+                  #printable-document {
+                    page-break-inside: avoid;
+                    box-shadow: none !important;
+                    border: none !important;
+                    padding: 0 !important;
+                  }
+                }
+              `}} />
+
+              {/* Title Header */}
+              <div className="border border-black bg-[#cbe3b6] text-center py-3 px-4 font-bold text-[11px] sm:text-xs text-black uppercase tracking-wider rounded">
+                ANEXO I PARITARIA CCT 659/13 MAYO DE 2026.
+              </div>
+
+              {/* Table 1: Categorias */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-black text-center text-[10px] sm:text-xs">
+                  <thead>
+                    <tr className="font-bold text-black text-[9px] sm:text-[10px]">
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[22%]" rowSpan={2}>
+                        <div className="font-black leading-tight">C.C.T. 659/13</div>
+                        <div className="mt-1 font-black leading-tight">CATEGORIAS</div>
+                      </th>
+                      <th className="border border-black bg-[#fff2cc] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>BASICOS</div>
+                        <div>DEL MES DE</div>
+                        <div>MAYO.2026</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>MAYO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#fff2cc] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>BASICOS</div>
+                        <div>DEL MES DE</div>
+                        <div>JUNIO.2026</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>JUNIO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>JUNIO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#fff2cc] p-2 text-center w-[13%] font-black leading-tight">
+                        <div>BASICOS</div>
+                        <div>DEL MES DE</div>
+                        <div>JULIO.2026</div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* CADETES */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        CADETES
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.293.737,56</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>43.675,21</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.293.737,56</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>87.350,43</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>14.558,40</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.381.087,99</span></div>
+                      </td>
+                    </tr>
+                    {/* APRENDIZ AYUDANTE */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        APRENDIZ AYUDANTE
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.293.737,56</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>43.675,21</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.293.737,56</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>87.350,43</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>14.558,40</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.381.087,99</span></div>
+                      </td>
+                    </tr>
+                    {/* PERSONAL AUXILIAR INTERNO Y EXTERNO */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        PERSONAL AUXILIAR INTERNO Y EXTERNO
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.366.186,84</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>46.121,02</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.366.186,84</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>92.242,05</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>15.373,67</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.458.428,89</span></div>
+                      </td>
+                    </tr>
+                    {/* PERSONAL CON ASIGNACION ESPECIFICA */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        PERSONAL CON ASIGNACION ESPECIFICA
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.452.737,87</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>49.042,89</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.452.737,87</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>98.085,79</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>16.347,63</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.550.823,66</span></div>
+                      </td>
+                    </tr>
+                    {/* AYUDANTE EN GESTION DE FARMACIA */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        AYUDANTE EN GESTION DE FARMACIA
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.452.737,87</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>49.042,89</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.452.737,87</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>98.085,79</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>16.347,63</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.550.823,66</span></div>
+                      </td>
+                    </tr>
+                    {/* PERSONAL EN GESTION DE FARMACIA */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        PERSONAL EN GESTION DE FARMACIA
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.777.306,78</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>60.000,00</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.777.306,78</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>120.000,00</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>20.000,00</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.897.306,78</span></div>
+                      </td>
+                    </tr>
+                    {/* FARMACEUTICO */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        FARMACEUTICO
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.962.632,78</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>66.256,41</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.962.632,78</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>132.512,82</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>22.085,47</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>2.095.145,60</span></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Table 2: Adicionales / Bloqueos */}
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse border border-black text-center text-[10px] sm:text-xs">
+                  <thead>
+                    <tr className="font-bold text-black text-[9px] sm:text-[10px]">
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-left w-[22%] font-black leading-tight">
+                        <div>Importe determinado para el</div>
+                        <div className="font-black">BLOQUEO DE TITULO, AUXILIAR Y</div>
+                        <div className="font-black">TITULO DE FARMACEUTICO</div>
+                      </th>
+                      <th className="border border-black bg-[#fff2cc] p-2 text-center w-[15.6%] font-black leading-tight">
+                        <div>BLOQUEO DE TITULO</div>
+                        <div>AUX y TITULO FARM.</div>
+                        <div>MAYO.2026</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[15.6%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>MAYO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[15.6%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>JUNIO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#cbe3b6] p-2 text-center w-[15.6%] font-black leading-tight">
+                        <div>SUMA NO</div>
+                        <div>REMUNERATIVA</div>
+                        <div>JUNIO. 2026.</div>
+                      </th>
+                      <th className="border border-black bg-[#fff2cc] p-2 text-center w-[15.6%] font-black leading-tight">
+                        <div>BLOQUEO DE TITULO</div>
+                        <div>AUX y TITULO FARM.</div>
+                        <div>JULIO.2026</div>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {/* Articulo 7 inciso a */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        Bloqueo de Titulo del Farmaceutico Director Tecnico - Articulo 7 inciso a).
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.517.179,91</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>51.218,39</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>102.436,78</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>19.045,13</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.619.616,69</span></div>
+                      </td>
+                    </tr>
+                    {/* Articulo 7 inciso b */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        Titulo de Farmaceutico (80% del importe del Bloqueo) - Articulo 7 inciso b).
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.213.743,92</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>40.974,71</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>81.949,43</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>15.236,10</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.295.693,35</span></div>
+                      </td>
+                    </tr>
+                    {/* Articulo 7 inciso c */}
+                    <tr className="text-black text-[10px]">
+                      <td className="border border-black bg-[#cbe3b6] p-2 text-left font-bold">
+                        Titulo de Farmaceutico (60% del importe del Bloqueo) - Articulo 7 inciso c).
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>910.307,94</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>30.731,03</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>61.462,07</span></div>
+                      </td>
+                      <td className="border border-black bg-[#cbe3b6] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>11.427,08</span></div>
+                      </td>
+                      <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>971.770,01</span></div>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Footnote zoom block */}
+              <div className="flex flex-col sm:flex-row items-stretch justify-between gap-6 pt-4">
+                <div className="border border-black bg-[#cbe3b6] p-3.5 text-[9px] sm:text-[10px] leading-relaxed text-black max-w-xl rounded">
+                  <p className="mb-2 font-semibold">
+                    El presente Acuerdo se realizó en forma virtual mediante plataforma ZOOM del 28 de mayo de 2026, del mismo participaron en varios procesos de la negociacion, los siguientes representantes:
+                  </p>
+                  <p className="underline mb-1 font-bold">
+                    Por COFA, Roberto Jorge Zgaib, Jorge Bordon y Eduardo Jaime Molina.
+                  </p>
+                  <p className="underline font-bold">
+                    Por FATFA, Sergio Haddad, Jose Lopez y Miguel Castro.
+                  </p>
+                </div>
+                <div className="flex items-center justify-center sm:justify-end flex-grow">
+                  <img 
+                    src="/images/logo.jpg" 
+                    alt="Logo ATFAR" 
+                    className="h-16 w-auto object-contain bg-white p-1 rounded-xl border border-black shadow-sm"
                   />
                 </div>
-                
-                {/* Period Selector Tabs (Mayo - Junio - Julio or Febrero - Marzo - Abril - Mayo) */}
-                <div className="flex bg-muted p-1 rounded-xl w-full sm:w-auto border border-border overflow-x-auto">
-                  {agreement === 'may2026' ? (
-                    <>
-                      <button
-                        onClick={() => setPeriod('may')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'may' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Mayo 2026
-                      </button>
-                      <button
-                        onClick={() => setPeriod('june')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'june' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Junio 2026
-                      </button>
-                      <button
-                        onClick={() => setPeriod('july')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'july' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Julio 2026
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => setPeriod('feb')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'feb' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Febrero 2026
-                      </button>
-                      <button
-                        onClick={() => setPeriod('mar')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'mar' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Marzo 2026
-                      </button>
-                      <button
-                        onClick={() => setPeriod('apr')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'apr' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Abril 2026
-                      </button>
-                      <button
-                        onClick={() => setPeriod('may')}
-                        className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
-                          period === 'may' ? 'bg-card text-foreground shadow-sm' : 'text-muted-foreground'
-                        }`}
-                      >
-                        Mayo 2026
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Interactive Seniority Slider */}
-              <div className="flex items-center gap-4 w-full md:w-auto border-t md:border-t-0 border-border pt-3 md:pt-0">
-                <div className="space-y-0.5">
-                  <label htmlFor="seniority-select" className="text-[10px] font-bold text-muted-foreground uppercase block">
-                    Calcular Antigüedad:
-                  </label>
-                  <span className="text-xs text-foreground font-black">{seniority} Años (+{seniority}%)</span>
-                </div>
-                <input
-                  type="range"
-                  id="seniority-select"
-                  min="0"
-                  max="40"
-                  value={seniority}
-                  onChange={(e) => setSeniority(Number(e.target.value))}
-                  className="w-full sm:w-44 accent-primary cursor-pointer"
-                />
               </div>
             </div>
 
-            {/* Main Table: Categories */}
-            <div className="space-y-2">
+            {/* Historical Archive Grid */}
+            <div className="space-y-4 pt-6 no-print">
               <h3 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
-                <Briefcase className="w-4 h-4 text-secondary" />
-                Categorías Profesionales CCT 659/13 ({period === 'july' ? 'Julio 2026' : period === 'june' ? 'Junio 2026' : period === 'may' ? 'Mayo 2026' : period === 'apr' ? 'Abril 2026' : period === 'mar' ? 'Marzo 2026' : period === 'feb' ? 'Febrero 2026' : 'Período'})
+                <FileText className="w-4.5 h-4.5 text-secondary" />
+                Historial de Acuerdos y Escalas Salariales
               </h3>
-              <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-premium glass">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/30 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <th className="py-4 px-6">Categoría Profesional</th>
-                        <th className="py-4 px-4 text-right">Sueldo Básico</th>
-                        <th className="py-4 px-4 text-right">Suma No Rem.</th>
-                        <th className="py-4 px-4 text-right">Monto Paritario</th>
-                        <th className="py-4 px-6 text-right bg-primary/5 text-primary">Est. de Bolsillo (con Adicionales)</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60 text-sm">
-                      {filteredScales.length === 0 ? (
-                        <tr>
-                          <td colSpan={5} className="py-8 text-center text-xs text-muted-foreground font-semibold">
-                            Ninguna categoría coincide con el filtro de búsqueda.
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredScales.map((row) => {
-                          const basic = row.basic;
-                          const noRem = row.noRem;
-                          const total = basic + noRem;
-                          const calculatedTotal = calculateInteractiveTotal(total);
-
-                          return (
-                            <tr key={row.category} className="hover:bg-muted/10 transition-colors">
-                              <td className="py-4 px-6">
-                                <span className="font-extrabold text-[#0f172a] block">{row.category}</span>
-                                <span className="text-xs text-muted-foreground/80 line-clamp-1 font-medium">{row.description}</span>
-                              </td>
-                              <td className="py-4 px-4 text-right font-semibold text-slate-700">
-                                ${basic.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </td>
-                              <td className="py-4 px-4 text-right text-amber-600 font-bold">
-                                {noRem > 0 
-                                  ? `$${noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                  : '-'
-                                }
-                              </td>
-                              <td className="py-4 px-4 text-right font-black text-[#0f172a]">
-                                ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </td>
-                              <td className="py-4 px-6 text-right font-black text-primary bg-primary/5">
-                                ${Math.round(calculatedTotal).toLocaleString('es-AR')}
-                              </td>
-                            </tr>
-                          );
-                        })
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            {/* Secondary Table: Blockades & Titles */}
-            <div className="space-y-2 pt-4">
-              <h3 className="text-sm font-black text-foreground uppercase tracking-widest flex items-center gap-2">
-                <Percent className="w-4 h-4 text-secondary" />
-                Bloqueo de Título y Adicionales Art. 7
-              </h3>
-              <div className="bg-card border border-border rounded-3xl overflow-hidden shadow-premium glass">
-                <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-left">
-                    <thead>
-                      <tr className="border-b border-border bg-muted/30 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                        <th className="py-4 px-6">Concepto / Adicional Art. 7</th>
-                        <th className="py-4 px-4 text-right">Sueldo Básico</th>
-                        <th className="py-4 px-4 text-right">Suma No Rem.</th>
-                        <th className="py-4 px-6 text-right bg-secondary/5 text-secondary">Monto Adicional Total</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/60 text-sm">
-                      {activeAdicionalesData.map((row) => {
-                        const basic = row.basic;
-                        const noRem = row.noRem;
-                        const total = basic + noRem;
-
-                        return (
-                          <tr key={row.concept} className="hover:bg-muted/10 transition-colors">
-                            <td className="py-4 px-6">
-                              <span className="font-extrabold text-[#0f172a] block">{row.concept}</span>
-                              <span className="text-xs text-muted-foreground/80 line-clamp-1 font-medium">{row.description}</span>
-                            </td>
-                            <td className="py-4 px-4 text-right font-semibold text-slate-700">
-                              ${basic.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </td>
-                            <td className="py-4 px-4 text-right text-amber-600 font-bold">
-                              {noRem > 0 
-                                ? `$${noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-                                : '-'
-                              }
-                            </td>
-                            <td className="py-4 px-6 text-right font-black text-secondary bg-secondary/5">
-                              ${total.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </div>
-
-            {/* Calculation Info Banner */}
-            <div className="bg-muted/40 border border-border rounded-2xl p-5 flex items-start gap-3">
-              <Info className="w-5 h-5 text-primary flex-shrink-0 mt-0.5" />
-              <div className="space-y-1 text-xs text-muted-foreground font-semibold leading-relaxed">
-                <h4 className="font-extrabold text-[#0f172a]">Notas sobre la Liquidación Vigente:</h4>
-                <ul className="list-disc pl-4 space-y-1 font-medium text-slate-600">
-                  <li>**Evolución del Básico**: Las sumas no remunerativas se abonan de forma transitoria para compensar la inflación y luego se incorporan al salario básico definitivo del mes subsiguiente (por ejemplo, el básico de Julio consolida las sumas previas).</li>
-                  <li>**Cómputo de Adicionales**: El sueldo estimado suma el total de la grilla (Básico + Sumas no rem.) y aplica un **10% de Presentismo** obligatorio y un **1% por año de servicio** (antigüedad acumulativa).</li>
-                </ul>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {historicalDocs.length === 0 ? (
+                  <div className="col-span-full border border-dashed border-border bg-card p-8 rounded-3xl text-center text-xs text-muted-foreground font-semibold shadow-premium glass">
+                    No hay registros en el historial de escalas salariales todavía.
+                  </div>
+                ) : (
+                  historicalDocs.map((doc) => (
+                    <a
+                      key={doc.id}
+                      href={doc.file_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="bg-card border border-border rounded-2xl p-5 flex items-center justify-between hover:border-primary/50 hover:shadow-premium transition-all group glass"
+                    >
+                      <div className="space-y-1">
+                        <span className="text-xs font-bold text-foreground block group-hover:text-primary transition-colors">
+                          {doc.title}
+                        </span>
+                        <span className="text-[10px] text-muted-foreground font-medium block">
+                          Período: {doc.period}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-bold text-primary bg-primary/5 px-3 py-2 rounded-xl group-hover:bg-primary group-hover:text-white transition-all whitespace-nowrap">
+                        Descargar
+                      </span>
+                    </a>
+                  ))
+                )}
               </div>
             </div>
           </div>

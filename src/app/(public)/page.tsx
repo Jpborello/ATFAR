@@ -22,8 +22,50 @@ import { supabase } from '@/lib/supabase';
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [activeScaleSlide, setActiveScaleSlide] = useState<any | null>(null);
 
-  const slides = [
+  useEffect(() => {
+    async function fetchActiveScale() {
+      try {
+        const isConfigured = 
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        const { data, error } = await supabase
+          .from('salary_scales_docs')
+          .select('*')
+          .eq('is_active', true)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (error) {
+          console.warn("Could not load active salary scale doc:", error.message);
+          return;
+        }
+
+        if (data && data.length > 0) {
+          const doc = data[0];
+          const isImage = /\.(jpg|jpeg|png|webp|gif)$/i.test(doc.file_url);
+          setActiveScaleSlide({
+            image: isImage ? doc.file_url : '/images/hero_tablet.jpg',
+            title: `Escalas Salariales`,
+            description: `Se encuentra disponible el nuevo acuerdo de escala salarial paritaria CCT para el período ${doc.period}. Hacé click para ver o descargar el documento oficial.`,
+            btnPrimary: 'Ver Escalas Salariales',
+            btnPrimaryHref: '/escalas',
+            btnSecondary: 'Descargar Documento',
+            btnSecondaryHref: doc.file_url,
+          });
+        }
+      } catch (err) {
+        console.error("Error loading active scale slide:", err);
+      }
+    }
+    fetchActiveScale();
+  }, []);
+
+  const defaultSlides = [
     {
       image: '/images/hero_shake.jpg',
       title: 'Bolsa de Trabajo',
@@ -52,6 +94,8 @@ export default function HomePage() {
       btnSecondaryHref: '/escalas',
     },
   ];
+
+  const slides = activeScaleSlide ? [activeScaleSlide, ...defaultSlides] : defaultSlides;
 
   useEffect(() => {
     const timer = setInterval(() => {

@@ -90,7 +90,7 @@ export default function PagosPage() {
             .eq('pharmacy_id', pharmacy.id)
             .order('created_at', { ascending: false });
 
-          if (paymentList && paymentList.length > 0) {
+          if (paymentList) {
             setInvoices(paymentList.map(p => ({
               id: p.id,
               invoiceNumber: p.invoice_number,
@@ -101,33 +101,7 @@ export default function PagosPage() {
               payDate: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : '---'
             })));
           } else {
-            // Seed a default test invoice
-            const defaultInvoice = {
-              pharmacy_id: pharmacy.id,
-              invoice_number: 'FAC-2026-06',
-              period: 'Junio 2026',
-              amount: 45000,
-              status: 'impago',
-              due_date: '2026-07-10'
-            };
-
-            const { data: newPay } = await supabase
-              .from('payments')
-              .insert(defaultInvoice)
-              .select()
-              .single();
-
-            if (newPay) {
-              setInvoices([{
-                id: newPay.id,
-                invoiceNumber: newPay.invoice_number,
-                period: newPay.period,
-                amount: Number(newPay.amount),
-                status: newPay.status as 'pagado' | 'impago' | 'en_revision',
-                dueDate: new Date(newPay.due_date).toLocaleDateString('es-AR'),
-                payDate: '---'
-              }]);
-            }
+            setInvoices([]);
           }
         }
       } catch (err) {

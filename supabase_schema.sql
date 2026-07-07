@@ -272,7 +272,7 @@ DROP POLICY IF EXISTS "Public Access to Receipts" ON storage.objects;
 CREATE POLICY "Public Access to Receipts" ON storage.objects
     FOR SELECT USING (bucket_id = 'receipts');
 
-DROP POLICY IF EXISTS "Allow Public Upload to Receipts" ON storage.objects;
+DROP POLICY IF EXISTS "Allow Authenticated Upload to Receipts" ON storage.objects;
 CREATE POLICY "Allow Authenticated Upload to Receipts" ON storage.objects
     FOR INSERT WITH CHECK (bucket_id = 'receipts' AND auth.role() = 'authenticated');
 
@@ -397,3 +397,27 @@ CREATE POLICY "Admins can do everything on scales" ON public.salary_scales
 -- Add onboarding tutorial status tracker to profiles
 ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS seen_tutorial BOOLEAN DEFAULT false;
 
+-- 8. Create Salary Scales Documents Table (for uploaded PDF/Images)
+CREATE TABLE IF NOT EXISTS public.salary_scales_docs (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    title TEXT NOT NULL,
+    period TEXT NOT NULL,
+    file_url TEXT NOT NULL,
+    is_active BOOLEAN DEFAULT false NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.salary_scales_docs ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Scales docs viewable by everyone" ON public.salary_scales_docs;
+CREATE POLICY "Scales docs viewable by everyone" ON public.salary_scales_docs
+    FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Admins can do everything on scales docs" ON public.salary_scales_docs;
+CREATE POLICY "Admins can do everything on scales docs" ON public.salary_scales_docs
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
