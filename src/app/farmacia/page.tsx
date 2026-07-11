@@ -33,6 +33,7 @@ interface Employee {
   category: string;
   entryDate: string;
   active: boolean;
+  isAffiliate: boolean;
 }
 
 export default function FarmaciaDashboard() {
@@ -81,11 +82,12 @@ export default function FarmaciaDashboard() {
   const [newEmpCategory, setNewEmpCategory] = useState('Personal en Gestión de Farmacia');
   const [newEmpEntryDate, setNewEmpEntryDate] = useState('');
   const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
+  const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(false);
 
   const [employees, setEmployees] = useState<Employee[]>([
-    { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true },
-    { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true },
-    { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true },
+    { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true, isAffiliate: true },
+    { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true, isAffiliate: false },
+    { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true, isAffiliate: false },
   ]);
 
   const [announcements, setAnnouncements] = useState<any[]>([
@@ -207,7 +209,8 @@ export default function FarmaciaDashboard() {
             cuil: emp.cuil,
             category: emp.category,
             entryDate: emp.entry_date,
-            active: emp.active
+            active: emp.active,
+            isAffiliate: !!emp.is_affiliate
           })));
         } else {
           setEmployees([]);
@@ -318,7 +321,8 @@ export default function FarmaciaDashboard() {
           category: newEmpCategory,
           entry_date: newEmpEntryDate,
           weekly_hours: newEmpWeeklyHours,
-          active: true
+          active: true,
+          is_affiliate: newEmpIsAffiliate
         })
         .select()
         .single();
@@ -340,7 +344,8 @@ export default function FarmaciaDashboard() {
         cuil: newEmpCuil,
         category: newEmpCategory,
         entryDate: newEmpEntryDate,
-        active: true
+        active: true,
+        isAffiliate: newEmpIsAffiliate
       }
     ]);
 
@@ -350,6 +355,7 @@ export default function FarmaciaDashboard() {
     setNewEmpCategory('Personal en Gestión de Farmacia');
     setNewEmpEntryDate('');
     setNewEmpWeeklyHours(44);
+    setNewEmpIsAffiliate(false);
     setIsEmployeeModalOpen(false);
   };
 
@@ -567,6 +573,7 @@ export default function FarmaciaDashboard() {
                     <th className="py-3 px-4">Nombre y Apellido</th>
                     <th className="py-3 px-4">CUIL</th>
                     <th className="py-3 px-4">Categoría Profesional</th>
+                    <th className="py-3 px-4 text-center">Afiliado</th>
                     <th className="py-3 px-4 text-center">Ingreso</th>
                     <th className="py-3 px-4 text-center">Antigüedad</th>
                     <th className="py-3 px-4 text-center">Acciones</th>
@@ -588,6 +595,17 @@ export default function FarmaciaDashboard() {
                               </span>
                             )}
                           </div>
+                        </td>
+                        <td className="py-3.5 px-4 text-center">
+                          {emp.isAffiliate ? (
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[9px] font-black uppercase border border-emerald-500/20">
+                              Sí
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-slate-500/10 text-slate-500 rounded text-[9px] font-black uppercase border border-slate-500/10">
+                              No
+                            </span>
+                          )}
                         </td>
                         <td className="py-3.5 px-4 text-center text-slate-500">{emp.entryDate}</td>
                         <td className="py-3.5 px-4 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>
@@ -976,6 +994,19 @@ export default function FarmaciaDashboard() {
                     <option key={idx} value={cat}>{cat}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
+                <input
+                  type="checkbox"
+                  id="new-emp-affiliate"
+                  checked={newEmpIsAffiliate}
+                  onChange={(e) => setNewEmpIsAffiliate(e.target.checked)}
+                  className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
+                />
+                <label htmlFor="new-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                  Afiliado Sindical (Aporta cuota completa y aportes mutuales)
+                </label>
               </div>
 
               <div>

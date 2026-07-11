@@ -165,6 +165,13 @@ export default function AdminDashboardPage() {
 
         if (error) throw error;
         
+        if (act.cuit) {
+          await supabase
+            .from('pharmacies')
+            .update({ has_debt: false })
+            .eq('cuit', act.cuit);
+        }
+
         // Recargar el estado local
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'paid', action: 'Declaración mensual validada por administración' } : a));
         setMonthlyRevenue(prev => prev + act.amount);

@@ -421,3 +421,7 @@ CREATE POLICY "Admins can do everything on scales docs" ON public.salary_scales_
             WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
         )
     );
+
+-- 9. Migration: Calculation based on affiliation
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAULT false NOT NULL;
+

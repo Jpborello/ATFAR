@@ -75,7 +75,8 @@ export default function FarmaciasPanelPage() {
               registered,
               has_debt,
               owner_id,
-              profiles:owner_id (full_name)
+              profiles:owner_id (full_name),
+              payments(status)
             `)
             .range(from, to);
 
@@ -94,22 +95,39 @@ export default function FarmaciasPanelPage() {
         }
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = allPharmacies.map((p: any) => ({
-          id: p.id,
-          razonSocial: p.name,
-          cuit: p.cuit,
-          address: p.address,
-          city: 'Rosario',
-          responsible: p.profiles?.full_name || 'Sin Responsable',
-          employeeCount: 0,
-          status: p.registered ? ('activa' as const) : ('inactiva' as const),
-          lastDeclaration: '-',
-          paymentStatus: !p.registered 
-            ? ('pendiente' as const) 
-            : (p.has_debt ? ('con_deuda' as const) : ('al_dia' as const)),
-          lat: p.latitude || -32.9511,
-          lng: p.longitude || -60.6663
-        }));
+        const mapped = allPharmacies.map((p: any) => {
+          let pStatus: 'al_dia' | 'con_deuda' | 'pendiente' = 'al_dia';
+          
+          if (p.registered) {
+            const hasImpago = p.payments?.some((pay: any) => pay.status === 'impago' || pay.status === 'unpaid');
+            const hasEnRevision = p.payments?.some((pay: any) => pay.status === 'en_revision' || pay.status === 'pending');
+            
+            if (p.has_debt || hasImpago) {
+              pStatus = 'con_deuda';
+            } else if (hasEnRevision) {
+              pStatus = 'pendiente';
+            } else {
+              pStatus = 'al_dia';
+            }
+          } else {
+            pStatus = 'pendiente'; // For unregistered
+          }
+
+          return {
+            id: p.id,
+            razonSocial: p.name,
+            cuit: p.cuit,
+            address: p.address,
+            city: 'Rosario',
+            responsible: p.profiles?.full_name || 'Sin Responsable',
+            employeeCount: 0,
+            status: p.registered ? ('activa' as const) : ('inactiva' as const),
+            lastDeclaration: '-',
+            paymentStatus: pStatus,
+            lat: p.latitude || -32.9511,
+            lng: p.longitude || -60.6663
+          };
+        });
         setPharmacies(mapped);
       } catch (err) {
         console.error("Error loading pharmacies from Supabase:", err);

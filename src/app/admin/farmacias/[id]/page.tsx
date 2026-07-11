@@ -47,6 +47,7 @@ interface Employee {
   category: string;
   entryDate: string;
   active: boolean;
+  isAffiliate: boolean;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -90,9 +91,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           });
 
           setEmployees([
-            { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true },
-            { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Cadetes', entryDate: '2019-01-10', active: true },
-            { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Aprendiz Ayudante', entryDate: '2016-11-01', active: true },
+            { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true, isAffiliate: true },
+            { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Cadetes', entryDate: '2019-01-10', active: true, isAffiliate: false },
+            { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Aprendiz Ayudante', entryDate: '2016-11-01', active: true, isAffiliate: false },
           ]);
           setLoading(false);
           return;
@@ -124,7 +125,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           cuil: e.cuil,
           category: e.category || 'Cadetes',
           entryDate: e.entry_date || '',
-          active: e.active
+          active: e.active,
+          isAffiliate: !!e.is_affiliate
         })) : [];
 
         // Fetch real payments
@@ -336,6 +338,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                     <tr className="border-b border-border text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
                       <th className="py-2.5 px-3">Nombre y CUIL</th>
                       <th className="py-2.5 px-3">Categoría</th>
+                      <th className="py-2.5 px-3 text-center">Afiliado</th>
                       <th className="py-2.5 px-3 text-center">Ingreso</th>
                       <th className="py-2.5 px-3 text-center">Antigüedad</th>
                     </tr>
@@ -358,6 +361,17 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                 </span>
                               )}
                             </div>
+                          </td>
+                          <td className="py-3 px-3 text-center">
+                            {emp.isAffiliate ? (
+                              <span className="inline-flex items-center px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[9px] font-black uppercase border border-emerald-500/20">
+                                Sí
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-500/10 text-slate-500 rounded text-[9px] font-black uppercase border border-slate-500/10">
+                                No
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 px-3 text-center text-slate-500">{emp.entryDate}</td>
                           <td className="py-3 px-3 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>

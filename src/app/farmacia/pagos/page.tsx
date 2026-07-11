@@ -117,7 +117,7 @@ export default function PagosPage() {
   const handleOpenCheckout = (invoice: Invoice) => {
     setCheckoutInvoice(invoice);
     setPaymentSuccess(false);
-    setPaymentMethod('online');
+    setPaymentMethod('transfer');
     setTransactionFileName('');
     setTransactionCode('');
     setTransferDate('');
@@ -459,104 +459,23 @@ export default function PagosPage() {
                     </button>
                   </div>
                 ) : paymentMethod === 'online' ? (
-                  /* Mercado Pago Form */
-                  <form onSubmit={handleProcessPayment} className="space-y-4">
-                    {/* MP branding */}
-                    <div className="flex items-center justify-between border-b border-border pb-1">
-                      <div className="flex items-center gap-1">
-                        <div className="w-3.5 h-3.5 rounded-full bg-[#009ee3] flex items-center justify-center text-[8px] font-black text-white">m</div>
-                        <span className="text-xs font-black text-[#009ee3]">mercado pago</span>
-                      </div>
-                      <span className="text-[10px] text-muted-foreground font-bold">Tarjeta</span>
+                  <div className="space-y-5 text-center py-6">
+                    <div className="inline-flex p-4 bg-[#009ee3]/10 text-[#009ee3] rounded-full">
+                      <CreditCard className="w-8 h-8" />
                     </div>
-
-                    <div className="bg-[#009ee3]/5 p-3 rounded-xl border border-[#009ee3]/10 space-y-1 text-xs">
-                      <div className="flex justify-between font-bold text-foreground">
-                        <span>Boleta:</span>
-                        <span className="text-[#009ee3]">{checkoutInvoice.invoiceNumber}</span>
-                      </div>
-                      <div className="flex justify-between text-muted-foreground">
-                        <span>Período:</span>
-                        <span>{checkoutInvoice.period}</span>
-                      </div>
-                      <div className="flex justify-between font-black text-foreground pt-1.5 border-t border-border/60">
-                        <span>Total:</span>
-                        <span className="text-[#009ee3] text-sm">${checkoutInvoice.amount.toLocaleString('es-AR')}</span>
-                      </div>
+                    <div className="space-y-2">
+                      <h4 className="font-extrabold text-foreground text-sm">Pago Online (Mercado Pago)</h4>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
+                        Esta función estará disponible próximamente. Por el momento, por favor realizá tus pagos mediante transferencia bancaria y adjuntá el comprobante en la pestaña de **Transferencia**.
+                      </p>
                     </div>
-
-                    {/* Credit Card Mock Form */}
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Nombre en la tarjeta</label>
-                        <input
-                          type="text"
-                          required
-                          value={cardName}
-                          onChange={(e) => setCardName(e.target.value)}
-                          placeholder="TITULAR DE LA CUENTA"
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-[#009ee3] text-xs uppercase font-semibold"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-bold text-muted-foreground uppercase">Número de tarjeta</label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={19}
-                          value={cardNumber}
-                          onChange={(e) => setCardNumber(e.target.value.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim())}
-                          placeholder="0000 0000 0000 0000"
-                          className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-[#009ee3] text-xs font-mono text-center"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase">Vencimiento</label>
-                          <input
-                            type="text"
-                            required
-                            maxLength={5}
-                            value={cardExpiry}
-                            onChange={(e) => setCardExpiry(e.target.value)}
-                            placeholder="MM/AA"
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-[#009ee3] text-xs text-center"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <label className="text-[9px] font-bold text-muted-foreground uppercase">CVV</label>
-                          <input
-                            type="password"
-                            required
-                            maxLength={4}
-                            value={cardCvv}
-                            onChange={(e) => setCardCvv(e.target.value)}
-                            placeholder="***"
-                            className="w-full px-3 py-2 rounded-lg border border-border bg-background focus:outline-none focus:ring-1 focus:ring-[#009ee3] text-xs text-center"
-                          />
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Submit */}
                     <button
-                      type="submit"
-                      disabled={paymentLoading}
-                      className="w-full py-3 rounded-xl bg-[#009ee3] text-white hover:bg-[#008ac6] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all shadow-md disabled:opacity-50 cursor-pointer"
+                      type="button"
+                      onClick={() => setPaymentMethod('transfer')}
+                      className="w-full py-2.5 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
                     >
-                      {paymentLoading ? (
-                        <>
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          Procesando...
-                        </>
-                      ) : (
-                        <>
-                          <Lock className="w-3.5 h-3.5" />
-                          Pagar Aportes
-                        </>
-                      )}
+                      Ir a Transferencia Bancaria
                     </button>
-                    
                     <button
                       type="button"
                       onClick={() => setCheckoutInvoice(null)}
@@ -564,7 +483,7 @@ export default function PagosPage() {
                     >
                       Cancelar
                     </button>
-                  </form>
+                  </div>
                 ) : (
                   /* Bank Transfer / Receipt Upload Form */
                   <form onSubmit={handleProcessTransfer} className="space-y-4">

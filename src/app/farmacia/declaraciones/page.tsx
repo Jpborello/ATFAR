@@ -86,7 +86,8 @@ export default function DeclaracionesPage() {
               cuil: emp.cuil,
               category: emp.category || 'Cadetes',
               entryDate: emp.entry_date,
-              active: emp.active
+              active: emp.active,
+              isAffiliate: !!emp.is_affiliate
             })));
           }
 
@@ -124,6 +125,7 @@ export default function DeclaracionesPage() {
   const getEmployeeCalculation = (emp: any) => {
     const categoryName = emp.category || 'Cadetes';
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
+    let noRem = 0;
 
     let dbPeriodStr = 'july';
     if (period.includes('Junio')) dbPeriodStr = 'june';
@@ -136,14 +138,27 @@ export default function DeclaracionesPage() {
     );
     if (dbScale) {
       basic = Number(dbScale.basic);
+      noRem = Number(dbScale.no_rem || 0);
     }
 
     const years = calculateSeniorityYears(emp.entryDate);
     const seniorityAmount = basic * years * 0.01;
     const grossSalary = basic + seniorityAmount;
 
-    const unionAporte = grossSalary * 0.02;
-    const mutualAporte = grossSalary * 0.015;
+    let unionAporte = 0;
+    let mutualAporte = 0;
+
+    if (emp.isAffiliate) {
+      // Afiliado: 2% de lo remunerativo + 2% de lo no remunerativo
+      unionAporte = (grossSalary + noRem) * 0.02;
+      // Mutual: 1.5% de lo remunerativo
+      mutualAporte = grossSalary * 0.015;
+    } else {
+      // No Afiliado: 2% de lo no remunerativo (nada sobre lo remunerativo, sin mutual)
+      unionAporte = noRem * 0.02;
+      mutualAporte = 0;
+    }
+
     const totalAporte = unionAporte + mutualAporte;
 
     return {
@@ -151,6 +166,7 @@ export default function DeclaracionesPage() {
       years,
       seniorityAmount,
       grossSalary,
+      noRem,
       unionAporte,
       mutualAporte,
       totalAporte
@@ -163,6 +179,7 @@ export default function DeclaracionesPage() {
   }));
 
   const totalSalaries = calculations.reduce((sum, item) => sum + item.calc.grossSalary, 0);
+  const totalNoRem = calculations.reduce((sum, item) => sum + item.calc.noRem, 0);
   const totalAmount = calculations.reduce((sum, item) => sum + item.calc.totalAporte, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -355,11 +372,12 @@ export default function DeclaracionesPage() {
                       <table className="w-full border-collapse text-left text-[11px] text-foreground font-sans">
                         <thead>
                           <tr className="border-b border-border bg-slate-50/75 text-[9px] font-bold text-muted-foreground uppercase">
-                            <th className="py-2.5 px-3">Empleado</th>
-                            <th className="py-2.5 px-3">Categoría CCT</th>
-                            <th className="py-2.5 px-3 text-center">Antigüedad</th>
-                            <th className="py-2.5 px-3 text-right">Sueldo Bruto</th>
-                            <th className="py-2.5 px-3 text-right font-black">Aporte (3.5%)</th>
+                            <th className="py-2.5 px-3">Empleado / Categoría</th>
+                            <th className="py-2.5 px-3 text-center">Afiliado</th>
+                            <th className="py-2.5 px-3 text-right">Base Remun.</th>
+                            <th className="py-2.5 px-3 text-right">No Remun.</th>
+                            <th className="py-2.5 px-3 text-right">Aportes (Sind / Mut)</th>
+                            <th className="py-2.5 px-3 text-right font-black">Total Aporte</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
@@ -367,16 +385,32 @@ export default function DeclaracionesPage() {
                             <tr key={employee.id} className="hover:bg-muted/5 transition-colors">
                               <td className="py-2 px-3 font-semibold">
                                 {employee.fullName}
-                                <span className="block text-[9px] text-muted-foreground font-mono">{employee.cuil}</span>
+                                <span className="block text-[9px] text-muted-foreground font-mono">{employee.cuil} • <span className="font-sans font-medium text-slate-500">{employee.category}</span></span>
                               </td>
-                              <td className="py-2 px-3 font-medium text-slate-600 max-w-[150px] truncate">
-                                {employee.category}
-                              </td>
-                              <td className="py-2 px-3 text-center font-bold text-slate-700">
-                                {calc.years} {calc.years === 1 ? 'año' : 'años'}
+                              <td className="py-2 px-3 text-center">
+                                {employee.isAffiliate ? (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[9px] font-black uppercase border border-emerald-500/20">
+                                    Sí
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-500/10 text-slate-500 rounded text-[9px] font-black uppercase border border-slate-500/10">
+                                    No
+                                  </span>
+                                )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-600">
                                 ${calc.grossSalary.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-slate-600">
+                                ${calc.noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                              </td>
+                              <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
+                                <div className="flex flex-col items-end leading-tight">
+                                  <span>Sind (2%): ${calc.unionAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  {calc.mutualAporte > 0 && (
+                                    <span className="text-[9px] text-slate-400">Mut (1.5%): ${calc.mutualAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  )}
+                                </div>
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-extrabold text-primary">
                                 ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
@@ -384,10 +418,14 @@ export default function DeclaracionesPage() {
                             </tr>
                           ))}
                           <tr className="bg-slate-50/50 border-t border-border font-bold">
-                            <td colSpan={3} className="py-2.5 px-3 text-right text-[10px] text-muted-foreground uppercase">Total Masa Salarial:</td>
+                            <td colSpan={2} className="py-2.5 px-3 text-right text-[10px] text-muted-foreground uppercase">Totales del Período:</td>
                             <td className="py-2.5 px-3 text-right font-mono text-slate-700">
                               ${totalSalaries.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
+                            <td className="py-2.5 px-3 text-right font-mono text-slate-700">
+                              ${totalNoRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </td>
+                            <td className="py-2.5 px-3"></td>
                             <td className="py-2.5 px-3 text-right font-mono font-black text-sm text-primary">
                               ${totalAmount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </td>
