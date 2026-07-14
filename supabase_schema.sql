@@ -92,10 +92,6 @@ DROP POLICY IF EXISTS "Users can update their own profile" ON public.profiles;
 CREATE POLICY "Users can update their own profile" ON public.profiles
     FOR UPDATE USING (auth.uid() = id);
 
-DROP POLICY IF EXISTS "Enable insert for profiles" ON public.profiles;
-CREATE POLICY "Enable insert for profiles" ON public.profiles
-    FOR INSERT WITH CHECK (true);
-
 -- Pharmacies Policies
 DROP POLICY IF EXISTS "Pharmacies viewable by everyone" ON public.pharmacies;
 CREATE POLICY "Pharmacies viewable by everyone" ON public.pharmacies
@@ -168,7 +164,12 @@ CREATE POLICY "Admins can view and update all requests" ON public.benefit_reques
 -- Job Applications Policies (Bolsa de empleo)
 DROP POLICY IF EXISTS "Public can submit applications" ON public.job_applications;
 CREATE POLICY "Public can submit applications" ON public.job_applications
-    FOR INSERT WITH CHECK (true);
+    FOR INSERT WITH CHECK (
+        full_name IS NOT NULL AND 
+        email IS NOT NULL AND 
+        phone IS NOT NULL AND 
+        cv_url IS NOT NULL
+    );
 
 DROP POLICY IF EXISTS "Only Admins can view applications" ON public.job_applications;
 DROP POLICY IF EXISTS "Admins and Pharmacy Owners can view applications" ON public.job_applications;

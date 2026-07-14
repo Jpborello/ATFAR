@@ -78,13 +78,32 @@ function LoginContent() {
   useEffect(() => {
     if (activeTab !== 'register' || registerRole !== 'pharmacy_owner' || typeof window === 'undefined') return;
 
-    let mapInstance: any = null;
-    let markerInstance: any = null;
+    let mapInstance: any = { removeEventListener: () => {}, remove: () => {} };
+    let markerInstance: any = { removeEventListener: () => {} };
+    let isCancelled = false;
+
+    const handleDragEnd = () => {
+      if (markerInstance && typeof markerInstance.getLatLng === 'function') {
+        const position = markerInstance.getLatLng();
+        setLatitude(position.lat);
+        setLongitude(position.lng);
+      }
+    };
+
+    const handleMapClick = (e: any) => {
+      if (markerInstance && typeof markerInstance.setLatLng === 'function') {
+        markerInstance.setLatLng(e.latlng);
+        setLatitude(e.latlng.lat);
+        setLongitude(e.latlng.lng);
+      }
+    };
 
     Promise.all([
       import('leaflet'),
       import('leaflet/dist/leaflet.css' as any)
     ]).then(([L]) => {
+      if (isCancelled) return;
+
       delete (L.Icon.Default.prototype as any)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -95,37 +114,30 @@ function LoginContent() {
       const container = document.getElementById('map-selector');
       if (!container) return;
 
-      mapInstance = L.map('map-selector').setView([latitude, longitude], 13);
+      const loadedMap = L.map('map-selector').setView([latitude, longitude], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '&copy; OpenStreetMap'
-      }).addTo(mapInstance);
+      }).addTo(loadedMap);
 
-      markerInstance = L.marker([latitude, longitude], { draggable: true }).addTo(mapInstance);
-      setMapRef(mapInstance);
-      setMarkerRef(markerInstance);
+      const loadedMarker = L.marker([latitude, longitude], { draggable: true }).addTo(loadedMap);
+      
+      mapInstance = loadedMap;
+      markerInstance = loadedMarker;
 
-      const updateCoordinates = (lat: number, lng: number) => {
-        setLatitude(lat);
-        setLongitude(lng);
-      };
+      setMapRef(loadedMap);
+      setMarkerRef(loadedMarker);
 
-      markerInstance.on('dragend', () => {
-        const position = markerInstance.getLatLng();
-        updateCoordinates(position.lat, position.lng);
-      });
-
-      mapInstance.on('click', (e: any) => {
-        markerInstance.setLatLng(e.latlng);
-        updateCoordinates(e.latlng.lat, e.latlng.lng);
-      });
+      markerInstance.addEventListener('dragend', handleDragEnd);
+      mapInstance.addEventListener('click', handleMapClick);
     }).catch(err => {
       console.warn("Failed to load map:", err);
     });
 
     return () => {
-      if (mapInstance) {
-        mapInstance.remove();
-      }
+      isCancelled = true;
+      markerInstance.removeEventListener('dragend', handleDragEnd);
+      mapInstance.removeEventListener('click', handleMapClick);
+      mapInstance.remove();
       setMapRef(null);
       setMarkerRef(null);
     };

@@ -38,25 +38,27 @@ export default function PharmacyMap({
     const rosarioCenter: [number, number] = [-32.9511, -60.6663];
 
     // Initialize leaflet map
-    leafletMap.current = L.map(mapRef.current).setView(rosarioCenter, 13);
+    const mapInstance = L.map(mapRef.current).setView(rosarioCenter, 13);
+    leafletMap.current = mapInstance;
 
     // Add Google Maps road map tile layer
     L.tileLayer('https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
       maxZoom: 20,
       subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
       attribution: '&copy; Google Maps',
-    }).addTo(leafletMap.current);
+    }).addTo(mapInstance);
 
     // Map click event
-    leafletMap.current.on('click', (e: L.LeafletMouseEvent) => {
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
       onMapClick(e.latlng.lat, e.latlng.lng);
-    });
+    };
+
+    mapInstance.on('click', handleMapClick);
 
     return () => {
-      if (leafletMap.current) {
-        leafletMap.current.remove();
-        leafletMap.current = null;
-      }
+      mapInstance.off('click', handleMapClick);
+      mapInstance.remove();
+      leafletMap.current = null;
     };
   }, []);
 
@@ -64,8 +66,9 @@ export default function PharmacyMap({
   useEffect(() => {
     if (!leafletMap.current) return;
 
-    // Clear old markers
+    // Clear old markers and their listeners
     Object.values(markersRef.current).forEach((marker) => {
+      marker.removeEventListener('click');
       leafletMap.current?.removeLayer(marker);
     });
     markersRef.current = {};
@@ -124,12 +127,18 @@ export default function PharmacyMap({
         </div>
       `);
 
-      marker.on('click', () => {
+      marker.addEventListener('click', () => {
         onSelectPharmacy(pharmacy.id);
       });
 
       markersRef.current[pharmacy.id] = marker;
     });
+
+    return () => {
+      Object.values(markersRef.current).forEach((marker) => {
+        marker.removeEventListener('click');
+      });
+    };
   }, [pharmacies]);
 
   // Center map on selected pharmacy

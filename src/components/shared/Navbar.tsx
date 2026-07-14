@@ -81,7 +81,9 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Inicio', href: '/' },
     { label: 'Institucional', href: '/institucional' },
+    { label: 'Obra Social', href: 'https://www.ospf.org.ar/' },
     { label: 'Escalas Salariales', href: '/escalas' },
+    { label: 'Turismo', href: 'https://fatfa.org.ar/turismo-social/' },
     { label: 'Noticias', href: '/noticias' },
     { label: 'Contacto', href: '/contacto' },
   ];
@@ -126,14 +128,17 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-4 lg:gap-5 ml-auto mr-6 lg:mr-10">
+          <div className="hidden lg:flex items-center gap-3 lg:gap-4 ml-auto mr-4 lg:mr-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
+              const isExternal = link.href.startsWith('http');
               return (
                 <Link
                   key={link.label}
                   href={link.href}
-                  className={`text-[11px] lg:text-sm font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
+                  className={`text-[11px] lg:text-[13px] font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
                     isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
                   }`}
                 >
@@ -192,10 +197,13 @@ export default function Navbar() {
           <div className="px-3 pt-2 pb-4 space-y-1">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
+              const isExternal = link.href.startsWith('http');
               return (
                 <Link
                   key={link.label}
                   href={link.href}
+                  target={isExternal ? '_blank' : undefined}
+                  rel={isExternal ? 'noopener noreferrer' : undefined}
                   onClick={() => setIsOpen(false)}
                   className={`block px-4 py-3.5 rounded-xl text-base font-bold uppercase tracking-wider hover:bg-slate-50 ${
                     isActive ? 'text-primary bg-slate-50 font-black' : 'text-slate-800'

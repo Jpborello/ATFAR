@@ -146,14 +146,10 @@ export default function PublicEscalasPage() {
   const [period, setPeriod] = useState<string>('july');
   const [seniority, setSeniority] = useState<number>(0);
 
-  const handleAgreementChange = (newAgreement: 'may2026' | 'feb2026') => {
-    setAgreement(newAgreement);
-    if (newAgreement === 'may2026') {
-      setPeriod('july');
-    } else {
-      setPeriod('may');
-    }
-  };
+  // Synchronize period when agreement changes to avoid nested state updates in event handlers
+  useEffect(() => {
+    setPeriod(agreement === 'may2026' ? 'july' : 'may');
+  }, [agreement]);
 
   // Tab 2: Calculator States
   const [calcSalary, setCalcSalary] = useState<number>(1381087.99); // Default basic for July (Cadete)
