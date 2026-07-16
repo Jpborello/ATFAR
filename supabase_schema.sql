@@ -55,7 +55,7 @@ ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
 -- 5. Create Benefit Requests Table (for school kits, etc.)
 CREATE TABLE IF NOT EXISTS public.benefit_requests (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
-    employee_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    employee_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
     benefit_type TEXT NOT NULL,
     status TEXT DEFAULT 'pending' NOT NULL, -- 'pending', 'approved', 'rejected'
     attachment_url TEXT,
@@ -64,6 +64,19 @@ CREATE TABLE IF NOT EXISTS public.benefit_requests (
 );
 
 ALTER TABLE public.benefit_requests ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow public insert on benefit_requests" ON public.benefit_requests;
+CREATE POLICY "Allow public insert on benefit_requests" ON public.benefit_requests
+    FOR INSERT WITH CHECK (true);
+
+DROP POLICY IF EXISTS "Allow admins all access on benefit_requests" ON public.benefit_requests;
+CREATE POLICY "Allow admins all access on benefit_requests" ON public.benefit_requests
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles 
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
 
 -- 6. Create Job Applications Table (for CV Board)
 CREATE TABLE IF NOT EXISTS public.job_applications (
@@ -244,7 +257,7 @@ ALTER TABLE public.pharmacies
   ADD COLUMN IF NOT EXISTS hr_alt_email TEXT,
   ADD COLUMN IF NOT EXISTS hr_name TEXT,
   ADD COLUMN IF NOT EXISTS hr_role TEXT,
-  ADD COLUMN IF NOT EXISTS has_debt BOOLEAN DEFAULT false NOT NULL;
+  ADD COLUMN IF NOT EXISTS has_debt BOOLEAN DEFAULT true NOT NULL;
 
 
 -- ----------------------------------------------------
@@ -273,9 +286,9 @@ DROP POLICY IF EXISTS "Public Access to Receipts" ON storage.objects;
 CREATE POLICY "Public Access to Receipts" ON storage.objects
     FOR SELECT USING (bucket_id = 'receipts');
 
-DROP POLICY IF EXISTS "Allow Authenticated Upload to Receipts" ON storage.objects;
-CREATE POLICY "Allow Authenticated Upload to Receipts" ON storage.objects
-    FOR INSERT WITH CHECK (bucket_id = 'receipts' AND auth.role() = 'authenticated');
+DROP POLICY IF EXISTS "Allow Public Upload to Receipts" ON storage.objects;
+CREATE POLICY "Allow Public Upload to Receipts" ON storage.objects
+    FOR INSERT WITH CHECK (bucket_id = 'receipts');
 
 
 -- ----------------------------------------------------

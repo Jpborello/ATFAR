@@ -327,6 +327,7 @@ function LoginContent() {
             .update({
               owner_id: authData.user.id,
               registered: true,
+              has_debt: true,
               cuit: pharmacyCuit,
               name: pharmacyName,
               razon_social: pharmacyRazonSocial,
@@ -355,6 +356,7 @@ function LoginContent() {
               .update({
                 owner_id: authData.user.id,
                 registered: true,
+                has_debt: true,
                 name: pharmacyName,
                 razon_social: pharmacyRazonSocial,
                 address: pharmacyAddress,
@@ -380,6 +382,7 @@ function LoginContent() {
                 longitude: longitude,
                 owner_id: authData.user.id,
                 registered: true,
+                has_debt: true
               });
             pharmacyError = insertError;
           }
@@ -539,12 +542,6 @@ function LoginContent() {
                 {loading ? 'Validando...' : 'Ingresar'}
               </button>
 
-              <div className="pt-2 text-center text-xs text-muted-foreground leading-relaxed bg-muted/20 p-3 rounded-xl border border-border/50">
-                <span className="font-semibold block text-foreground mb-1">Cuentas de simulación disponibles:</span>
-                • Admin: <code className="text-secondary font-mono">admin@atfar.org.ar</code> <br />
-                • Farmacia: <code className="text-secondary font-mono">farmacia@atfar.org.ar</code> <br />
-                • Empleado: <code className="text-secondary font-mono">empleado@atfar.org.ar</code>
-              </div>
             </form>
           ) : (
             /* Register Form */

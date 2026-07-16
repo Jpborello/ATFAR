@@ -34,7 +34,7 @@ export default function AdminReportesPage() {
         const { data: paid } = await supabase
           .from('payments')
           .select('amount')
-          .eq('status', 'paid');
+          .eq('status', 'pagado');
         
         if (paid) {
           const sum = paid.reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -60,7 +60,7 @@ export default function AdminReportesPage() {
         const { count: pendCount } = await supabase
           .from('payments')
           .select('*', { count: 'exact', head: true })
-          .eq('status', 'pending');
+          .eq('status', 'en_revision');
         
         setPendingCount(pendCount || 0);
       } catch (err) {

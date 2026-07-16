@@ -141,7 +141,7 @@ export default function HomePage() {
       title: 'Kit de Útiles Escolares',
       description: 'Entrega anual gratuita de mochilas y útiles escolares para los hijos de los afiliados.',
       icon: GraduationCap,
-      href: '/login?tab=register',
+      href: '/utiles',
     },
     {
       title: 'Turismo Social',

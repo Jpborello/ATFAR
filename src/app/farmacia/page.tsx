@@ -169,6 +169,36 @@ export default function FarmaciaDashboard() {
       }
 
       if (pharmacy) {
+        // Sync has_debt status dynamically
+        try {
+          const todayStr = new Date().toISOString().split('T')[0];
+          const { data: payments } = await supabase
+            .from('payments')
+            .select('status, due_date')
+            .eq('pharmacy_id', pharmacy.id);
+
+          let shouldHaveDebt = false;
+          if (!payments || payments.length === 0) {
+            shouldHaveDebt = true;
+          } else {
+            const hasPastDueUnpaid = payments.some(p => 
+              (p.status === 'impago' || p.status === 'unpaid') && 
+              p.due_date < todayStr
+            );
+            shouldHaveDebt = hasPastDueUnpaid;
+          }
+
+          if (pharmacy.has_debt !== shouldHaveDebt) {
+            await supabase
+              .from('pharmacies')
+              .update({ has_debt: shouldHaveDebt })
+              .eq('id', pharmacy.id);
+            pharmacy.has_debt = shouldHaveDebt;
+          }
+        } catch (syncErr) {
+          console.error("Error syncing pharmacy debt:", syncErr);
+        }
+
         setPharmacyId(pharmacy.id);
         setPharmacyName(pharmacy.nombre_fantasia || pharmacy.name || pharmacy.razon_social);
         setPharmacyCuit(pharmacy.cuit);

@@ -30,6 +30,8 @@ interface Invoice {
   status: 'pagado' | 'impago' | 'en_revision';
   dueDate: string;
   payDate: string;
+  transactionCode?: string;
+  receiptUrl?: string;
 }
 
 export default function PagosPage() {
@@ -56,6 +58,9 @@ export default function PagosPage() {
   const [transferDate, setTransferDate] = useState('');
   const [copied, setCopied] = useState(false);
 
+  const [pharmacy, setPharmacy] = useState<any | null>(null);
+  const [selectedDetailInvoice, setSelectedDetailInvoice] = useState<Invoice | null>(null);
+
   useEffect(() => {
     async function loadInvoices() {
       try {
@@ -66,28 +71,35 @@ export default function PagosPage() {
 
         if (!isConfigured || !session) {
           // Simulation fallback
+          setPharmacy({
+            nombre_fantasia: 'Farmacia de Prueba Sol',
+            razon_social: 'Farmacia Sol de Rosario S.A.',
+            cuit: '30-12345678-9',
+            declared_addresses: 'Av. Pellegrini 1500, Rosario'
+          });
           setInvoices([
-            { id: '1', invoiceNumber: 'FAC-2026-06', period: 'Junio 2026', amount: 45000, status: 'impago', dueDate: '10/07/2026', payDate: '---' },
-            { id: '2', invoiceNumber: 'FAC-2026-05', period: 'Mayo 2026', amount: 45000, status: 'pagado', dueDate: '10/06/2026', payDate: '09/06/2026' },
-            { id: '3', invoiceNumber: 'FAC-2026-04', period: 'Abril 2026', amount: 41800, status: 'pagado', dueDate: '10/05/2026', payDate: '08/05/2026' },
+            { id: '1', invoiceNumber: 'BLT-202606-MOCK1', period: 'Junio 2026', amount: 45000, status: 'impago', dueDate: '10/07/2026', payDate: '---', transactionCode: '', receiptUrl: '' },
+            { id: '2', invoiceNumber: 'BLT-202605-MOCK2', period: 'Mayo 2026', amount: 45000, status: 'pagado', dueDate: '10/06/2026', payDate: '09/06/2026', transactionCode: 'TX-884271', receiptUrl: '#' },
+            { id: '3', invoiceNumber: 'BLT-202604-MOCK3', period: 'Abril 2026', amount: 41800, status: 'pagado', dueDate: '10/05/2026', payDate: '08/05/2026', transactionCode: 'TX-758219', receiptUrl: '#' },
           ]);
           setLoading(false);
           return;
         }
 
         // Fetch pharmacy
-        const { data: pharmacy } = await supabase
+        const { data: pharmacyData } = await supabase
           .from('pharmacies')
-          .select('id')
+          .select('*')
           .eq('owner_id', session.user.id)
           .single();
 
-        if (pharmacy) {
+        if (pharmacyData) {
+          setPharmacy(pharmacyData);
           // Fetch invoices
           const { data: paymentList } = await supabase
             .from('payments')
             .select('*')
-            .eq('pharmacy_id', pharmacy.id)
+            .eq('pharmacy_id', pharmacyData.id)
             .order('created_at', { ascending: false });
 
           if (paymentList) {
@@ -98,7 +110,9 @@ export default function PagosPage() {
               amount: Number(p.amount),
               status: p.status as 'pagado' | 'impago' | 'en_revision',
               dueDate: new Date(p.due_date).toLocaleDateString('es-AR'),
-              payDate: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : '---'
+              payDate: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : '---',
+              transactionCode: p.transaction_code || '',
+              receiptUrl: p.receipt_url || ''
             })));
           } else {
             setInvoices([]);
@@ -119,15 +133,15 @@ export default function PagosPage() {
     setPaymentSuccess(false);
     setPaymentMethod('transfer');
     setTransactionFileName('');
-    setTransactionCode('');
-    setTransferDate('');
+    setTransactionCode(invoice.invoiceNumber); // Prefill transactionCode with invoice number!
+    setTransferDate(new Date().toISOString().split('T')[0]); // Prefill transfer date with today's date!
     setReceiptFile(null);
     setDdjjFile(null);
     setDdjjFileName('');
   };
 
   const handleCopyCbu = () => {
-    navigator.clipboard.writeText('0650020701000000379012');
+    navigator.clipboard.writeText('3300000610000019519073');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -251,7 +265,12 @@ export default function PagosPage() {
       setInvoices((prev) =>
         prev.map((inv) =>
           inv.id === checkoutInvoice.id
-            ? { ...inv, status: 'en_revision', payDate: 'Pendiente Aud.' }
+            ? { 
+                ...inv, 
+                status: 'en_revision', 
+                payDate: new Date(transferDate + 'T00:00:00').toLocaleDateString('es-AR'),
+                transactionCode: transactionCode
+              }
             : inv
         )
       );
@@ -262,6 +281,144 @@ export default function PagosPage() {
     } finally {
       setPaymentLoading(false);
     }
+  };
+
+  const handlePrint = (invoice: Invoice) => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const receiptHtml = `
+      <html>
+        <head>
+          <title>Comprobante ${invoice.invoiceNumber}</title>
+          <style>
+            body { font-family: sans-serif; padding: 40px; color: #1e293b; line-height: 1.5; }
+            .header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 20px; margin-bottom: 30px; }
+            .logo-text { font-size: 24px; font-weight: bold; color: #0284c7; letter-spacing: 1px; }
+            .subtitle { font-size: 12px; color: #64748b; margin-top: 5px; text-transform: uppercase; font-weight: bold; }
+            .title { font-size: 18px; font-weight: bold; margin-top: 15px; margin-bottom: 5px; }
+            .section { margin-bottom: 25px; }
+            .section-title { font-size: 12px; font-weight: bold; text-transform: uppercase; color: #64748b; border-bottom: 1px solid #e2e8f0; padding-bottom: 5px; margin-bottom: 10px; }
+            .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+            .field { margin-bottom: 8px; }
+            .label { font-size: 11px; color: #64748b; font-weight: 600; text-transform: uppercase; }
+            .value { font-size: 13px; font-weight: bold; color: #0f172a; }
+            .amount-box { background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 15px; text-align: center; margin-top: 20px; }
+            .amount-label { font-size: 12px; color: #64748b; font-weight: bold; text-transform: uppercase; }
+            .amount-val { font-size: 28px; font-weight: 900; color: #0f172a; margin-top: 5px; }
+            .status-badge { display: inline-block; padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; text-transform: uppercase; margin-top: 5px; }
+            .status-pagado { background-color: #dcfce7; color: #15803d; }
+            .status-revision { background-color: #fef3c7; color: #b45309; }
+            .status-impago { background-color: #fee2e2; color: #b91c1c; }
+            .footer { text-align: center; margin-top: 50px; font-size: 10px; color: #94a3b8; border-top: 1px dashed #e2e8f0; padding-top: 20px; }
+            @media print {
+              body { padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="logo-text">ATFAR</div>
+            <div class="subtitle">Asociación de Trabajadores de Farmacias de Rosario</div>
+            <div class="subtitle" style="font-size: 10px; margin-top: 2px;">Personería Gremial Nº 1391 • CUIT 30-54827379-1</div>
+            <div class="title">BOLETA DE APORTES SINDICALES Y MUTUAL (CCT 659/13)</div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Datos de la Farmacia</div>
+            <div class="grid">
+              <div class="field">
+                <div class="label">Razón Social / Fantasía</div>
+                <div class="value">${pharmacy?.razon_social || pharmacy?.nombre_fantasia || 'FARMACIA ADHERIDA'}</div>
+              </div>
+              <div class="field">
+                <div class="label">CUIT</div>
+                <div class="value">${pharmacy?.cuit || '---'}</div>
+              </div>
+              <div class="field" style="grid-column: span 2;">
+                <div class="label">Dirección Declarada</div>
+                <div class="value">${pharmacy?.address || pharmacy?.declared_addresses || '---'}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="section-title">Detalle de Liquidación</div>
+            <div class="grid">
+              <div class="field">
+                <div class="label">Boleta / Comprobante Nº</div>
+                <div class="value">${invoice.invoiceNumber}</div>
+              </div>
+              <div class="field">
+                <div class="label">Período</div>
+                <div class="value">${invoice.period}</div>
+              </div>
+              <div class="field">
+                <div class="label">Fecha de Vencimiento</div>
+                <div class="value">${invoice.dueDate}</div>
+              </div>
+              <div class="field">
+                <div class="label">Estado del Pago</div>
+                <div>
+                  <span class="status-badge status-${invoice.status === 'pagado' ? 'pagado' : invoice.status === 'en_revision' ? 'revision' : 'impago'}">
+                    ${invoice.status === 'pagado' ? 'PAGADO' : invoice.status === 'en_revision' ? 'EN REVISIÓN' : 'IMPAGO'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          ${invoice.status !== 'impago' ? `
+          <div class="section">
+            <div class="section-title">Información de Transferencia</div>
+            <div class="grid">
+              <div class="field">
+                <div class="label">Fecha de Pago</div>
+                <div class="value">${invoice.payDate}</div>
+              </div>
+              <div class="field">
+                <div class="label">Referencia / Transacción</div>
+                <div class="value" style="font-family: monospace;">${invoice.transactionCode || '---'}</div>
+              </div>
+              <div class="field" style="grid-column: span 2;">
+                <div class="label">Cuenta de Destino</div>
+                <div class="value">Banco de Santa Fe • CBU 3300000610000019519073 • ALIAS PILA.TORNO.ZAR</div>
+              </div>
+            </div>
+          </div>
+          ` : `
+          <div class="section">
+            <div class="section-title">Cuentas de Depósito Autorizadas</div>
+            <div class="value" style="font-size: 12px; font-weight: normal; color: #475569;">
+              Transferir a: <strong>Banco de Santa Fe</strong><br/>
+              Nº Cuenta: <strong>000001951907</strong><br/>
+              CBU: <strong>3300000610000019519073</strong><br/>
+              Alias: <strong>PILA.TORNO.ZAR</strong><br/>
+              CUIT: <strong>30-54827379-1</strong>
+            </div>
+          </div>
+          `}
+
+          <div class="amount-box">
+            <div class="amount-label">Monto Total Liquidado</div>
+            <div class="amount-val">$${invoice.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}</div>
+          </div>
+
+          <div class="footer">
+            <p>Este comprobante es un documento digital oficial generado por el Portal de Farmacias de ATFAR.</p>
+            <p style="font-size: 9px; margin-top: 5px; color: #cbd5e1;">Generado el ${new Date().toLocaleString('es-AR')}</p>
+          </div>
+
+          <script>
+            window.onload = function() {
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `;
+    printWindow.document.write(receiptHtml);
+    printWindow.document.close();
   };
 
   const totalUnpaid = invoices
@@ -362,11 +519,12 @@ export default function PagosPage() {
                           <span>Pagado</span>
                         </span>
                         <button
-                          onClick={() => alert(`Descargando comprobante de pago: ${inv.invoiceNumber}.pdf`)}
-                          className="p-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground"
-                          title="Descargar Recibo"
+                          onClick={() => setSelectedDetailInvoice(inv)}
+                          className="p-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                          title="Ver y/o Imprimir Recibo"
                         >
-                          <Download className="w-3.5 h-3.5" />
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Recibo</span>
                         </button>
                       </div>
                     ) : inv.status === 'en_revision' ? (
@@ -375,6 +533,14 @@ export default function PagosPage() {
                           <Clock className="w-3.5 h-3.5" />
                           <span>En Revisión</span>
                         </span>
+                        <button
+                          onClick={() => setSelectedDetailInvoice(inv)}
+                          className="p-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                          title="Ver Detalle"
+                        >
+                          <FileText className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Detalle</span>
+                        </button>
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
@@ -383,10 +549,17 @@ export default function PagosPage() {
                           <span>Impago</span>
                         </span>
                         <button
-                          onClick={() => handleOpenCheckout(inv)}
-                          className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all text-xs font-bold uppercase tracking-wider shadow-sm"
+                          onClick={() => setSelectedDetailInvoice(inv)}
+                          className="p-1.5 rounded-lg border border-border hover:bg-muted text-muted-foreground cursor-pointer"
+                          title="Ver Boleta Detallada"
                         >
-                          Pagar Aportes
+                          <FileText className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleOpenCheckout(inv)}
+                          className="inline-flex items-center justify-center px-4 py-2 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 transition-all text-xs font-bold uppercase tracking-wider shadow-sm cursor-pointer"
+                        >
+                          Pagar
                         </button>
                       </div>
                     )}
@@ -487,18 +660,37 @@ export default function PagosPage() {
                 ) : (
                   /* Bank Transfer / Receipt Upload Form */
                   <form onSubmit={handleProcessTransfer} className="space-y-4">
+                    {/* Current invoice info */}
+                    <div className="bg-[#f8fafc] border border-border rounded-xl p-3.5 text-xs text-[#0f172a] space-y-1.5 shadow-sm">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground font-semibold">Boleta a Pagar:</span>
+                        <span className="font-extrabold text-primary">{checkoutInvoice.invoiceNumber}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground font-semibold">Período:</span>
+                        <span className="font-bold">{checkoutInvoice.period}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground font-semibold">Monto a Transferir:</span>
+                        <span className="font-black text-slate-900">${checkoutInvoice.amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
                     {/* ATFAR Bank info */}
                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3.5 text-xs text-emerald-950 font-semibold space-y-2">
                       <span className="text-[10px] font-extrabold text-emerald-800 uppercase block tracking-wider">Cuentas del Sindicato</span>
                       <div className="space-y-1 font-medium text-slate-700">
                         <div className="flex justify-between">
                           <span>Banco:</span>
-                          <span className="font-bold text-emerald-950">Banco Municipal</span>
+                          <span className="font-bold text-emerald-950">Banco de Santa Fe</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Nº de Cuenta:</span>
+                          <span className="font-bold text-emerald-950 font-mono">000001951907</span>
                         </div>
                         <div className="flex justify-between items-center gap-2">
                           <span>CBU:</span>
                           <div className="flex items-center gap-1 font-mono font-bold text-emerald-950">
-                            <span>0650020701000000379012</span>
+                            <span>3300000610000019519073</span>
                             <button
                               type="button"
                               onClick={handleCopyCbu}
@@ -511,7 +703,7 @@ export default function PagosPage() {
                         </div>
                         <div className="flex justify-between">
                           <span>Alias:</span>
-                          <span className="font-bold text-emerald-950">ATFAR.ROSARIO.GREMIO</span>
+                          <span className="font-bold text-emerald-950">PILA.TORNO.ZAR</span>
                         </div>
                         <div className="flex justify-between">
                           <span>CUIT:</span>
@@ -636,6 +828,135 @@ export default function PagosPage() {
 
         </div>
       </main>
+
+      {/* Detailed Invoice Modal */}
+      {selectedDetailInvoice && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn animate-duration-200">
+          <div className="bg-card border border-border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl space-y-6 p-6 sm:p-8 animate-scaleUp animate-duration-200">
+            
+            {/* Modal Header */}
+            <div className="flex items-center justify-between border-b border-border pb-4">
+              <div>
+                <h3 className="font-extrabold text-foreground text-base">Boleta de Aportes Detallada</h3>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Convenio CCT 659/13</span>
+              </div>
+              <button 
+                onClick={() => setSelectedDetailInvoice(null)}
+                className="p-1 hover:bg-muted rounded-lg text-muted-foreground transition-colors cursor-pointer"
+              >
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="space-y-5 text-xs">
+              
+              {/* Union Header Logo/Text */}
+              <div className="text-center bg-slate-50/50 border border-slate-100 rounded-2xl p-4 space-y-1">
+                <span className="text-sm font-black text-primary block tracking-wider">ATFAR</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase block">Asoc. Trabajadores de Farmacias de Rosario</span>
+                <span className="text-[9px] text-slate-400 block">Personería Gremial Nº 1391 • CUIT 30-54827379-1</span>
+              </div>
+
+              {/* Pharmacy Details */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-extrabold text-secondary uppercase block tracking-wider">Datos de la Farmacia</span>
+                <div className="bg-muted/40 rounded-xl p-3 border border-border/80 space-y-1 text-slate-700 font-semibold">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Razón Social:</span>
+                    <span className="text-foreground">{pharmacy?.razon_social || pharmacy?.nombre_fantasia || 'FARMACIA ADHERIDA'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">CUIT:</span>
+                    <span className="text-foreground">{pharmacy?.cuit || '---'}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Dirección:</span>
+                    <span className="text-foreground truncate max-w-[200px]" title={pharmacy?.address || pharmacy?.declared_addresses}>
+                      {pharmacy?.address || pharmacy?.declared_addresses || '---'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Invoice details */}
+              <div className="space-y-2">
+                <span className="text-[10px] font-extrabold text-secondary uppercase block tracking-wider">Detalle del Comprobante</span>
+                <div className="bg-muted/40 rounded-xl p-3 border border-border/80 space-y-1 text-slate-700 font-semibold">
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Número de Boleta:</span>
+                    <span className="font-mono text-primary font-bold">{selectedDetailInvoice.invoiceNumber}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Período Liquidado:</span>
+                    <span className="text-foreground">{selectedDetailInvoice.period}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Vencimiento:</span>
+                    <span className="text-foreground">{selectedDetailInvoice.dueDate}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-muted-foreground">Estado de la cuenta:</span>
+                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[9px] font-black uppercase ${
+                      selectedDetailInvoice.status === 'pagado'
+                        ? 'bg-emerald-500/10 text-emerald-600'
+                        : selectedDetailInvoice.status === 'en_revision'
+                        ? 'bg-amber-500/10 text-amber-600'
+                        : 'bg-red-500/10 text-red-600'
+                    }`}>
+                      {selectedDetailInvoice.status === 'pagado' ? 'Pagado' : selectedDetailInvoice.status === 'en_revision' ? 'En Revisión' : 'Impago'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Payment Details */}
+              {selectedDetailInvoice.status !== 'impago' && (
+                <div className="space-y-2">
+                  <span className="text-[10px] font-extrabold text-emerald-800 uppercase block tracking-wider">Información de Transferencia</span>
+                  <div className="bg-emerald-500/5 rounded-xl p-3 border border-emerald-500/10 space-y-1 text-slate-700 font-semibold">
+                    <div className="flex justify-between">
+                      <span className="text-emerald-800/80">Fecha de Pago:</span>
+                      <span className="text-emerald-950">{selectedDetailInvoice.payDate}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-emerald-800/80">Código de Transacción:</span>
+                      <span className="font-mono text-emerald-950">{selectedDetailInvoice.transactionCode || '---'}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Total Amount Box */}
+              <div className="bg-[#f8fafc] border border-border rounded-xl p-4 text-center space-y-1">
+                <span className="text-[10px] font-extrabold text-muted-foreground uppercase block tracking-wider">Total Liquidado</span>
+                <span className="text-2xl font-black text-[#0f172a] block">
+                  ${selectedDetailInvoice.amount.toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                </span>
+              </div>
+
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 border-t border-border pt-4">
+              <button
+                onClick={() => handlePrint(selectedDetailInvoice)}
+                className="flex-1 py-3 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 text-xs uppercase tracking-wider shadow-md transition-all flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
+              >
+                <Download className="w-4 h-4" />
+                Imprimir Boleta
+              </button>
+              <button
+                onClick={() => setSelectedDetailInvoice(null)}
+                className="py-3 px-5 rounded-xl border border-border bg-card font-bold hover:bg-muted/10 text-xs uppercase text-muted-foreground transition-all cursor-pointer"
+              >
+                Cerrar
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }

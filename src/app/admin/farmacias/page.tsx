@@ -99,8 +99,8 @@ export default function FarmaciasPanelPage() {
           let pStatus: 'al_dia' | 'con_deuda' | 'pendiente' = 'al_dia';
           
           if (p.registered) {
-            const hasImpago = p.payments?.some((pay: any) => pay.status === 'impago' || pay.status === 'unpaid');
-            const hasEnRevision = p.payments?.some((pay: any) => pay.status === 'en_revision' || pay.status === 'pending');
+            const hasImpago = p.payments?.some((pay: any) => pay.status === 'impago');
+            const hasEnRevision = p.payments?.some((pay: any) => pay.status === 'en_revision');
             
             if (p.has_debt || hasImpago) {
               pStatus = 'con_deuda';

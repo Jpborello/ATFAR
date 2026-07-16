@@ -63,23 +63,62 @@ export default function AdminDashboardPage() {
           .from('pharmacies')
           .select('*', { count: 'exact', head: true });
 
-        // Fetch registered pharmacies
-        const { data: regData } = await supabase
+        // Fetch all pharmacies with their payments to dynamically sync has_debt
+        const { data: allPharmacies } = await supabase
           .from('pharmacies')
-          .select('registered, has_debt')
+          .select('id, has_debt, registered, payments(status, due_date)')
           .eq('registered', true);
+
+        let activeCount = 0;
+        let debtCount = 0;
+
+        if (allPharmacies) {
+          const todayStr = new Date().toISOString().split('T')[0];
+          
+          for (const pharm of allPharmacies) {
+            let shouldHaveDebt = false;
+            const payments = (pharm.payments || []) as any[];
+            
+            if (payments.length === 0) {
+              // Newly registered pharmacy, no payments generated yet -> has debt by default
+              shouldHaveDebt = true;
+            } else {
+              // Check if there is any unpaid invoice past due date
+              const hasPastDueUnpaid = payments.some(p => 
+                (p.status === 'impago' || p.status === 'unpaid') && 
+                p.due_date < todayStr
+              );
+              shouldHaveDebt = hasPastDueUnpaid;
+            }
+
+            if (pharm.has_debt !== shouldHaveDebt) {
+              // Update in DB
+              await supabase
+                .from('pharmacies')
+                .update({ has_debt: shouldHaveDebt })
+                .eq('id', pharm.id);
+              pharm.has_debt = shouldHaveDebt; // update local object reference
+            }
+
+            if (shouldHaveDebt) {
+              debtCount++;
+            } else {
+              activeCount++;
+            }
+          }
+        }
 
         // Fetch pending payments
         const { data: pendingPayments } = await supabase
           .from('payments')
           .select('id')
-          .eq('status', 'pending');
+          .eq('status', 'en_revision');
 
         // Fetch paid payments
         const { data: paidPayments } = await supabase
           .from('payments')
           .select('amount')
-          .eq('status', 'paid');
+          .eq('status', 'pagado');
 
         // Fetch recent payments activity
         const { data: recentPayments } = await supabase
@@ -103,11 +142,9 @@ export default function AdminDashboardPage() {
 
         setTotalPharmacies(totalCount || 0);
         
-        if (regData) {
-          const active = regData.filter(p => !p.has_debt).length;
-          const debt = regData.filter(p => p.has_debt).length;
-          setActivePharmaciesCount(active);
-          setDebtPharmaciesCount(debt);
+        if (allPharmacies) {
+          setActivePharmaciesCount(activeCount);
+          setDebtPharmaciesCount(debtCount);
         }
 
         setPendingDeclarationsCount(pendingPayments?.length || 0);
@@ -123,9 +160,9 @@ export default function AdminDashboardPage() {
             id: idx + 1,
             dbId: p.id,
             pharmacy: p.pharmacies?.name || 'Farmacia Desconocida',
-            action: p.status === 'paid' 
+            action: p.status === 'pagado' 
               ? 'Declaración mensual validada por administración'
-              : (p.status === 'pending' ? `Declaración mensual presentada (${p.period || 'Período'})` : 'Pago rechazado / con deuda'),
+              : (p.status === 'en_revision' ? `Declaración mensual presentada (${p.period || 'Período'})` : 'Pago rechazado / con deuda'),
             date: new Date(p.created_at).toLocaleDateString('es-AR'),
             status: p.status,
             amount: p.amount || 0,
@@ -147,7 +184,7 @@ export default function AdminDashboardPage() {
   }, []);
 
   const handleOpenAudit = (activity: Activity) => {
-    if (activity.status === 'pending') {
+    if (activity.status === 'en_revision') {
       setSelectedActivity(activity);
       setIsAuditModalOpen(true);
     }
@@ -160,7 +197,7 @@ export default function AdminDashboardPage() {
       if (act && act.dbId) {
         const { error } = await supabase
           .from('payments')
-          .update({ status: 'paid' })
+          .update({ status: 'pagado' })
           .eq('id', act.dbId);
 
         if (error) throw error;
@@ -172,10 +209,70 @@ export default function AdminDashboardPage() {
             .eq('cuit', act.cuit);
         }
 
+        // Auto-generate the next period's payment as 'impago'
+        try {
+          const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+          const parts = act.period.split(' ');
+          if (parts.length === 2) {
+            const monthIndex = months.indexOf(parts[0]);
+            if (monthIndex !== -1) {
+              let nextPeriod = '';
+              let dueMonth = monthIndex + 2; // +1 for next month, +1 for 0-indexed month of due date
+              let dueYear = parseInt(parts[1]);
+              
+              if (monthIndex === 11) {
+                nextPeriod = `${months[0]} ${parseInt(parts[1]) + 1}`;
+              } else {
+                nextPeriod = `${months[monthIndex + 1]} ${parts[1]}`;
+              }
+              
+              if (dueMonth > 12) {
+                dueMonth = dueMonth - 12;
+                dueYear = dueYear + 1;
+              }
+              const nextDueDate = `${dueYear}-${dueMonth.toString().padStart(2, '0')}-10`;
+
+              // Get pharmacy ID
+              const { data: pharm } = await supabase
+                .from('pharmacies')
+                .select('id')
+                .eq('cuit', act.cuit)
+                .single();
+
+              if (pharm) {
+                const { data: existingNextPayment } = await supabase
+                  .from('payments')
+                  .select('id')
+                  .eq('pharmacy_id', pharm.id)
+                  .eq('period', nextPeriod)
+                  .maybeSingle();
+
+                if (!existingNextPayment) {
+                  const shortId = Math.random().toString(36).substring(2, 6).toUpperCase();
+                  const yearMonthCode = nextPeriod.includes('Junio') ? '202606' : nextPeriod.includes('Julio') ? '202607' : '202608';
+                  await supabase
+                    .from('payments')
+                    .insert({
+                      pharmacy_id: pharm.id,
+                      invoice_number: `BLT-${yearMonthCode}-${shortId}`,
+                      period: nextPeriod,
+                      amount: act.amount,
+                      status: 'impago',
+                      due_date: nextDueDate
+                    });
+                }
+              }
+            }
+          }
+        } catch (genErr) {
+          console.error("Error generating next payment:", genErr);
+        }
+
         // Recargar el estado local
-        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'paid', action: 'Declaración mensual validada por administración' } : a));
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'pagado', action: 'Declaración mensual validada por administración' } : a));
         setMonthlyRevenue(prev => prev + act.amount);
-        setActivePharmaciesCount(prev => prev + 1);
+        
+        // Decrement pending count
         setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
       }
     } catch (err) {
@@ -194,7 +291,7 @@ export default function AdminDashboardPage() {
       if (act && act.dbId) {
         const { error } = await supabase
           .from('payments')
-          .update({ status: 'unpaid' })
+          .update({ status: 'impago' })
           .eq('id', act.dbId);
 
         if (error) throw error;
@@ -206,7 +303,8 @@ export default function AdminDashboardPage() {
             .eq('cuit', act.cuit);
         }
 
-        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'unpaid', action: 'Pago rechazado por administración' } : a));
+        // Recargar el estado local
+        setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'impago', action: 'Pago rechazado por administración' } : a));
         setDebtPharmaciesCount(prev => prev + 1);
         setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
       }
@@ -366,9 +464,9 @@ export default function AdminDashboardPage() {
                 key={activity.id} 
                 onClick={() => handleOpenAudit(activity)}
                 className={`py-4 first:pt-0 last:pb-0 flex items-start justify-between gap-4 ${
-                  activity.status === 'pending' ? 'cursor-pointer hover:bg-muted/30 px-2 -mx-2 rounded-xl transition-all' : ''
+                  activity.status === 'en_revision' ? 'cursor-pointer hover:bg-muted/30 px-2 -mx-2 rounded-xl transition-all' : ''
                 }`}
-                title={activity.status === 'pending' ? 'Hacer clic para auditar comprobante' : undefined}
+                title={activity.status === 'en_revision' ? 'Hacer clic para auditar comprobante' : undefined}
               >
                 <div className="space-y-1">
                   <span className="text-xs font-bold text-foreground block">{activity.pharmacy}</span>
@@ -382,13 +480,13 @@ export default function AdminDashboardPage() {
                 <div className="text-right space-y-1 flex-shrink-0">
                   <span className="text-xs font-bold text-foreground block">${activity.amount.toLocaleString('es-AR')}</span>
                   <span className={`inline-block text-[8px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    activity.status === 'paid' 
+                    activity.status === 'pagado' 
                       ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' 
-                      : activity.status === 'pending'
+                      : activity.status === 'en_revision'
                       ? 'bg-amber-500/10 text-amber-600 dark:text-amber-400 animate-pulse'
                       : 'bg-red-500/10 text-red-600 dark:text-red-400'
                   }`}>
-                    {activity.status === 'paid' ? 'Pagado' : activity.status === 'pending' ? 'Pendiente' : 'Deuda'}
+                    {activity.status === 'pagado' ? 'Pagado' : activity.status === 'en_revision' ? 'Pendiente' : 'Deuda'}
                   </span>
                 </div>
               </div>
