@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -146,10 +147,10 @@ export default function PublicEscalasPage() {
   const [period, setPeriod] = useState<string>('july');
   const [seniority, setSeniority] = useState<number>(0);
 
-  // Synchronize period when agreement changes to avoid nested state updates in event handlers
-  useEffect(() => {
-    setPeriod(agreement === 'may2026' ? 'july' : 'may');
-  }, [agreement]);
+  const handleAgreementSelect = (val: 'may2026' | 'feb2026') => {
+    setAgreement(val);
+    setPeriod(val === 'may2026' ? 'july' : 'may');
+  };
 
   // Tab 2: Calculator States
   const [calcSalary, setCalcSalary] = useState<number>(1381087.99); // Default basic for July (Cadete)
@@ -161,7 +162,7 @@ export default function PublicEscalasPage() {
   const [paritariaMayoAdicionales, setParitariaMayoAdicionales] = useState(DEFAULT_PARITARIA_MAYO_ADICIONALES);
   const [paritariaFebrero, setParitariaFebrero] = useState(DEFAULT_PARITARIA_FEBRERO);
   const [paritariaFebreroAdicionales, setParitariaFebreroAdicionales] = useState(DEFAULT_PARITARIA_FEBRERO_ADICIONALES);
-  const [historicalDocs, setHistoricalDocs] = useState<any[]>([]);
+  const [historicalDocs, setHistoricalDocs] = useState<{ id: string; title?: string; name?: string; period: string; file_url: string }[]>([]);
 
   useEffect(() => {
     async function loadScales() {
@@ -218,10 +219,10 @@ export default function PublicEscalasPage() {
             may: additionals.filter(s => s.agreement === 'feb2026' && s.period === 'may').map(s => ({ concept: s.category, basic: Number(s.basic), noRem: Number(s.no_rem), description: s.description })),
           };
 
-          if (newMayo.may.length > 0) setParitariaMayo(newMayo as any);
-          if (newMayoAdicionales.may.length > 0) setParitariaMayoAdicionales(newMayoAdicionales as any);
-          if (newFebrero.feb.length > 0) setParitariaFebrero(newFebrero as any);
-          if (newFebreroAdicionales.feb.length > 0) setParitariaFebreroAdicionales(newFebreroAdicionales as any);
+          if (newMayo.may.length > 0) setParitariaMayo(newMayo as typeof paritariaMayo);
+          if (newMayoAdicionales.may.length > 0) setParitariaMayoAdicionales(newMayoAdicionales as typeof paritariaMayoAdicionales);
+          if (newFebrero.feb.length > 0) setParitariaFebrero(newFebrero as typeof paritariaFebrero);
+          if (newFebreroAdicionales.feb.length > 0) setParitariaFebreroAdicionales(newFebreroAdicionales as typeof paritariaFebreroAdicionales);
         }
       } catch (err) {
         console.error("Error loading scales from Supabase:", err);
@@ -250,18 +251,9 @@ export default function PublicEscalasPage() {
     }
   };
 
-  const calculateInteractiveTotal = (base: number) => {
-    const seniorityBonus = base * (seniority * 0.01);
-    const presentismo = base * 0.10;
-    return base + seniorityBonus + presentismo;
-  };
-
   const activeGridData = getActiveGrid();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const activeAdicionalesData = getActiveAdicionales();
-
-  const filteredScales = activeGridData.filter((row) =>
-    row.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   // Calculator outputs
   const valNormalDay = calcSalary / 30;

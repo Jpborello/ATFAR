@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -12,19 +13,15 @@ import {
   AlertTriangle,
   ArrowRight,
   MapPin,
-  Calendar,
-  ShieldCheck,
   Plus,
   Trash2,
   Loader2,
   X,
-  Phone,
-  Mail,
-  FileCheck,
-  Briefcase
+  Briefcase,
+  Upload
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
+import { calculateSeniority, getCurrentCategory, getReceiptStatus } from '@/lib/dateUtils';
 
 interface Employee {
   id: string;
@@ -34,6 +31,8 @@ interface Employee {
   entryDate: string;
   active: boolean;
   isAffiliate: boolean;
+  receiptUrl?: string;
+  receiptDate?: string;
 }
 
 export default function FarmaciaDashboard() {
@@ -53,6 +52,13 @@ export default function FarmaciaDashboard() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
   const [profileTab, setProfileTab] = useState<'empresa' | 'contactos'>('empresa');
+
+  // Receipt Upload States
+  const [newEmpReceiptFile, setNewEmpReceiptFile] = useState<File | null>(null);
+  const [uploadingReceipt, setUploadingReceipt] = useState(false);
+  const [selectedEmpForReceipt, setSelectedEmpForReceipt] = useState<Employee | null>(null);
+  const [isUpdateReceiptModalOpen, setIsUpdateReceiptModalOpen] = useState(false);
+  const [updateReceiptFile, setUpdateReceiptFile] = useState<File | null>(null);
 
   // Detailed profile state
   const [profileData, setProfileData] = useState({
@@ -90,7 +96,7 @@ export default function FarmaciaDashboard() {
     { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true, isAffiliate: false },
   ]);
 
-  const [announcements, setAnnouncements] = useState<any[]>([
+  const [announcements, setAnnouncements] = useState<{ id: string; title: string; summary: string; date: string }[]>([
     { id: '1', title: 'Nueva Homologación CCT 659/13', summary: 'Se informa a las farmacias la escala de Julio 2026 vigente para liquidaciones.', date: '25 Jun 2026' }
   ]);
 
@@ -224,7 +230,7 @@ export default function FarmaciaDashboard() {
           hrAltEmail: pharmacy.hr_alt_email || '',
           hrName: pharmacy.hr_name || '',
           hrRole: pharmacy.hr_role || ''
-        } as any);
+        });
 
         // Fetch registered employees
         const { data: list } = await supabase
@@ -240,7 +246,9 @@ export default function FarmaciaDashboard() {
             category: emp.category,
             entryDate: emp.entry_date,
             active: emp.active,
-            isAffiliate: !!emp.is_affiliate
+            isAffiliate: !!emp.is_affiliate,
+            receiptUrl: emp.receipt_url,
+            receiptDate: emp.receipt_date
           })));
         } else {
           setEmployees([]);
@@ -273,7 +281,7 @@ export default function FarmaciaDashboard() {
     window.location.href = '/';
   };
 
-  const handleProfileFieldChange = (field: string, value: any) => {
+  const handleProfileFieldChange = (field: string, value: string | number) => {
     setProfileData(prev => ({
       ...prev,
       [field]: value
@@ -335,58 +343,153 @@ export default function FarmaciaDashboard() {
       return;
     }
 
+    setUploadingReceipt(true);
+    let uploadedReceiptUrl = '';
+    const nowIso = new Date().toISOString();
+
     const isConfigured = 
       process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
       !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-    let newId = Math.random().toString();
+    try {
+      if (isConfigured && newEmpReceiptFile) {
+        const ext = newEmpReceiptFile.name.split('.').pop();
+        const filePath = `receipts/emp_${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('receipts')
+          .upload(filePath, newEmpReceiptFile);
 
-    if (isConfigured && pharmacyId) {
-      const { data, error } = await supabase
-        .from('employees')
-        .insert({
-          pharmacy_id: pharmacyId,
-          full_name: newEmpName,
+        if (!uploadErr) {
+          const { data: { publicUrl } } = supabase.storage
+            .from('receipts')
+            .getPublicUrl(filePath);
+          uploadedReceiptUrl = publicUrl;
+        }
+      }
+
+      let newId = Math.random().toString();
+
+      if (isConfigured && pharmacyId) {
+        const { data, error } = await supabase
+          .from('employees')
+          .insert({
+            pharmacy_id: pharmacyId,
+            full_name: newEmpName,
+            cuil: newEmpCuil,
+            category: newEmpCategory,
+            entry_date: newEmpEntryDate,
+            weekly_hours: newEmpWeeklyHours,
+            active: true,
+            is_affiliate: newEmpIsAffiliate,
+            receipt_url: uploadedReceiptUrl || null,
+            receipt_date: uploadedReceiptUrl ? nowIso : null
+          })
+          .select()
+          .single();
+
+        if (error) {
+          alert('Error al guardar empleado: ' + error.message);
+          return;
+        }
+        if (data) {
+          newId = data.id;
+        }
+      }
+
+      setEmployees(prev => [
+        ...prev,
+        {
+          id: newId,
+          fullName: newEmpName,
           cuil: newEmpCuil,
           category: newEmpCategory,
-          entry_date: newEmpEntryDate,
-          weekly_hours: newEmpWeeklyHours,
+          entryDate: newEmpEntryDate,
           active: true,
-          is_affiliate: newEmpIsAffiliate
-        })
-        .select()
-        .single();
+          isAffiliate: newEmpIsAffiliate,
+          receiptUrl: uploadedReceiptUrl || undefined,
+          receiptDate: uploadedReceiptUrl ? nowIso : undefined
+        }
+      ]);
 
-      if (error) {
-        alert('Error al guardar empleado: ' + error.message);
-        return;
-      }
-      if (data) {
-        newId = data.id;
-      }
+      // reset fields
+      setNewEmpName('');
+      setNewEmpCuil('');
+      setNewEmpCategory('Personal en Gestión de Farmacia');
+      setNewEmpEntryDate('');
+      setNewEmpWeeklyHours(44);
+      setNewEmpIsAffiliate(false);
+      setNewEmpReceiptFile(null);
+      setIsEmployeeModalOpen(false);
+    } catch (err: unknown) {
+      console.error(err);
+      alert('Ocurrió un error al procesar el recibo de sueldo.');
+    } finally {
+      setUploadingReceipt(false);
+    }
+  };
+
+  const handleUpdateSingleReceipt = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedEmpForReceipt || !updateReceiptFile) {
+      alert('Por favor selecciona un archivo de recibo válido.');
+      return;
     }
 
-    setEmployees(prev => [
-      ...prev,
-      {
-        id: newId,
-        fullName: newEmpName,
-        cuil: newEmpCuil,
-        category: newEmpCategory,
-        entryDate: newEmpEntryDate,
-        active: true,
-        isAffiliate: newEmpIsAffiliate
-      }
-    ]);
+    setUploadingReceipt(true);
+    const nowIso = new Date().toISOString();
 
-    // reset fields
-    setNewEmpName('');
-    setNewEmpCuil('');
-    setNewEmpCategory('Personal en Gestión de Farmacia');
-    setNewEmpEntryDate('');
-    setNewEmpWeeklyHours(44);
-    setNewEmpIsAffiliate(false);
-    setIsEmployeeModalOpen(false);
+    try {
+      const isConfigured = 
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      let publicUrl = '';
+      if (isConfigured) {
+        const ext = updateReceiptFile.name.split('.').pop();
+        const filePath = `receipts/emp_${selectedEmpForReceipt.id}_${Date.now()}.${ext}`;
+        const { error: uploadErr } = await supabase.storage
+          .from('receipts')
+          .upload(filePath, updateReceiptFile);
+
+        if (uploadErr) throw uploadErr;
+
+        const { data: pubData } = supabase.storage
+          .from('receipts')
+          .getPublicUrl(filePath);
+        publicUrl = pubData.publicUrl;
+
+        const { error: updateErr } = await supabase
+          .from('employees')
+          .update({
+            receipt_url: publicUrl,
+            receipt_date: nowIso
+          })
+          .eq('id', selectedEmpForReceipt.id);
+
+        if (updateErr) throw updateErr;
+      }
+
+      setEmployees(prev => prev.map(emp => {
+        if (emp.id === selectedEmpForReceipt.id) {
+          return {
+            ...emp,
+            receiptUrl: publicUrl || emp.receiptUrl || 'simulated_receipt.pdf',
+            receiptDate: nowIso
+          };
+        }
+        return emp;
+      }));
+
+      alert('¡Recibo de sueldo actualizado exitosamente!');
+      setIsUpdateReceiptModalOpen(false);
+      setSelectedEmpForReceipt(null);
+      setUpdateReceiptFile(null);
+    } catch (err: unknown) {
+      console.error(err);
+      alert('Ocurrió un error al subir el recibo de sueldo.');
+    } finally {
+      setUploadingReceipt(false);
+    }
   };
 
   const handleDeleteEmployee = async (id: string) => {
@@ -604,6 +707,7 @@ export default function FarmaciaDashboard() {
                     <th className="py-3 px-4">CUIL</th>
                     <th className="py-3 px-4">Categoría Profesional</th>
                     <th className="py-3 px-4 text-center">Afiliado</th>
+                    <th className="py-3 px-4 text-center">Recibo Sueldo (6m)</th>
                     <th className="py-3 px-4 text-center">Ingreso</th>
                     <th className="py-3 px-4 text-center">Antigüedad</th>
                     <th className="py-3 px-4 text-center">Acciones</th>
@@ -612,6 +716,7 @@ export default function FarmaciaDashboard() {
                 <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                   {employees.map((emp) => {
                     const catInfo = getCurrentCategory(emp.category, emp.entryDate);
+                    const receiptStatus = getReceiptStatus(emp.receiptDate);
                     return (
                       <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-4 font-bold text-[#0f172a]">{emp.fullName}</td>
@@ -637,16 +742,50 @@ export default function FarmaciaDashboard() {
                             </span>
                           )}
                         </td>
+                        <td className="py-3.5 px-4 text-center">
+                          <div className="flex flex-col items-center gap-1">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${
+                              receiptStatus.valid 
+                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+                                : 'bg-red-500/10 text-red-600 border-red-500/20'
+                            }`}>
+                              {receiptStatus.label}
+                            </span>
+                            {emp.receiptUrl && (
+                              <a
+                                href={emp.receiptUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] text-primary underline hover:opacity-80 inline-flex items-center gap-0.5 font-bold"
+                              >
+                                <FileText className="w-3 h-3" />
+                                <span>Ver PDF</span>
+                              </a>
+                            )}
+                          </div>
+                        </td>
                         <td className="py-3.5 px-4 text-center text-slate-500">{emp.entryDate}</td>
                         <td className="py-3.5 px-4 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>
                         <td className="py-3.5 px-4 text-center">
-                          <button
-                            onClick={() => handleDeleteEmployee(emp.id)}
-                            className="p-1.5 rounded-lg border border-border hover:bg-red-50 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer shadow-sm"
-                            title="Dar de Baja"
-                          >
-                            <Trash2 className="w-3.5 h-3.5" />
-                          </button>
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                setSelectedEmpForReceipt(emp);
+                                setIsUpdateReceiptModalOpen(true);
+                              }}
+                              className="p-1.5 rounded-lg border border-border hover:bg-secondary/10 text-slate-600 hover:text-secondary hover:border-secondary/30 transition-colors bg-white cursor-pointer shadow-sm"
+                              title="Cargar / Actualizar Recibo de Sueldo (Requerido cada 6 meses)"
+                            >
+                              <Upload className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteEmployee(emp.id)}
+                              className="p-1.5 rounded-lg border border-border hover:bg-red-50 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer shadow-sm"
+                              title="Dar de Baja"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -1055,6 +1194,21 @@ export default function FarmaciaDashboard() {
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">Rango: 1 hs (mínimo) a 44 hs (jornada completa)</span>
               </div>
 
+              <div>
+                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
+                  Recibo de Sueldo (PDF / Imagen) *
+                </label>
+                <input 
+                  type="file"
+                  accept=".pdf,image/*"
+                  onChange={(e) => setNewEmpReceiptFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary/15 file:text-secondary hover:file:bg-secondary/20 cursor-pointer"
+                />
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">
+                  Requerido al dar de alta y con renovación obligatoria cada 6 meses.
+                </span>
+              </div>
+
               <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
                 <button
                   type="button"
@@ -1065,9 +1219,73 @@ export default function FarmaciaDashboard() {
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
+                  disabled={uploadingReceipt}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50"
                 >
-                  Registrar Empleado
+                  {uploadingReceipt ? 'Guardando...' : 'Registrar Empleado'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Update Employee Salary Receipt Modal */}
+      {isUpdateReceiptModalOpen && selectedEmpForReceipt && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-premium-lg relative animate-scaleIn space-y-6">
+            <button
+              onClick={() => {
+                setIsUpdateReceiptModalOpen(false);
+                setSelectedEmpForReceipt(null);
+              }}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="space-y-1">
+              <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2">
+                <Upload className="w-5 h-5 text-secondary" />
+                <span>Actualizar Recibo de Sueldo</span>
+              </h3>
+              <p className="text-xs text-slate-500 font-semibold">
+                Empleado: <strong className="text-slate-800">{selectedEmpForReceipt.fullName}</strong> ({selectedEmpForReceipt.cuil})
+              </p>
+            </div>
+
+            <form onSubmit={handleUpdateSingleReceipt} className="space-y-5">
+              <div className="p-4 bg-slate-50 border border-border rounded-2xl space-y-2">
+                <span className="text-xs font-bold text-slate-700 block">Adjuntar nuevo recibo (PDF o Foto):</span>
+                <input 
+                  type="file" 
+                  accept=".pdf,image/*"
+                  required
+                  onChange={(e) => setUpdateReceiptFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
+                />
+                <span className="text-[10px] text-slate-500 font-semibold block leading-relaxed">
+                  Al subir este archivo se actualizará la fecha del recibo a la fecha actual y se habilitará la vigencia por los próximos 6 meses.
+                </span>
+              </div>
+
+              <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsUpdateReceiptModalOpen(false);
+                    setSelectedEmpForReceipt(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploadingReceipt}
+                  className="px-5 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider hover:bg-secondary/95 transition-all shadow-md cursor-pointer disabled:opacity-50"
+                >
+                  {uploadingReceipt ? 'Subiendo...' : 'Guardar Recibo'}
                 </button>
               </div>
             </form>
@@ -1124,7 +1342,7 @@ export default function FarmaciaDashboard() {
                   </div>
                   <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 1: Mi Farmacia y Ubicación</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Antes que nada, verificá los datos de tu sucursal en el mapa de ATFAR. Hacé clic en "Ver / Editar Perfil" en el panel principal para completar tu razón social, CUIT y datos de contacto actualizados.
+                    Antes que nada, verificá los datos de tu sucursal en el mapa de ATFAR. Hacé clic en &quot;Ver / Editar Perfil&quot; en el panel principal para completar tu razón social, CUIT y datos de contacto actualizados.
                   </p>
                 </div>
               )}
@@ -1154,7 +1372,7 @@ export default function FarmaciaDashboard() {
                     Todos los meses debés generar tu Declaración Jurada, descargar la boleta de pago y realizar el depósito o transferencia bancaria.
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Una vez realizado el pago, recordá subir el comprobante de transferencia desde la sección de "Declaraciones y Pagos" para que el sindicato concilie y apruebe tu estado de cuenta.
+                    Una vez realizado el pago, recordá subir el comprobante de transferencia desde la sección de &quot;Declaraciones y Pagos&quot; para que el sindicato concilie y apruebe tu estado de cuenta.
                   </p>
                 </div>
               )}

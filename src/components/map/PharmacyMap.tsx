@@ -31,6 +31,14 @@ export default function PharmacyMap({
   const leafletMap = useRef<L.Map | null>(null);
   const markersRef = useRef<{ [key: string]: L.Marker }>({});
 
+  const onMapClickRef = useRef(onMapClick);
+  const onSelectPharmacyRef = useRef(onSelectPharmacy);
+
+  useEffect(() => {
+    onMapClickRef.current = onMapClick;
+    onSelectPharmacyRef.current = onSelectPharmacy;
+  }, [onMapClick, onSelectPharmacy]);
+
   useEffect(() => {
     if (!mapRef.current) return;
 
@@ -50,7 +58,7 @@ export default function PharmacyMap({
 
     // Map click event
     const handleMapClick = (e: L.LeafletMouseEvent) => {
-      onMapClick(e.latlng.lat, e.latlng.lng);
+      onMapClickRef.current(e.latlng.lat, e.latlng.lng);
     };
 
     mapInstance.on('click', handleMapClick);
@@ -128,7 +136,7 @@ export default function PharmacyMap({
       `);
 
       marker.addEventListener('click', () => {
-        onSelectPharmacy(pharmacy.id);
+        onSelectPharmacyRef.current(pharmacy.id);
       });
 
       markersRef.current[pharmacy.id] = marker;

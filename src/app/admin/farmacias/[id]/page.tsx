@@ -13,16 +13,14 @@ import {
   CheckCircle2, 
   XCircle, 
   Clock, 
-  Calendar,
   CreditCard,
   Download,
-  ShieldCheck,
   Users,
-  Briefcase,
   Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
+import { Payment } from '@/types';
 
 interface PharmacyDetail {
   razonSocial: string;
@@ -137,12 +135,12 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           .order('created_at', { ascending: false });
 
         const mappedPayments = payList && payList.length > 0
-          ? payList.map((p: any) => ({
-              invoice: p.invoice_number,
-              period: p.period,
-              amount: Number(p.amount),
-              status: p.status as 'pagado' | 'impago' | 'en_revision',
-              date: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : new Date(p.due_date).toLocaleDateString('es-AR'),
+          ? payList.map((p: Payment) => ({
+              invoice: p.invoice_number || 'N/A',
+              period: p.period || 'Periodo',
+              amount: Number(p.amount || 0),
+              status: (p.status || 'impago') as 'pagado' | 'impago' | 'en_revision',
+              date: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : p.due_date ? new Date(p.due_date).toLocaleDateString('es-AR') : 'Sin fecha',
               receiptUrl: p.receipt_url || null
             }))
           : [

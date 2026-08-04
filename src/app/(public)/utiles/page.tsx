@@ -138,9 +138,10 @@ export default function UtilesPage() {
       setAffiliateData({ fullName: '', cuil: '', email: '', phone: '' });
       setChildrenList([{ fullName: '', age: '', schoolLevel: '' }]);
       setReceiptFile(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      setErrorMessage(error.message || 'Error al procesar la solicitud.');
+      const msg = error instanceof Error ? error.message : 'Error al procesar la solicitud.';
+      setErrorMessage(msg);
       setStatus('error');
     } finally {
       setLoading(false);
@@ -356,7 +357,7 @@ export default function UtilesPage() {
                         <select
                           required
                           value={child.schoolLevel}
-                          onChange={(e) => handleChildChange(index, 'schoolLevel', e.target.value as any)}
+                          onChange={(e) => handleChildChange(index, 'schoolLevel', e.target.value as 'preescolar' | 'primaria' | 'secundaria')}
                           className="w-full px-4 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-teal-500/50 text-sm transition-all"
                         >
                           <option value="">Seleccionar...</option>

@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  FileText, 
   ArrowLeft, 
   Download, 
   Loader2, 

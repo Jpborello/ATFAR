@@ -4,9 +4,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { 
   FileText, 
-  Plus, 
-  CheckCircle2, 
-  TrendingUp, 
   DollarSign, 
   Upload,
   BookOpen,
@@ -14,15 +11,21 @@ import {
   Trash2
 } from 'lucide-react';
 
-interface CategorySalary {
+interface SalaryScaleDoc {
   id: string;
   name: string;
-  basicSalary: number;
+  title?: string;
+  period: string;
+  file_url: string;
+  active?: boolean;
+  is_active?: boolean;
+  created_at: string;
 }
 
 export default function AdminEscalasPage() {
   const [agreement, setAgreement] = useState<'may2026' | 'feb2026'>('may2026');
   const [period, setPeriod] = useState<string>('july');
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [scales, setScales] = useState<any[]>([]);
   const [loadingScales, setLoadingScales] = useState(true);
 
@@ -38,14 +41,13 @@ export default function AdminEscalasPage() {
   const [newsSummary, setNewsSummary] = useState('');
   const [newsVisibility, setNewsVisibility] = useState<'public' | 'pharmacy'>('public');
   const [newsImageUrl, setNewsImageUrl] = useState('');
-  const [publishedNewsCount, setPublishedNewsCount] = useState(3);
 
   // File upload states
   const [pdfName, setPdfName] = useState('');
   const [pdfPeriod, setPdfPeriod] = useState('');
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfIsActive, setPdfIsActive] = useState<boolean>(true);
-  const [uploadedDocs, setUploadedDocs] = useState<any[]>([]);
+  const [uploadedDocs, setUploadedDocs] = useState<SalaryScaleDoc[]>([]);
   const [uploading, setUploading] = useState(false);
 
   const loadUploadedDocs = async () => {
@@ -70,7 +72,10 @@ export default function AdminEscalasPage() {
   };
 
   useEffect(() => {
-    loadUploadedDocs();
+    async function initDocs() {
+      await loadUploadedDocs();
+    }
+    initDocs();
   }, []);
 
   useEffect(() => {
@@ -155,15 +160,15 @@ export default function AdminEscalasPage() {
         if (error) throw error;
       }
 
-      setPublishedNewsCount((prev) => prev + 1);
       setNewsTitle('');
       setNewsSummary('');
       setNewsContent('');
       setNewsImageUrl('');
       setNewsVisibility('public');
       alert('Noticia publicada con éxito en el sistema.');
-    } catch (err: any) {
-      alert(err.message || 'Error al publicar el comunicado.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al publicar el comunicado.';
+      alert(msg);
     }
   };
 
@@ -237,8 +242,9 @@ export default function AdminEscalasPage() {
       setPdfIsActive(true);
       await loadUploadedDocs();
       alert('Escala salarial cargada y publicada exitosamente.');
-    } catch (err: any) {
-      alert(err.message || 'Error al subir la escala.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al subir la escala.';
+      alert(msg);
     } finally {
       setUploading(false);
     }
@@ -337,7 +343,7 @@ export default function AdminEscalasPage() {
             <div className="flex gap-2">
               <select
                 value={agreement}
-                onChange={(e) => handleAgreementChange(e.target.value as any)}
+                onChange={(e) => handleAgreementChange(e.target.value as 'may2026' | 'feb2026')}
                 className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground"
               >
                 <option value="may2026">Acuerdo Mayo 2026</option>
@@ -524,7 +530,7 @@ export default function AdminEscalasPage() {
                 <label className="text-xs font-semibold text-muted-foreground">Visibilidad / Destino</label>
                 <select
                   value={newsVisibility}
-                  onChange={(e) => setNewsVisibility(e.target.value as any)}
+                  onChange={(e) => setNewsVisibility(e.target.value as 'public' | 'pharmacy')}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all text-foreground font-bold"
                 >
                   <option value="public">Público (Web y Noticias)</option>
@@ -678,7 +684,7 @@ export default function AdminEscalasPage() {
                     </td>
                     <td className="py-3 px-4 text-center">
                       <button
-                        onClick={() => handleToggleActive(doc.id, doc.is_active)}
+                        onClick={() => handleToggleActive(doc.id, !!(doc.is_active ?? doc.active))}
                         className={`inline-flex px-2 py-1 rounded text-[9px] font-black uppercase cursor-pointer hover:opacity-90 transition-all ${
                           doc.is_active
                             ? 'bg-emerald-500/15 text-emerald-600 border border-emerald-500/30'

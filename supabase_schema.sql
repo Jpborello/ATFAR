@@ -47,6 +47,8 @@ CREATE TABLE IF NOT EXISTS public.employees (
     entry_date DATE, -- Modified to support registration without initial entry_date
     weekly_hours INTEGER DEFAULT 44 NOT NULL,
     active BOOLEAN DEFAULT true NOT NULL,
+    receipt_url TEXT,
+    receipt_date TIMESTAMP WITH TIME ZONE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 

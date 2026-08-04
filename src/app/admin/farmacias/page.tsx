@@ -4,17 +4,10 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { 
-  Building2, 
   Search, 
-  Plus, 
-  MapPin, 
   Map, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle,
   Eye,
   Trash2,
-  ChevronDown,
   ArrowUpDown,
   FileSpreadsheet,
   ChevronLeft,
@@ -50,6 +43,19 @@ interface Pharmacy {
   lng: number;
 }
 
+interface DbPharmacyRaw {
+  id: string;
+  name: string;
+  cuit?: string;
+  address?: string;
+  latitude?: number;
+  longitude?: number;
+  registered?: boolean;
+  has_debt?: boolean;
+  profiles?: { full_name?: string } | { full_name?: string }[] | null;
+  payments?: { status?: string }[] | null;
+}
+
 export default function FarmaciasPanelPage() {
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +63,7 @@ export default function FarmaciasPanelPage() {
   useEffect(() => {
     async function fetchPharmacies() {
       try {
-        let allPharmacies: any[] = [];
+        let allPharmacies: DbPharmacyRaw[] = [];
         let from = 0;
         let to = 999;
         let hasMore = true;
@@ -83,7 +89,7 @@ export default function FarmaciasPanelPage() {
           if (error) throw error;
 
           if (data && data.length > 0) {
-            allPharmacies = [...allPharmacies, ...data];
+            allPharmacies = [...allPharmacies, ...(data as unknown as DbPharmacyRaw[])];
             from += 1000;
             to += 1000;
             if (data.length < 1000) {
@@ -94,13 +100,12 @@ export default function FarmaciasPanelPage() {
           }
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const mapped = allPharmacies.map((p: any) => {
+        const mapped = allPharmacies.map((p) => {
           let pStatus: 'al_dia' | 'con_deuda' | 'pendiente' = 'al_dia';
           
           if (p.registered) {
-            const hasImpago = p.payments?.some((pay: any) => pay.status === 'impago');
-            const hasEnRevision = p.payments?.some((pay: any) => pay.status === 'en_revision');
+            const hasImpago = p.payments?.some(pay => pay.status === 'impago');
+            const hasEnRevision = p.payments?.some(pay => pay.status === 'en_revision');
             
             if (p.has_debt || hasImpago) {
               pStatus = 'con_deuda';
@@ -113,13 +118,15 @@ export default function FarmaciasPanelPage() {
             pStatus = 'pendiente'; // For unregistered
           }
 
+          const respName = Array.isArray(p.profiles) ? p.profiles[0]?.full_name : p.profiles?.full_name;
+
           return {
             id: p.id,
             razonSocial: p.name,
-            cuit: p.cuit,
-            address: p.address,
+            cuit: p.cuit || 'Sin CUIT',
+            address: p.address || 'Sin Dirección',
             city: 'Rosario',
-            responsible: p.profiles?.full_name || 'Sin Responsable',
+            responsible: respName || 'Sin Responsable',
             employeeCount: 0,
             status: p.registered ? ('activa' as const) : ('inactiva' as const),
             lastDeclaration: '-',
@@ -189,6 +196,14 @@ export default function FarmaciasPanelPage() {
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

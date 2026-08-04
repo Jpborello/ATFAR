@@ -3,13 +3,11 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { 
-  User, 
   GraduationCap, 
   FileText, 
   LogOut, 
   CheckCircle2, 
   Clock, 
-  CreditCard,
   QrCode,
   ArrowRight,
   Loader2,
@@ -32,7 +30,7 @@ export default function EmpleadoPortalPage() {
   const [affiliateNumber, setAffiliateNumber] = useState('...');
   const [pharmacyName, setPharmacyName] = useState('Farmacia del Sol');
 
-  const [requests, setRequests] = useState<BenefitRequest[]>([
+  const [requests] = useState<BenefitRequest[]>([
     { id: '1', type: 'Entrega de Útiles Escolares 2026', date: '2026-06-25', status: 'approved' },
     { id: '2', type: 'Subsidio por Nacimiento', date: '2025-10-14', status: 'approved' },
   ]);

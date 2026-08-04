@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Briefcase, Upload, Send, CheckCircle, AlertCircle, FileText } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { cctCategories } from '@/lib/dateUtils';
 
 export default function BolsaPage() {
   const [formData, setFormData] = useState({
@@ -69,7 +70,7 @@ export default function BolsaPage() {
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
       const filePath = `public/${fileName}`;
 
-      const { error: uploadError, data: uploadData } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('cvs')
         .upload(filePath, cvFile);
 
@@ -97,9 +98,10 @@ export default function BolsaPage() {
       setStatus('success');
       setFormData({ fullName: '', email: '', phone: '', message: '', position: 'Personal en Gestión de Farmacia' });
       setCvFile(null);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      setErrorMessage(error.message || 'Ocurrió un error inesperado al enviar la solicitud.');
+      const message = error instanceof Error ? error.message : 'Ocurrió un error inesperado al enviar la solicitud.';
+      setErrorMessage(message);
       setStatus('error');
     } finally {
       setLoading(false);
@@ -213,13 +215,11 @@ export default function BolsaPage() {
                   onChange={(e) => setFormData(prev => ({ ...prev, position: e.target.value }))}
                   className="w-full px-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all font-semibold text-foreground"
                 >
-                  <option value="Cadetes">Cadetes</option>
-                  <option value="Aprendiz Ayudante">Aprendiz Ayudante</option>
-                  <option value="Personal Auxiliar Interno y Externo">Personal Auxiliar Interno y Externo</option>
-                  <option value="Personal con Asignación Específica">Personal con Asignación Específica</option>
-                  <option value="Ayudante en Gestión de Farmacia">Ayudante en Gestión de Farmacia</option>
-                  <option value="Personal en Gestión de Farmacia">Personal en Gestión de Farmacia</option>
-                  <option value="Farmacéutico">Farmacéutico</option>
+                  {cctCategories.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
                   <option value="Otros / Administrativo">Otros / Administrativo</option>
                 </select>
               </div>

@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, User, ArrowRight, BookOpen, Sparkles } from 'lucide-react';
+import { Calendar, User, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface NewsItem {
@@ -74,10 +75,10 @@ export default function NoticiasPage() {
         if (error) throw error;
 
         if (data && data.length > 0) {
-          setNews(data.map((item: any) => ({
+          setNews(data.map((item: { id: string; title: string; category: string; created_at: string; summary: string; image_url?: string }) => ({
             id: item.id,
             title: item.title,
-            category: item.category as any,
+            category: (item.category || 'Gremiales') as NewsItem['category'],
             date: new Date(item.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short', year: 'numeric' }),
             author: 'Gremio ATFAR',
             summary: item.summary,

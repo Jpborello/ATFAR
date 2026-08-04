@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -5,13 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LogOut, Shield, MapPin, ClipboardList, User, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  role: 'admin' | 'pharmacy_owner' | 'employee' | null;
-  full_name: string | null;
-}
+import { UserProfile } from '@/types';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -97,7 +92,9 @@ export default function Navbar() {
 
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-border shadow-premium flex flex-col"
+      className={`fixed top-0 left-0 right-0 z-50 bg-card border-b border-border transition-shadow flex flex-col ${
+        isScrolled ? 'shadow-premium-lg bg-card/95 backdrop-blur-md' : 'shadow-premium'
+      }`}
     >
       {/* Top Banner Notice */}
       <div className="bg-primary text-primary-foreground py-2 text-center text-[10px] sm:text-xs font-bold px-4 flex items-center justify-center gap-1.5 border-b border-white/5 font-sans">

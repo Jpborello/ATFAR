@@ -14,25 +14,7 @@ import {
   ExternalLink
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-
-interface BenefitRequest {
-  id: string;
-  benefit_type: string;
-  status: 'pending' | 'approved' | 'rejected';
-  attachment_url: string;
-  metadata: {
-    affiliate_name: string;
-    affiliate_cuil: string;
-    affiliate_email: string;
-    affiliate_phone: string;
-    children: Array<{
-      fullName: string;
-      age: string;
-      schoolLevel: string;
-    }>;
-  };
-  created_at: string;
-}
+import { BenefitRequest } from '@/types';
 
 export default function AdminUtilesPage() {
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
@@ -276,7 +258,7 @@ export default function AdminUtilesPage() {
                     </td>
                     <td className="py-4.5 px-6">
                       <span className="text-muted-foreground font-sans">
-                        {new Date(req.created_at).toLocaleDateString('es-AR')}
+                        {req.created_at ? new Date(req.created_at).toLocaleDateString('es-AR') : '-'}
                       </span>
                     </td>
                     <td className="py-4.5 px-6">
@@ -303,7 +285,7 @@ export default function AdminUtilesPage() {
                           <Eye className="w-3.5 h-3.5" />
                         </button>
                         <button
-                          onClick={() => handleDelete(req.id, req.attachment_url)}
+                          onClick={() => handleDelete(req.id, req.attachment_url || '')}
                           disabled={actionLoading === req.id}
                           className="p-1.5 rounded-lg border border-border text-red-500 hover:bg-red-500/10 hover:border-red-500/20 transition-all"
                           title="Eliminar solicitud"
@@ -328,7 +310,7 @@ export default function AdminUtilesPage() {
               <div>
                 <h3 className="text-base font-extrabold text-foreground tracking-tight">Detalle de Solicitud</h3>
                 <p className="text-[10px] text-muted-foreground font-semibold">
-                  Presentada el {new Date(selectedRequest.created_at).toLocaleDateString('es-AR')} a las {new Date(selectedRequest.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}
+                  Presentada {selectedRequest.created_at ? `el ${new Date(selectedRequest.created_at).toLocaleDateString('es-AR')} a las ${new Date(selectedRequest.created_at).toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' })}` : ''}
                 </p>
               </div>
               <button

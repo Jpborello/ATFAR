@@ -10,14 +10,12 @@ import {
   XCircle, 
   TrendingUp, 
   Clock, 
-  ArrowUpRight,
   ArrowRight,
   ShieldCheck,
   DollarSign,
   X,
   FileText,
-  AlertCircle,
-  Check
+  AlertCircle
 } from 'lucide-react';
 
 interface Activity {
@@ -77,7 +75,7 @@ export default function AdminDashboardPage() {
           
           for (const pharm of allPharmacies) {
             let shouldHaveDebt = false;
-            const payments = (pharm.payments || []) as any[];
+            const payments = (pharm.payments || []) as { status?: string; due_date?: string }[];
             
             if (payments.length === 0) {
               // Newly registered pharmacy, no payments generated yet -> has debt by default
@@ -86,7 +84,7 @@ export default function AdminDashboardPage() {
               // Check if there is any unpaid invoice past due date
               const hasPastDueUnpaid = payments.some(p => 
                 (p.status === 'impago' || p.status === 'unpaid') && 
-                p.due_date < todayStr
+                !!p.due_date && p.due_date < todayStr
               );
               shouldHaveDebt = hasPastDueUnpaid;
             }

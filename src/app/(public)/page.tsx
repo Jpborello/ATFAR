@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,7 +8,6 @@ import {
   FileText, 
   Users, 
   ShieldCheck, 
-  Building, 
   Calendar, 
   HeartHandshake, 
   GraduationCap, 
@@ -15,13 +15,13 @@ import {
   Sparkles,
   ChevronRight,
   TrendingUp,
-  MapPin,
   ChevronLeft
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeScaleSlide, setActiveScaleSlide] = useState<any | null>(null);
 
   useEffect(() => {
@@ -205,7 +205,7 @@ export default function HomePage() {
         if (error) throw error;
 
         if (data && data.length > 0) {
-          setNews(data.map((item: any) => ({
+          setNews(data.map((item: { id: string; title: string; category: string; created_at: string; image_url?: string }) => ({
             id: item.id,
             title: item.title,
             category: item.category,
@@ -214,7 +214,7 @@ export default function HomePage() {
             image: item.image_url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&q=80&w=600'
           })));
         }
-      } catch (err) {
+      } catch {
         // Error loading news ignored
       }
     }
@@ -394,10 +394,10 @@ export default function HomePage() {
                     </p>
                     <div className="pt-1">
                       <Link 
-                        href={(service as any).href || '#'} 
+                        href={(service as { href?: string; linkText?: string }).href || '#'} 
                         className="inline-flex items-center text-sm font-extrabold text-primary hover:text-secondary group/btn"
                       >
-                        <span>{(service as any).linkText || 'Ingresar al sistema'}</span>
+                        <span>{(service as { href?: string; linkText?: string }).linkText || 'Ingresar al sistema'}</span>
                         <ArrowRight className="w-3.5 h-3.5 ml-1.5 group-hover/btn:translate-x-0.5 transition-transform" />
                       </Link>
                     </div>

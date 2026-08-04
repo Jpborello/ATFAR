@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Calendar, User, ArrowLeft, BookOpen, Share2, Printer, Loader2 } from 'lucide-react';
+import { Calendar, User, ArrowLeft, Share2, Printer, Loader2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 interface NewsDetail {

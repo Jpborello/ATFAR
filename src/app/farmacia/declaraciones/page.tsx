@@ -1,10 +1,13 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, ArrowLeft, Send, CheckCircle2, AlertCircle, Clock, Plus, Loader2, Users } from 'lucide-react';
+import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniorityYears } from '@/lib/dateUtils';
+import { calculateSeniorityYears, isReceiptValid } from '@/lib/dateUtils';
+
+import { Employee, Pharmacy, SalaryScale } from '@/types';
 
 interface DeclarationItem {
   period: string;
@@ -25,9 +28,9 @@ const FALLBACK_SALARIES: Record<string, number> = {
 
 export default function DeclaracionesPage() {
   const [loading, setLoading] = useState(true);
-  const [employees, setEmployees] = useState<any[]>([]);
-  const [pharmacy, setPharmacy] = useState<any | null>(null);
-  const [salaryScales, setSalaryScales] = useState<any[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
+  const [salaryScales, setSalaryScales] = useState<SalaryScale[]>([]);
   
   const [observations, setObservations] = useState('');
   const [period, setPeriod] = useState('Junio 2026');
@@ -50,9 +53,9 @@ export default function DeclaracionesPage() {
 
         if (!isConfigured) {
           setEmployees([
-            { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true },
-            { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true },
-            { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true },
+            { id: '1', full_name: 'Estela Maris Gómez', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entry_date: '2024-03-15', entryDate: '2024-03-15', active: true, is_affiliate: true, isAffiliate: true },
+            { id: '2', full_name: 'Carlos Alberto Rossi', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entry_date: '2025-01-10', entryDate: '2025-01-10', active: true, is_affiliate: false, isAffiliate: false },
+            { id: '3', full_name: 'Matias Nicolás Fernández', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entry_date: '2025-11-01', entryDate: '2025-11-01', active: true, is_affiliate: true, isAffiliate: true },
           ]);
           setLoading(false);
           return;
@@ -82,12 +85,19 @@ export default function DeclaracionesPage() {
           if (list) {
             setEmployees(list.map(emp => ({
               id: emp.id,
+              full_name: emp.full_name,
               fullName: emp.full_name,
               cuil: emp.cuil,
               category: emp.category || 'Cadetes',
+              entry_date: emp.entry_date,
               entryDate: emp.entry_date,
               active: emp.active,
-              isAffiliate: !!emp.is_affiliate
+              is_affiliate: !!emp.is_affiliate,
+              isAffiliate: !!emp.is_affiliate,
+              receipt_url: emp.receipt_url,
+              receiptUrl: emp.receipt_url,
+              receipt_date: emp.receipt_date,
+              receiptDate: emp.receipt_date
             })));
           }
 
@@ -122,7 +132,7 @@ export default function DeclaracionesPage() {
     loadData();
   }, [period]);
 
-  const getEmployeeCalculation = (emp: any) => {
+  const getEmployeeCalculation = (emp: Employee) => {
     const categoryName = emp.category || 'Cadetes';
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
     let noRem = 0;
@@ -137,8 +147,8 @@ export default function DeclaracionesPage() {
       !s.is_additional
     );
     if (dbScale) {
-      basic = Number(dbScale.basic);
-      noRem = Number(dbScale.no_rem || 0);
+      basic = Number(dbScale.basic ?? dbScale.base_salary ?? 0);
+      noRem = Number(dbScale.no_rem ?? dbScale.non_remunerative ?? 0);
     }
 
     const years = calculateSeniorityYears(emp.entryDate);
@@ -182,10 +192,16 @@ export default function DeclaracionesPage() {
   const totalNoRem = calculations.reduce((sum, item) => sum + item.calc.noRem, 0);
   const totalAmount = calculations.reduce((sum, item) => sum + item.calc.totalAporte, 0);
 
+  const invalidReceiptEmployees = employees.filter(emp => !isReceiptValid(emp.receiptDate || emp.receipt_date));
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (employees.length === 0) {
       alert('No tenés empleados activos registrados para declarar. Agregalos primero en el panel de inicio.');
+      return;
+    }
+    if (invalidReceiptEmployees.length > 0) {
+      alert('Debés actualizar el recibo de sueldo de tus empleados para emitir la boleta de pago.');
       return;
     }
     if (!confirmed) {
@@ -202,7 +218,7 @@ export default function DeclaracionesPage() {
       let generatedInvoiceNum = '';
 
       if (isConfigured && pharmacy) {
-        const shortId = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const shortId = (pharmacy.id || 'BLT').replace(/-/g, '').substring(0, 5).toUpperCase();
         const yearMonth = period.includes('Junio') ? '202606' : period.includes('Julio') ? '202607' : '202608';
         generatedInvoiceNum = `BLT-${yearMonth}-${shortId}`;
 
@@ -248,9 +264,10 @@ export default function DeclaracionesPage() {
           })));
         }
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      alert(err.message || 'Error al presentar la declaración jurada.');
+      const msg = err instanceof Error ? err.message : 'Error al presentar la declaración jurada.';
+      alert(msg);
     } finally {
       setSubmitting(false);
     }
@@ -449,6 +466,29 @@ export default function DeclaracionesPage() {
                 />
               </div>
 
+              {/* Salary Receipt Expiration Warning Banner */}
+              {invalidReceiptEmployees.length > 0 && (
+                <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold text-red-800">
+                    <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+                    <span>Documentación Requerida (Recibo de Sueldo):</span>
+                  </div>
+                  <p className="leading-relaxed font-semibold">
+                    Para generar la boleta de pago del período, debes regularizar la carga del recibo de sueldo (renovación obligatoria cada 6 meses) de los siguientes empleados:
+                  </p>
+                  <ul className="list-disc list-inside font-bold space-y-0.5 pl-2 text-red-900">
+                    {invalidReceiptEmployees.map(emp => (
+                      <li key={emp.id}>{emp.fullName || emp.full_name} ({emp.cuil})</li>
+                    ))}
+                  </ul>
+                  <div className="pt-1">
+                    <Link href="/farmacia" className="underline font-bold text-red-800 hover:opacity-80 inline-flex items-center gap-1">
+                      Ir al Panel de Farmacia para subir los recibos →
+                    </Link>
+                  </div>
+                </div>
+              )}
+
               {/* Sworn Confirmation */}
               <div className="flex items-start gap-3 p-3.5 bg-muted/40 rounded-xl border border-border/80">
                 <input
@@ -465,7 +505,7 @@ export default function DeclaracionesPage() {
 
               <button
                 type="submit"
-                disabled={submitting || employees.length === 0}
+                disabled={submitting || employees.length === 0 || invalidReceiptEmployees.length > 0}
                 className="w-full inline-flex items-center justify-center px-6 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/95 transition-all text-xs uppercase tracking-wider shadow-premium disabled:opacity-50 disabled:cursor-not-allowed group cursor-pointer"
               >
                 {submitting ? (

@@ -11,7 +11,6 @@ import {
   Building2, 
   FileCheck, 
   UserCheck, 
-  ShieldCheck, 
   ArrowLeft,
   AlertCircle,
   Sparkles,
@@ -55,7 +54,7 @@ function LoginContent() {
 
   // Autocomplete states
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string; address: string; latitude?: number; longitude?: number }[]>([]);
   const [searching, setSearching] = useState(false);
   const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null);
   
@@ -64,47 +63,34 @@ function LoginContent() {
   const [guideStep, setGuideStep] = useState(1);
 
   // Leaflet refs for coordinate sync
-  const [mapRef, setMapRef] = useState<any>(null);
-  const [markerRef, setMarkerRef] = useState<any>(null);
+  const [mapRef, setMapRef] = useState<unknown>(null);
+  const [markerRef, setMarkerRef] = useState<unknown>(null);
 
   // Handle URL tab changes
   useEffect(() => {
     const tab = searchParams.get('tab');
-    if (tab === 'register') setActiveTab('register');
-    else setActiveTab('login');
+    const timer = setTimeout(() => {
+      if (tab === 'register') setActiveTab('register');
+      else setActiveTab('login');
+    }, 0);
+    return () => clearTimeout(timer);
   }, [searchParams]);
 
   // Leaflet map selector loading
   useEffect(() => {
     if (activeTab !== 'register' || registerRole !== 'pharmacy_owner' || typeof window === 'undefined') return;
 
-    let mapInstance: any = { removeEventListener: () => {}, remove: () => {} };
-    let markerInstance: any = { removeEventListener: () => {} };
     let isCancelled = false;
-
-    const handleDragEnd = () => {
-      if (markerInstance && typeof markerInstance.getLatLng === 'function') {
-        const position = markerInstance.getLatLng();
-        setLatitude(position.lat);
-        setLongitude(position.lng);
-      }
-    };
-
-    const handleMapClick = (e: any) => {
-      if (markerInstance && typeof markerInstance.setLatLng === 'function') {
-        markerInstance.setLatLng(e.latlng);
-        setLatitude(e.latlng.lat);
-        setLongitude(e.latlng.lng);
-      }
-    };
+    let localMap: { remove: () => void; setView: (coords: [number, number], zoom?: number) => void; off?: (event: string, fn: (e: unknown) => void) => void } | null = null;
 
     Promise.all([
       import('leaflet'),
-      import('leaflet/dist/leaflet.css' as any)
+      import('leaflet/dist/leaflet.css')
     ]).then(([L]) => {
       if (isCancelled) return;
 
-      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      type DefaultIconProto = { _getIconUrl?: unknown };
+      delete (L.Icon.Default.prototype as DefaultIconProto)._getIconUrl;
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
         iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
@@ -120,42 +106,58 @@ function LoginContent() {
       }).addTo(loadedMap);
 
       const loadedMarker = L.marker([latitude, longitude], { draggable: true }).addTo(loadedMap);
-      
-      mapInstance = loadedMap;
-      markerInstance = loadedMarker;
+
+      localMap = loadedMap;
+
+      loadedMarker.on('dragend', () => {
+        const pos = loadedMarker.getLatLng();
+        setLatitude(pos.lat);
+        setLongitude(pos.lng);
+      });
+
+      loadedMap.on('click', (e: { latlng: { lat: number; lng: number } }) => {
+        loadedMarker.setLatLng(e.latlng);
+        setLatitude(e.latlng.lat);
+        setLongitude(e.latlng.lng);
+      });
 
       setMapRef(loadedMap);
       setMarkerRef(loadedMarker);
-
-      markerInstance.addEventListener('dragend', handleDragEnd);
-      mapInstance.addEventListener('click', handleMapClick);
     }).catch(err => {
       console.warn("Failed to load map:", err);
     });
 
     return () => {
       isCancelled = true;
-      markerInstance.removeEventListener('dragend', handleDragEnd);
-      mapInstance.removeEventListener('click', handleMapClick);
-      mapInstance.remove();
+      if (localMap) {
+        localMap.remove();
+      }
       setMapRef(null);
       setMarkerRef(null);
     };
-  }, [activeTab, registerRole]);
+  }, [activeTab, registerRole, latitude, longitude]);
 
   // Update map position when coordinates are updated by autocompleting
   useEffect(() => {
     if (mapRef && markerRef) {
-      markerRef.setLatLng([latitude, longitude]);
-      mapRef.setView([latitude, longitude], 15);
+      const markerObj = markerRef as { setLatLng: (coords: [number, number]) => void };
+      const mapObj = mapRef as { setView: (coords: [number, number], zoom?: number) => void };
+      if (typeof markerObj.setLatLng === 'function') {
+        markerObj.setLatLng([latitude, longitude]);
+      }
+      if (typeof mapObj.setView === 'function') {
+        mapObj.setView([latitude, longitude], 15);
+      }
     }
   }, [latitude, longitude, mapRef, markerRef]);
 
   // Search pharmacies in real-time
   useEffect(() => {
     if (searchQuery.trim().length < 3) {
-      setSearchResults([]);
-      return;
+      const timer = setTimeout(() => {
+        setSearchResults([]);
+      }, 0);
+      return () => clearTimeout(timer);
     }
 
     const delayDebounceFn = setTimeout(async () => {
@@ -937,7 +939,7 @@ function LoginContent() {
                   </div>
                   <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 2: Completar Nombre, Razón Social y CUIT</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Ingresá el Nombre de Fantasía, Razón Social (ej. "Farmacia Centro S.H.") y CUIT Comercial (11 dígitos, sin guiones ni espacios).
+                    Ingresá el Nombre de Fantasía, Razón Social (ej. &quot;Farmacia Centro S.H.&quot;) y CUIT Comercial (11 dígitos, sin guiones ni espacios).
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Estos datos comerciales deben ser exactos ya que aparecerán impresos en las boletas y comprobantes de aportes del sindicato.
@@ -952,7 +954,7 @@ function LoginContent() {
                   </div>
                   <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 3: Dirección y Calles de Cruce</h3>
                   <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Colocá la dirección postal de tu farmacia y especificá las calles entre las cuales se encuentra (ej. "Entre Mendoza y 3 de Febrero").
+                    Colocá la dirección postal de tu farmacia y especificá las calles entre las cuales se encuentra (ej. &quot;Entre Mendoza y 3 de Febrero&quot;).
                   </p>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
                     Esto asegura la correcta categorización por departamentos y facilita la fiscalización de aportes por parte del sindicato.

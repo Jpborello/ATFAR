@@ -1,6 +1,6 @@
 'use client';
 
-import { ShieldCheck, Award, Users, BookOpen } from 'lucide-react';
+import { ShieldCheck, Users, BookOpen } from 'lucide-react';
 
 export default function InstitucionalPage() {
   const comision = [

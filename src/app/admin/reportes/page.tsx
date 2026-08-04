@@ -4,12 +4,10 @@ import { useState, useEffect } from 'react';
 import { 
   FileSpreadsheet, 
   FileText, 
-  TrendingUp, 
   PieChart, 
-  Calendar, 
-  DollarSign, 
   Download,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -81,6 +79,14 @@ export default function AdminReportesPage() {
   const handleExport = (format: 'pdf' | 'excel') => {
     alert(`Simulando exportación de Reportes Financieros ${reportPeriod} en formato: ${format.toUpperCase()}`);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8">

@@ -1,20 +1,17 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
+import { Pharmacy } from '@/types';
 import { 
   CreditCard, 
   ArrowLeft, 
   CheckCircle2, 
   XCircle, 
-  Calendar, 
   Download, 
-  ShieldCheck, 
-  DollarSign,
   Loader2,
-  Lock,
-  ArrowRight,
   Upload,
   Copy,
   Check,
@@ -45,11 +42,7 @@ export default function PagosPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
-  // CC States
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardName, setCardName] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
+
 
   // Transfer States
   const [paymentMethod, setPaymentMethod] = useState<'online' | 'transfer'>('online');
@@ -58,7 +51,7 @@ export default function PagosPage() {
   const [transferDate, setTransferDate] = useState('');
   const [copied, setCopied] = useState(false);
 
-  const [pharmacy, setPharmacy] = useState<any | null>(null);
+  const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
   const [selectedDetailInvoice, setSelectedDetailInvoice] = useState<Invoice | null>(null);
 
   useEffect(() => {
@@ -72,9 +65,12 @@ export default function PagosPage() {
         if (!isConfigured || !session) {
           // Simulation fallback
           setPharmacy({
+            id: 'mock-1',
+            name: 'Farmacia de Prueba Sol',
             nombre_fantasia: 'Farmacia de Prueba Sol',
             razon_social: 'Farmacia Sol de Rosario S.A.',
             cuit: '30-12345678-9',
+            address: 'Av. Pellegrini 1500, Rosario',
             declared_addresses: 'Av. Pellegrini 1500, Rosario'
           });
           setInvoices([
@@ -144,52 +140,6 @@ export default function PagosPage() {
     navigator.clipboard.writeText('3300000610000019519073');
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleProcessPayment = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cardNumber || !cardName || !cardExpiry || !cardCvv || !checkoutInvoice) {
-      alert('Por favor complete todos los datos de tarjeta.');
-      return;
-    }
-
-    setPaymentLoading(true);
-
-    try {
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
-        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-      if (isConfigured) {
-        const { error } = await supabase
-          .from('payments')
-          .update({
-            status: 'pagado',
-            pay_date: new Date().toISOString().split('T')[0]
-          })
-          .eq('id', checkoutInvoice.id);
-
-        if (error) throw error;
-      }
-
-      setInvoices((prev) =>
-        prev.map((inv) =>
-          inv.id === checkoutInvoice.id
-            ? { ...inv, status: 'pagado', payDate: new Date().toLocaleDateString('es-AR') }
-            : inv
-        )
-      );
-
-      setPaymentSuccess(true);
-      setCardNumber('');
-      setCardName('');
-      setCardExpiry('');
-      setCardCvv('');
-    } catch (err: any) {
-      alert(err.message || 'Error al procesar el pago.');
-    } finally {
-      setPaymentLoading(false);
-    }
   };
 
   const handleProcessTransfer = async (e: React.FormEvent) => {
@@ -276,8 +226,9 @@ export default function PagosPage() {
       );
 
       setPaymentSuccess(true);
-    } catch (err: any) {
-      alert(err.message || 'Error al enviar comprobante.');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al enviar comprobante.';
+      alert(msg);
     } finally {
       setPaymentLoading(false);
     }

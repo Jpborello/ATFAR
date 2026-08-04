@@ -16,7 +16,7 @@ export function calculateSeniorityYears(entryDateStr: string | null | undefined)
   const today = new Date();
   let years = today.getFullYear() - entryDate.getFullYear();
   let months = today.getMonth() - entryDate.getMonth();
-  let days = today.getDate() - entryDate.getDate();
+  const days = today.getDate() - entryDate.getDate();
   
   if (days < 0) months--;
   if (months < 0) {
@@ -34,7 +34,7 @@ export function calculateSeniority(entryDateStr: string | null | undefined): str
   
   let years = today.getFullYear() - entryDate.getFullYear();
   let months = today.getMonth() - entryDate.getMonth();
-  let days = today.getDate() - entryDate.getDate();
+  const days = today.getDate() - entryDate.getDate();
   
   if (days < 0) {
     months--;
@@ -81,3 +81,25 @@ export function getCurrentCategory(registeredCategory: string, entryDateStr: str
     steps: targetIndex - baseIndex
   };
 }
+
+export function isReceiptValid(receiptDateStr: string | null | undefined): boolean {
+  if (!receiptDateStr) return false;
+  const receiptDate = new Date(receiptDateStr);
+  if (isNaN(receiptDate.getTime())) return false;
+  
+  const diffTime = Math.abs(new Date().getTime() - receiptDate.getTime());
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  return diffDays <= 180; // 6 months maximum validity
+}
+
+export function getReceiptStatus(receiptDateStr: string | null | undefined): { valid: boolean; label: string; color: string } {
+  if (!receiptDateStr) {
+    return { valid: false, label: 'Sin Recibo', color: 'red' };
+  }
+  const valid = isReceiptValid(receiptDateStr);
+  if (valid) {
+    return { valid: true, label: 'Al Día (6m)', color: 'emerald' };
+  }
+  return { valid: false, label: 'Vencido (+6m)', color: 'red' };
+}
+
