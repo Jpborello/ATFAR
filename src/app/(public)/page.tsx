@@ -326,38 +326,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Logos Section */}
-      <section className="bg-primary/5 border-b border-primary/10 py-10 px-4 sm:px-6 lg:px-8 animate-fadeIn">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-8">
-          <div className="text-center md:text-left flex-shrink-0">
-            <span className="text-xs font-black text-primary uppercase tracking-widest block font-sans">Instituciones Asociadas</span>
-            <span className="text-sm font-extrabold text-[#0f172a] block">Obras Sociales y Mutuales</span>
-          </div>
-          <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-8 items-center justify-items-center">
-            {/* Logo OSPF */}
-            <a href="https://www.ospf.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <span>OSPF OBRA SOCIAL</span>
-            </a>
-            {/* Logo OSECAC */}
-            <a href="https://www.osecac.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-              <span>OSECAC COMERCIO</span>
-            </a>
-            {/* Logo AMUPEF */}
-            <div className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              <span>AMUPEF MUTUAL</span>
-            </div>
-            {/* Logo FATFA */}
-            <a href="https://fatfa.org.ar" target="_blank" rel="noopener noreferrer" className="text-slate-800 font-extrabold tracking-wider text-xs sm:text-sm flex items-center gap-1.5 cursor-pointer hover:text-primary transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-primary" />
-              <span>FATFA NACIONAL</span>
-            </a>
-          </div>
-        </div>
-      </section>
-
       {/* Services Section */}
       <section className="bg-slate-50 border-b border-border py-20 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
