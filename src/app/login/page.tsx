@@ -46,6 +46,9 @@ function LoginContent() {
   const [pharmacyAddress, setPharmacyAddress] = useState('');
   const [pharmacyCrossStreets, setPharmacyCrossStreets] = useState('');
   const [pharmacyPhoneAlt, setPharmacyPhoneAlt] = useState('');
+  const [hrName, setHrName] = useState('');
+  const [hrEmail, setHrEmail] = useState('');
+  const [hrPhone, setHrPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // Map coordinate picker states (Rosario default coords)
@@ -336,6 +339,9 @@ function LoginContent() {
               address: pharmacyAddress,
               cross_streets: pharmacyCrossStreets,
               phone_alt: pharmacyPhoneAlt,
+              hr_name: hrName || null,
+              hr_email: hrEmail || null,
+              hr_phone: hrPhone || null,
               latitude: latitude,
               longitude: longitude
             })
@@ -364,6 +370,9 @@ function LoginContent() {
                 address: pharmacyAddress,
                 cross_streets: pharmacyCrossStreets,
                 phone_alt: pharmacyPhoneAlt,
+                hr_name: hrName || null,
+                hr_email: hrEmail || null,
+                hr_phone: hrPhone || null,
                 latitude: latitude,
                 longitude: longitude
               })
@@ -380,6 +389,9 @@ function LoginContent() {
                 address: pharmacyAddress,
                 cross_streets: pharmacyCrossStreets,
                 phone_alt: pharmacyPhoneAlt,
+                hr_name: hrName || null,
+                hr_email: hrEmail || null,
+                hr_phone: hrPhone || null,
                 latitude: latitude,
                 longitude: longitude,
                 owner_id: authData.user.id,
@@ -837,6 +849,51 @@ function LoginContent() {
                     <span className="text-xs text-muted-foreground block text-right font-medium">
                       Coordenadas: {latitude.toFixed(6)}, {longitude.toFixed(6)}
                     </span>
+                  </div>
+
+                  {/* Contacto de RRHH (Opcional) */}
+                  <div className="pt-3 border-t border-border/80 space-y-3">
+                    <span className="text-xs font-bold text-secondary uppercase tracking-wider block">
+                      Contacto de RRHH / Liquidaciones (Opcional)
+                    </span>
+                    <div className="space-y-1">
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Nombre del Responsable de RRHH
+                      </label>
+                      <input
+                        type="text"
+                        value={hrName}
+                        onChange={(e) => setHrName(e.target.value)}
+                        placeholder="Ej. Roberto Gómez"
+                        className="w-full px-3.5 py-2 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm text-foreground font-semibold"
+                      />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Email de RRHH
+                        </label>
+                        <input
+                          type="email"
+                          value={hrEmail}
+                          onChange={(e) => setHrEmail(e.target.value)}
+                          placeholder="rrhh@farmacia.com"
+                          className="w-full px-3.5 py-2 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm text-foreground font-semibold"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Teléfono de RRHH
+                        </label>
+                        <input
+                          type="text"
+                          value={hrPhone}
+                          onChange={(e) => setHrPhone(e.target.value)}
+                          placeholder="Ej. 0341-4247815"
+                          className="w-full px-3.5 py-2 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm text-foreground font-semibold"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

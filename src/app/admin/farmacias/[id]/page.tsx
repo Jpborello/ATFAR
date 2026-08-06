@@ -30,6 +30,9 @@ interface PharmacyDetail {
   responsibleName: string;
   responsibleEmail: string;
   responsiblePhone: string;
+  hrName?: string;
+  hrEmail?: string;
+  hrPhone?: string;
   registeredDate: string;
   employees: number;
   paymentStatus: 'al_dia' | 'con_deuda';
@@ -71,6 +74,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             responsibleName: id === '3' ? 'Carlos Daniel Fernández' : 'Dr. Lucas Gómez',
             responsibleEmail: id === '3' ? 'fernandez@farmaciaalberdi.coop' : 'lucas.gomez@farmaciacentro.com',
             responsiblePhone: id === '3' ? '341 455-2233' : '341 425-9988',
+            hrName: id === '3' ? 'Roberto Gómez' : 'Lic. Mariana Rossi',
+            hrEmail: id === '3' ? 'rrhh@farmaciaalberdi.coop' : 'rrhh@farmaciacentro.com',
+            hrPhone: id === '3' ? '341 455-2234' : '341 425-9989',
             registeredDate: id === '3' ? '05 Mar 2025' : '12 Ene 2024',
             employees: id === '3' ? 3 : 3,
             paymentStatus: id === '3' ? 'con_deuda' : 'al_dia',
@@ -158,6 +164,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             responsibleName: pharmData.profiles?.full_name || 'Sin Asignar',
             responsibleEmail: pharmData.profiles?.email || 'Sin Asignar',
             responsiblePhone: pharmData.profiles?.phone || 'Sin Asignar',
+            hrName: pharmData.hr_name || undefined,
+            hrEmail: pharmData.hr_email || undefined,
+            hrPhone: pharmData.hr_phone || undefined,
             registeredDate: new Date(pharmData.created_at).toLocaleDateString('es-AR'),
             employees: mappedEmployees.length,
             paymentStatus: pharmData.has_debt ? 'con_deuda' : 'al_dia',
@@ -281,6 +290,51 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                 </div>
               </div>
             </div>
+
+            {/* RRHH / Human Resources Contact */}
+            {(pharmacy.hrName || pharmacy.hrEmail || pharmacy.hrPhone) && (
+              <>
+                <hr className="border-border/60" />
+                <div className="space-y-4">
+                  <h3 className="font-bold text-foreground text-sm flex items-center gap-2">
+                    <Users className="w-4 h-4 text-primary" />
+                    Contacto de RRHH / Liquidaciones
+                  </h3>
+                  
+                  <div className="space-y-3 text-xs font-semibold text-muted-foreground">
+                    {pharmacy.hrName && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-foreground">Responsable:</span>
+                        <span className="font-bold text-foreground">{pharmacy.hrName}</span>
+                      </div>
+                    )}
+                    {pharmacy.hrEmail && (
+                      <div className="flex items-center gap-2">
+                        <Mail className="w-4 h-4 text-primary" />
+                        <a href={`mailto:${pharmacy.hrEmail}`} className="hover:underline text-primary">
+                          {pharmacy.hrEmail}
+                        </a>
+                      </div>
+                    )}
+                    {pharmacy.hrPhone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-primary" />
+                        <span>{pharmacy.hrPhone}</span>
+                        <a
+                          href={`https://wa.me/${pharmacy.hrPhone.replace(/\D/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-2 px-2 py-0.5 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 font-bold text-[9px] uppercase tracking-wider transition-colors inline-flex items-center"
+                          title="Abrir Chat de WhatsApp RRHH"
+                        >
+                          WhatsApp
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* Uploaded Documents File List */}
