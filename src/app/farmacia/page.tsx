@@ -62,24 +62,24 @@ export default function FarmaciaDashboard() {
 
   // Detailed profile state
   const [profileData, setProfileData] = useState({
-    cuit: '30-71122334-9',
-    razonSocial: 'Farmacia Central S.A.',
-    nombreFantasia: 'Farmacia Central',
-    whatsapp: '3413889900',
-    actividadEconomica: 'Venta al por menor de productos farmacéuticos y de herboristería',
-    initialPeriod: '2024-03-01',
-    declaredEmployeeCount: 3,
-    branches: 'Sucursal Sur, Sucursal Norte',
-    notes: 'Sede central Pellegrini sin observaciones.',
-    declaredAddresses: 'Pellegrini 1650, Rosario',
-    respEmail: 'director@farmaciacentral.com',
-    respPhone: '0341-4247814',
-    respAltEmail: 'admin@farmaciacentral.com',
-    hrEmail: 'rrhh@farmaciacentral.com',
-    hrPhone: '0341-4247815',
-    hrAltEmail: 'contable@farmaciacentral.com',
-    hrName: 'Roberto Gómez',
-    hrRole: 'Contador / RRHH'
+    cuit: '',
+    razonSocial: '',
+    nombreFantasia: '',
+    whatsapp: '',
+    actividadEconomica: '',
+    initialPeriod: '',
+    declaredEmployeeCount: 0,
+    branches: '',
+    notes: '',
+    declaredAddresses: '',
+    respEmail: '',
+    respPhone: '',
+    respAltEmail: '',
+    hrEmail: '',
+    hrPhone: '',
+    hrAltEmail: '',
+    hrName: '',
+    hrRole: ''
   });
 
   // Employee Add form state
@@ -90,11 +90,7 @@ export default function FarmaciaDashboard() {
   const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
   const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(false);
 
-  const [employees, setEmployees] = useState<Employee[]>([
-    { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true, isAffiliate: true },
-    { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entryDate: '2025-01-10', active: true, isAffiliate: false },
-    { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entryDate: '2025-11-01', active: true, isAffiliate: false },
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
 
   const [announcements, setAnnouncements] = useState<{ id: string; title: string; summary: string; date: string }[]>([
     { id: '1', title: 'Nueva Homologación CCT 659/13', summary: 'Se informa a las farmacias la escala de Julio 2026 vigente para liquidaciones.', date: '25 Jun 2026' }

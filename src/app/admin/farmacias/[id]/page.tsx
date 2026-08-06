@@ -89,57 +89,44 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured) {
-          // Simulation fallback
+          // Clean fallback
           setPharmacy({
             id: id,
-            name: id === '3' ? 'Farmacia Alberdi Coop.' : 'Farmacia del Centro S.R.L.',
-            nombreFantasia: id === '3' ? 'Farmacia Alberdi' : 'Farmacia del Centro',
-            razonSocial: id === '3' ? 'Farmacia Alberdi Coop. Ltda.' : 'Farmacia del Centro S.R.L.',
-            cuit: id === '3' ? '30-50443221-5' : '30-71122334-9',
-            address: id === '3' ? 'Bv. Rondeau 1200' : 'San Martin 801',
-            declaredAddresses: id === '3' ? 'Bv. Rondeau 1200, Rosario' : 'San Martin 801, Rosario',
-            crossStreets: id === '3' ? 'Entre Baigorria y Güemes' : 'Entre Córdoba y Santa Fe',
+            name: 'Farmacia Registrada',
+            nombreFantasia: 'Farmacia Registrada',
+            razonSocial: 'Farmacia Registrada S.A.',
+            cuit: '30-00000000-0',
+            address: 'Dirección Registrada',
+            declaredAddresses: 'Dirección Registrada',
+            crossStreets: 'Sin declarar',
             city: 'Rosario, Santa Fe',
-            whatsapp: id === '3' ? '3414552233' : '3414259988',
-            phoneAlt: '0341-4247814',
+            whatsapp: '',
+            phoneAlt: '',
             actividadEconomica: 'Venta al por menor de productos farmacéuticos',
-            initialPeriod: '2024-01-01',
-            declaredEmployeeCount: 3,
-            branches: id === '3' ? 'Sucursal Rondeau' : 'Sucursal Pellegrini, Sucursal Peatonal',
-            notes: 'Sin observaciones pendientes por el momento.',
+            initialPeriod: '',
+            declaredEmployeeCount: 0,
+            branches: 'Sede Única',
+            notes: 'Sin observaciones.',
             latitude: -32.9468,
             longitude: -60.6393,
-            responsibleName: id === '3' ? 'Carlos Daniel Fernández' : 'Dr. Lucas Gómez',
-            responsibleEmail: id === '3' ? 'fernandez@farmaciaalberdi.coop' : 'lucas.gomez@farmaciacentro.com',
-            responsiblePhone: id === '3' ? '341 455-2233' : '341 425-9988',
-            responsibleAltEmail: 'titular@farmacia.com',
-            hrName: id === '3' ? 'Roberto Gómez' : 'Lic. Mariana Rossi',
-            hrRole: 'Contador / Jefe de RRHH',
-            hrEmail: id === '3' ? 'rrhh@farmaciaalberdi.coop' : 'rrhh@farmaciacentro.com',
-            hrPhone: id === '3' ? '341 455-2234' : '341 425-9989',
-            hrAltEmail: 'liquidaciones@farmacia.com',
-            registeredDate: id === '3' ? '05 Mar 2025' : '12 Ene 2024',
-            employees: 3,
-            paymentStatus: id === '3' ? 'con_deuda' : 'al_dia',
-            declarations: [
-              { month: 'Junio 2026', date: id === '3' ? '---' : '25/06/2026', employees: id === '3' ? 0 : 3, status: id === '3' ? 'pendiente' : 'validada' },
-              { month: 'Mayo 2026', date: '28/05/2026', employees: 3, status: 'validada' },
-            ],
-            payments: [
-              { invoice: 'FAC-2026-06', period: 'Junio 2026', amount: id === '3' ? 12500 : 45000, status: id === '3' ? 'impago' : 'pagado', date: '30/06/2026' },
-              { invoice: 'FAC-2026-05', period: 'Mayo 2026', amount: id === '3' ? 12500 : 45000, status: 'pagado', date: '30/05/2026' }
-            ],
-            documents: [
-              { name: 'habilitacion_provincial.pdf', type: 'Habilitación', size: '1.9 MB' },
-              { name: 'constancia_cuit_afip.pdf', type: 'AFIP', size: '840 KB' },
-            ]
+            responsibleName: 'Sin Responsable Asignado',
+            responsibleEmail: 'sin_email@farmacia.com',
+            responsiblePhone: '',
+            responsibleAltEmail: '',
+            hrName: undefined,
+            hrRole: undefined,
+            hrEmail: undefined,
+            hrPhone: undefined,
+            hrAltEmail: undefined,
+            registeredDate: new Date().toLocaleDateString('es-AR'),
+            employees: 0,
+            paymentStatus: 'al_dia',
+            declarations: [],
+            payments: [],
+            documents: []
           });
 
-          setEmployees([
-            { id: '1', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entryDate: '2024-03-15', active: true, isAffiliate: true },
-            { id: '2', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Cadetes', entryDate: '2019-01-10', active: true, isAffiliate: false },
-            { id: '3', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Aprendiz Ayudante', entryDate: '2016-11-01', active: true, isAffiliate: false },
-          ]);
+          setEmployees([]);
           setLoading(false);
           return;
         }
@@ -190,9 +177,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
               date: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : p.due_date ? new Date(p.due_date).toLocaleDateString('es-AR') : 'Sin fecha',
               receiptUrl: p.receipt_url || null
             }))
-          : [
-              { invoice: 'FAC-2026-06', period: 'Junio 2026', amount: mappedEmployees.length * 15000, status: pharmData.has_debt ? ('impago' as const) : ('pagado' as const), date: '30/06/2026', receiptUrl: null },
-            ];
+          : [];
 
         setEmployees(mappedEmployees);
 
@@ -228,13 +213,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             registeredDate: new Date(pharmData.created_at).toLocaleDateString('es-AR'),
             employees: mappedEmployees.length,
             paymentStatus: pharmData.has_debt ? 'con_deuda' : 'al_dia',
-            declarations: [
-              { month: 'Junio 2026', date: '25/06/2026', employees: mappedEmployees.length, status: 'validada' },
-            ],
+            declarations: [],
             payments: mappedPayments,
-            documents: [
-              { name: 'constancia_cuit_afip.pdf', type: 'AFIP', size: '840 KB' },
-            ]
+            documents: []
           });
         }
       } catch (err) {
@@ -696,31 +677,37 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                 </h2>
               </div>
 
-              <div className="divide-y divide-border/60">
-                {pharmacy.declarations.map((dec, idx) => (
-                  <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
-                    <div className="space-y-0.5">
-                      <span className="font-bold text-foreground block text-sm">{dec.month}</span>
-                      <span className="text-[10px] text-muted-foreground block font-medium">Presentada: {dec.date}</span>
-                    </div>
+              {pharmacy.declarations.length === 0 ? (
+                <div className="text-center py-8 text-xs font-semibold text-muted-foreground">
+                  No hay declaraciones juradas presentadas en el sistema.
+                </div>
+              ) : (
+                <div className="divide-y divide-border/60">
+                  {pharmacy.declarations.map((dec, idx) => (
+                    <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-foreground block text-sm">{dec.month}</span>
+                        <span className="text-[10px] text-muted-foreground block font-medium">Presentada: {dec.date}</span>
+                      </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className="text-muted-foreground font-semibold">{dec.employees} emp.</span>
-                      {dec.status === 'validada' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Validada</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
-                          <Clock className="w-3 h-3 animate-pulse" />
-                          <span>Pendiente</span>
-                        </span>
-                      )}
+                      <div className="flex items-center gap-4">
+                        <span className="text-muted-foreground font-semibold">{dec.employees} emp.</span>
+                        {dec.status === 'validada' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Validada</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
+                            <Clock className="w-3 h-3 animate-pulse" />
+                            <span>Pendiente</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Payments / Invoices List */}
@@ -732,49 +719,55 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                 </h2>
               </div>
 
-              <div className="divide-y divide-border/60">
-                {pharmacy.payments.map((pay, idx) => (
-                  <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
-                    <div className="space-y-0.5">
-                      <span className="font-bold text-foreground block">{pay.invoice}</span>
-                      <span className="text-[10px] text-muted-foreground block font-medium">Período: {pay.period}</span>
-                    </div>
+              {pharmacy.payments.length === 0 ? (
+                <div className="text-center py-8 text-xs font-semibold text-muted-foreground">
+                  No hay comprobantes ni pagos cargados para esta farmacia.
+                </div>
+              ) : (
+                <div className="divide-y divide-border/60">
+                  {pharmacy.payments.map((pay, idx) => (
+                    <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
+                      <div className="space-y-0.5">
+                        <span className="font-bold text-foreground block">{pay.invoice}</span>
+                        <span className="text-[10px] text-muted-foreground block font-medium">Período: {pay.period}</span>
+                      </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className="font-bold text-foreground text-sm">${pay.amount.toLocaleString('es-AR')}</span>
-                      
-                      {pay.receiptUrl && (
-                        <a
-                          href={pay.receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="p-1.5 rounded-lg border border-border text-primary hover:bg-primary/5 text-[10px] font-bold transition-all bg-white"
-                          title="Ver Comprobante"
-                        >
-                          <FileText className="w-3.5 h-3.5" />
-                        </a>
-                      )}
-                      
-                      {pay.status === 'pagado' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>Pagado</span>
-                        </span>
-                      ) : pay.status === 'en_revision' ? (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
-                          <Clock className="w-3 h-3 animate-pulse" />
-                          <span>En Revisión</span>
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 font-bold text-[9px] uppercase border border-red-500/20">
-                          <XCircle className="w-3 h-3" />
-                          <span>Impago</span>
-                        </span>
-                      )}
+                      <div className="flex items-center gap-4">
+                        <span className="font-bold text-foreground text-sm">${pay.amount.toLocaleString('es-AR')}</span>
+                        
+                        {pay.receiptUrl && (
+                          <a
+                            href={pay.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 rounded-lg border border-border text-primary hover:bg-primary/5 text-[10px] font-bold transition-all bg-white"
+                            title="Ver Comprobante"
+                          >
+                            <FileText className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        
+                        {pay.status === 'pagado' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
+                            <CheckCircle2 className="w-3 h-3" />
+                            <span>Pagado</span>
+                          </span>
+                        ) : pay.status === 'en_revision' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
+                            <Clock className="w-3 h-3 animate-pulse" />
+                            <span>En Revisión</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 font-bold text-[9px] uppercase border border-red-500/20">
+                            <XCircle className="w-3 h-3" />
+                            <span>Impago</span>
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -790,31 +783,37 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
               <p className="text-xs text-muted-foreground mt-0.5">Constancias de AFIP, habilitaciones y documentación respaldatoria</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {pharmacy.documents.map((doc, idx) => (
-                <div 
-                  key={idx}
-                  className="p-4 border border-border rounded-2xl flex items-center justify-between gap-4 text-xs font-semibold bg-background/50 hover:bg-muted/15 transition-all"
-                >
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="p-2.5 bg-secondary/10 text-secondary rounded-xl">
-                      <FileText className="w-5 h-5" />
-                    </div>
-                    <div className="truncate">
-                      <span className="block text-foreground font-bold truncate text-sm">{doc.name}</span>
-                      <span className="block text-[10px] text-muted-foreground font-medium uppercase mt-0.5">{doc.type} • {doc.size}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => alert(`Simulando descarga de: ${doc.name}`)}
-                    className="px-3 py-1.5 rounded-xl border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-1.5 bg-white shadow-sm"
+            {pharmacy.documents.length === 0 ? (
+              <div className="text-center py-8 text-xs font-semibold text-muted-foreground">
+                No se adjuntaron documentos adicionales para esta farmacia.
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {pharmacy.documents.map((doc, idx) => (
+                  <div 
+                    key={idx}
+                    className="p-4 border border-border rounded-2xl flex items-center justify-between gap-4 text-xs font-semibold bg-background/50 hover:bg-muted/15 transition-all"
                   >
-                    <Download className="w-3.5 h-3.5" />
-                    <span>Descargar</span>
-                  </button>
-                </div>
-              ))}
-            </div>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="p-2.5 bg-secondary/10 text-secondary rounded-xl">
+                        <FileText className="w-5 h-5" />
+                      </div>
+                      <div className="truncate">
+                        <span className="block text-foreground font-bold truncate text-sm">{doc.name}</span>
+                        <span className="block text-[10px] text-muted-foreground font-medium uppercase mt-0.5">{doc.type} • {doc.size}</span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => alert(`Simulando descarga de: ${doc.name}`)}
+                      className="px-3 py-1.5 rounded-xl border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-1.5 bg-white shadow-sm"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Descargar</span>
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
