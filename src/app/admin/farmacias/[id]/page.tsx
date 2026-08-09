@@ -61,7 +61,7 @@ interface PharmacyDetail {
   paymentStatus: 'al_dia' | 'con_deuda';
   declarations: { month: string; date: string; employees: number; status: 'validada' | 'pendiente' }[];
   payments: { invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
-  documents: { name: string; type: string; size: string }[];
+  documents: { name: string; type: string; size: string; url?: string | null }[];
 }
 
 interface Employee {
@@ -803,13 +803,26 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                         <span className="block text-[10px] text-muted-foreground font-medium uppercase mt-0.5">{doc.type} • {doc.size}</span>
                       </div>
                     </div>
-                    <button
-                      onClick={() => alert(`Simulando descarga de: ${doc.name}`)}
-                      className="px-3 py-1.5 rounded-xl border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-1.5 bg-white shadow-sm"
-                    >
-                      <Download className="w-3.5 h-3.5" />
-                      <span>Descargar</span>
-                    </button>
+                    {doc.url ? (
+                      <a
+                        href={doc.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        download
+                        className="px-3 py-1.5 rounded-xl border border-border hover:bg-muted transition-colors text-muted-foreground hover:text-foreground text-xs font-bold flex items-center gap-1.5 bg-white shadow-sm"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Descargar</span>
+                      </a>
+                    ) : (
+                      <span
+                        title="Todavía no se subió el archivo"
+                        className="px-3 py-1.5 rounded-xl border border-border text-muted-foreground/50 text-xs font-bold flex items-center gap-1.5 bg-white/50 cursor-not-allowed"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Sin archivo</span>
+                      </span>
+                    )}
                   </div>
                 ))}
               </div>

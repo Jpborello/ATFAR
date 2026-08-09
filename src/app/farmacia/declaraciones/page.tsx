@@ -26,6 +26,31 @@ const FALLBACK_SALARIES: Record<string, number> = {
   'Farmacéutico': 1895145.60
 };
 
+// Nombres de mes en español (índice 0 = Enero) y su clave correspondiente en salary_scales.period.
+// Antes esto estaba hardcodeado a mano solo para Junio/Julio/Agosto 2026 - se rompía apenas pasaba ese trimestre.
+const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+const SALARY_PERIOD_KEYS = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];
+
+/** Parsea una etiqueta "Mes AAAA" (ej. "Julio 2026") a { year, monthIndex } (0-indexado). */
+function parsePeriodLabel(label: string): { year: number; monthIndex: number } | null {
+  const [monthName, yearStr] = label.split(' ');
+  const monthIndex = MONTHS_ES.findIndex((m) => m === monthName);
+  const year = parseInt(yearStr, 10);
+  if (monthIndex === -1 || isNaN(year)) return null;
+  return { year, monthIndex };
+}
+
+/** Genera las opciones de período declarable: el mes actual y los dos anteriores. */
+function buildDeclarablePeriods(): string[] {
+  const now = new Date();
+  const options: string[] = [];
+  for (let i = 0; i < 3; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    options.push(`${MONTHS_ES[d.getMonth()]} ${d.getFullYear()}`);
+  }
+  return options;
+}
+
 export default function DeclaracionesPage() {
   const [loading, setLoading] = useState(true);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -33,7 +58,8 @@ export default function DeclaracionesPage() {
   const [salaryScales, setSalaryScales] = useState<SalaryScale[]>([]);
   
   const [observations, setObservations] = useState('');
-  const [period, setPeriod] = useState('Junio 2026');
+  const declarablePeriods = buildDeclarablePeriods();
+  const [period, setPeriod] = useState(declarablePeriods[0]);
   const [confirmed, setConfirmed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -137,15 +163,16 @@ export default function DeclaracionesPage() {
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
     let noRem = 0;
 
-    let dbPeriodStr = 'july';
-    if (period.includes('Junio')) dbPeriodStr = 'june';
-    if (period.includes('Mayo')) dbPeriodStr = 'may';
+    const parsedPeriod = parsePeriodLabel(period);
+    const dbPeriodStr = parsedPeriod ? SALARY_PERIOD_KEYS[parsedPeriod.monthIndex] : null;
 
-    const dbScale = salaryScales.find(s => 
-      s.category.toLowerCase().trim() === categoryName.toLowerCase().trim() &&
-      s.period === dbPeriodStr &&
-      !s.is_additional
-    );
+    const dbScale = dbPeriodStr
+      ? salaryScales.find(s =>
+          s.category.toLowerCase().trim() === categoryName.toLowerCase().trim() &&
+          s.period === dbPeriodStr &&
+          !s.is_additional
+        )
+      : undefined;
     if (dbScale) {
       basic = Number(dbScale.basic ?? dbScale.base_salary ?? 0);
       noRem = Number(dbScale.no_rem ?? dbScale.non_remunerative ?? 0);
@@ -188,6 +215,14 @@ export default function DeclaracionesPage() {
     calc: getEmployeeCalculation(emp)
   }));
 
+  // Si el sindicato todavía no cargó la escala salarial oficial de este período (Admin > Escalas),
+  // los montos de abajo son un valor de referencia viejo, no la escala vigente.
+  const currentPeriodKey = (() => {
+    const parsed = parsePeriodLabel(period);
+    return parsed ? SALARY_PERIOD_KEYS[parsed.monthIndex] : null;
+  })();
+  const hasOfficialScaleForPeriod = salaryScales.some(s => s.period === currentPeriodKey);
+
   const totalSalaries = calculations.reduce((sum, item) => sum + item.calc.grossSalary, 0);
   const totalNoRem = calculations.reduce((sum, item) => sum + item.calc.noRem, 0);
   const totalAmount = calculations.reduce((sum, item) => sum + item.calc.totalAporte, 0);
@@ -219,12 +254,16 @@ export default function DeclaracionesPage() {
 
       if (isConfigured && pharmacy) {
         const shortId = (pharmacy.id || 'BLT').replace(/-/g, '').substring(0, 5).toUpperCase();
-        const yearMonth = period.includes('Junio') ? '202606' : period.includes('Julio') ? '202607' : '202608';
+
+        const parsedPeriod = parsePeriodLabel(period);
+        if (!parsedPeriod) throw new Error('Período inválido, volvé a seleccionarlo.');
+
+        const yearMonth = `${parsedPeriod.year}${String(parsedPeriod.monthIndex + 1).padStart(2, '0')}`;
         generatedInvoiceNum = `BLT-${yearMonth}-${shortId}`;
 
-        let dueDate = '2026-07-10';
-        if (period.includes('Julio')) dueDate = '2026-08-10';
-        if (period.includes('Agosto')) dueDate = '2026-09-10';
+        // Vencimiento: el 10 del mes siguiente al período declarado (calculado, no hardcodeado)
+        const dueDateObj = new Date(parsedPeriod.year, parsedPeriod.monthIndex + 1, 10);
+        const dueDate = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, '0')}-${String(dueDateObj.getDate()).padStart(2, '0')}`;
 
         const { error } = await supabase
           .from('payments')
@@ -361,9 +400,9 @@ export default function DeclaracionesPage() {
                     onChange={(e) => setPeriod(e.target.value)}
                     className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all font-bold text-foreground"
                   >
-                    <option value="Junio 2026">Junio 2026</option>
-                    <option value="Julio 2026">Julio 2026</option>
-                    <option value="Agosto 2026">Agosto 2026</option>
+                    {declarablePeriods.map((p) => (
+                      <option key={p} value={p}>{p}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -375,6 +414,17 @@ export default function DeclaracionesPage() {
                   <span className="font-extrabold text-sm text-foreground">{employees.length}</span>
                 </div>
               </div>
+
+              {!hasOfficialScaleForPeriod && (
+                <div className="flex items-start gap-3 p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  <span>
+                    El sindicato todavía no cargó la escala salarial oficial para {period} en el sistema. Los montos
+                    de abajo se calculan con la última referencia disponible y pueden no coincidir con el CCT vigente
+                    para este período.
+                  </span>
+                </div>
+              )}
 
               {/* Employees calculation breakdown */}
               <div className="space-y-2">

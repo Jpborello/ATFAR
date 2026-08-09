@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { GraduationCap, Upload, Send, CheckCircle, AlertCircle, FileText, Plus, Trash } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { GraduationCap, Upload, Send, CheckCircle, AlertCircle, FileText, Plus, Trash, Loader2, LogIn } from 'lucide-react';
+import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 
 interface ChildRequest {
@@ -17,7 +18,7 @@ export default function UtilesPage() {
     email: '',
     phone: '',
   });
-  
+
   const [childrenList, setChildrenList] = useState<ChildRequest[]>([
     { fullName: '', age: '', schoolLevel: '' }
   ]);
@@ -26,6 +27,32 @@ export default function UtilesPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Es un beneficio exclusivo para afiliados: hace falta estar logueado para que
+  // el pedido quede vinculado a la cuenta real (employee_id), si no la política RLS lo rechaza.
+  const [checkingSession, setCheckingSession] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      if (!isConfigured) {
+        setCheckingSession(false);
+        return;
+      }
+
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        setUserId(session.user.id);
+        setAffiliateData((prev) => ({ ...prev, email: session.user.email || prev.email }));
+      }
+      setCheckingSession(false);
+    };
+    checkSession();
+  }, []);
 
   const handleAffiliateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -67,6 +94,10 @@ export default function UtilesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!userId) {
+      alert('Necesitás iniciar sesión con tu cuenta de afiliado para enviar la solicitud.');
+      return;
+    }
     if (!receiptFile) {
       alert('Por favor, adjunta una copia de tu último recibo de sueldo para verificar la afiliación.');
       return;
@@ -119,10 +150,11 @@ export default function UtilesPage() {
       const { error: insertError } = await supabase
         .from('benefit_requests')
         .insert({
+          employee_id: userId,
           benefit_type: 'utiles_escolares_2026',
           status: 'pending',
           attachment_url: publicUrl,
-          // Custom fields can be stored in metadata or JSONB
+          // Custom fields can be stored in metadata o JSONB
           metadata: {
             affiliate_cuil: affiliateData.cuil,
             affiliate_name: affiliateData.fullName,
@@ -168,7 +200,30 @@ export default function UtilesPage() {
           </p>
         </div>
 
-        {status === 'success' ? (
+        {checkingSession ? (
+          <div className="flex justify-center py-16">
+            <Loader2 className="w-8 h-8 animate-spin text-teal-500" />
+          </div>
+        ) : !userId ? (
+          <div className="bg-card border border-border rounded-3xl p-8 text-center space-y-5 shadow-xl glass max-w-xl mx-auto">
+            <div className="inline-flex p-4 bg-teal-500/10 text-teal-600 rounded-full">
+              <LogIn className="w-10 h-10" />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-xl font-bold text-foreground">Iniciá sesión como afiliado</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Este beneficio es exclusivo para afiliados de ATFAR. Ingresá con tu cuenta para que la solicitud
+                quede vinculada a tu perfil y puedas hacerle seguimiento desde tu panel.
+              </p>
+            </div>
+            <Link
+              href="/login"
+              className="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md text-sm"
+            >
+              Iniciar sesión / Registrarme
+            </Link>
+          </div>
+        ) : status === 'success' ? (
           <div className="bg-card border border-emerald-500/20 rounded-3xl p-8 text-center space-y-6 shadow-xl glass max-w-2xl mx-auto">
             <div className="inline-flex p-4 bg-emerald-500/10 text-emerald-500 rounded-full">
               <CheckCircle className="w-12 h-12" />

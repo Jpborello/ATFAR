@@ -174,6 +174,50 @@ export default function FarmaciasPanelPage() {
     setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc');
   };
 
+  const PAYMENT_STATUS_LABEL: Record<Pharmacy['paymentStatus'], string> = {
+    al_dia: 'Al día',
+    con_deuda: 'Con deuda',
+    pendiente: 'Pendiente',
+  };
+
+  const csvEscape = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+
+  const handleExportCsv = (rows: Pharmacy[]) => {
+    if (rows.length === 0) {
+      alert('No hay farmacias para exportar con los filtros actuales.');
+      return;
+    }
+    const headers = ['Razón Social', 'CUIT', 'Dirección', 'Ciudad', 'Responsable', 'Empleados', 'Estado', 'Última Declaración', 'Estado de Pago'];
+    const lines = [
+      headers.map(csvEscape).join(','),
+      ...rows.map((p) =>
+        [
+          p.razonSocial,
+          p.cuit,
+          p.address,
+          p.city,
+          p.responsible,
+          p.employeeCount,
+          p.status === 'activa' ? 'Activa' : 'Inactiva',
+          p.lastDeclaration || '—',
+          PAYMENT_STATUS_LABEL[p.paymentStatus],
+        ]
+          .map(csvEscape)
+          .join(',')
+      ),
+    ];
+    // BOM para que Excel detecte UTF-8 y no rompa los acentos
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `farmacias_atfar_${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   // Filtering & Sorting logic
   const processedPharmacies = pharmacies
     .filter(p => {
@@ -227,7 +271,7 @@ export default function FarmaciasPanelPage() {
             <span>{showMap ? 'Ocultar Mapa' : 'Ver Mapa'}</span>
           </button>
           <button
-            onClick={() => alert('Simulando exportación a Excel...')}
+            onClick={() => handleExportCsv(processedPharmacies)}
             className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-foreground text-xs font-bold uppercase tracking-wider hover:bg-muted/40 transition-all bg-card"
           >
             <FileSpreadsheet className="w-4 h-4 text-emerald-500" />

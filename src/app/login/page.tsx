@@ -405,16 +405,18 @@ function LoginContent() {
         if (pharmacyError) throw new Error(`Error al registrar farmacia: ${pharmacyError.message}`);
         router.push('/farmacia');
       } else {
-        // Create employee profile row linked to user profile
-        const { error: employeeError } = await supabase
-          .from('employees')
-          .insert({
-            id: authData.user.id,
-            cuil: cuil,
-            full_name: fullName,
-          });
-        
-        if (employeeError) console.error('Error registering employee row:', employeeError);
+        // Vincular esta cuenta con la fila de nómina que su farmacia ya declaró (por CUIL).
+        // No creamos una fila nueva en `employees`: esa tabla la gestiona la farmacia, y crear
+        // un registro paralelo generaba duplicados o fallaba en silencio por el UNIQUE de cuil.
+        const { error: claimError } = await supabase.rpc('claim_employee_profile', {
+          p_cuil: cuil,
+        });
+
+        if (claimError) {
+          console.warn('No se pudo vincular automáticamente al empleado:', claimError.message);
+          // Seguimos igual: la cuenta quedó creada, el panel de empleado va a mostrar
+          // "vinculación pendiente" hasta que la farmacia lo cargue en su nómina con este CUIL.
+        }
         router.push('/empleado');
       }
     } catch (err: unknown) {

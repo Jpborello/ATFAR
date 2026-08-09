@@ -28,38 +28,25 @@ export default function AdminReportesPage() {
 
         if (!isConfigured) return;
 
-        // 1. Total revenue
-        const { data: paid } = await supabase
-          .from('payments')
-          .select('amount')
-          .eq('status', 'pagado');
-        
+        // Las 4 consultas son independientes - iban una atras de otra, ahora van en paralelo.
+        const [
+          { data: paid },
+          { count: regCount },
+          { count: empCount },
+          { count: pendCount },
+        ] = await Promise.all([
+          supabase.from('payments').select('amount').eq('status', 'pagado'),
+          supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true),
+          supabase.from('employees').select('*', { count: 'exact', head: true }),
+          supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'en_revision'),
+        ]);
+
         if (paid) {
           const sum = paid.reduce((acc, curr) => acc + (curr.amount || 0), 0);
           setTotalRevenue(sum);
         }
-
-        // 2. Count registered pharmacies
-        const { count: regCount } = await supabase
-          .from('pharmacies')
-          .select('*', { count: 'exact', head: true })
-          .eq('registered', true);
-        
         setRegisteredPharmacies(regCount || 0);
-
-        // 3. Count employees
-        const { count: empCount } = await supabase
-          .from('employees')
-          .select('*', { count: 'exact', head: true });
-        
         setActiveEmployees(empCount || 0);
-
-        // 4. Count pending payments
-        const { count: pendCount } = await supabase
-          .from('payments')
-          .select('*', { count: 'exact', head: true })
-          .eq('status', 'en_revision');
-        
         setPendingCount(pendCount || 0);
       } catch (err) {
         console.error("Error loading report stats:", err);
@@ -77,7 +64,35 @@ export default function AdminReportesPage() {
   ];
 
   const handleExport = (format: 'pdf' | 'excel') => {
-    alert(`Simulando exportación de Reportes Financieros ${reportPeriod} en formato: ${format.toUpperCase()}`);
+    if (format === 'pdf') {
+      // Sin librería de PDF instalada: usamos el diálogo de impresión del navegador,
+      // que permite "Guardar como PDF" - un PDF real, no un mensaje simulado.
+      window.print();
+      return;
+    }
+
+    const csvEscape = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
+    const lines = [
+      ['Reporte Financiero ATFAR', reportPeriod].map(csvEscape).join(','),
+      [].join(','),
+      ['Indicador', 'Valor'].map(csvEscape).join(','),
+      ['Recaudación Total', totalRevenue.toFixed(2)].map(csvEscape).join(','),
+      ['Farmacias Registradas', registeredPharmacies].map(csvEscape).join(','),
+      ['Empleados Activos', activeEmployees].map(csvEscape).join(','),
+      ['Declaraciones Pendientes de Revisión', pendingCount].map(csvEscape).join(','),
+      [].join(','),
+      ['Distribución de Aportes', ''].map(csvEscape).join(','),
+      ...revenueBreakdown.map((r) => [r.source, r.amount.toFixed(2)].map(csvEscape).join(',')),
+    ];
+    const blob = new Blob(['﻿' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `reporte_financiero_atfar_${reportPeriod}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   if (loading) {

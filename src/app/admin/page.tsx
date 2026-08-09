@@ -50,102 +50,52 @@ export default function AdminDashboardPage() {
   useEffect(() => {
     async function loadStats() {
       try {
-        const isConfigured = 
-          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured) return;
 
-        // Fetch all pharmacies count
-        const { count: totalCount } = await supabase
-          .from('pharmacies')
-          .select('*', { count: 'exact', head: true });
-
-        // Fetch all pharmacies with their payments to dynamically sync has_debt
-        const { data: allPharmacies } = await supabase
-          .from('pharmacies')
-          .select('id, has_debt, registered, payments(status, due_date)')
-          .eq('registered', true);
-
-        let activeCount = 0;
-        let debtCount = 0;
-
-        if (allPharmacies) {
-          const todayStr = new Date().toISOString().split('T')[0];
-          
-          for (const pharm of allPharmacies) {
-            let shouldHaveDebt = false;
-            const payments = (pharm.payments || []) as { status?: string; due_date?: string }[];
-            
-            if (payments.length === 0) {
-              // Newly registered pharmacy, no payments generated yet -> has debt by default
-              shouldHaveDebt = true;
-            } else {
-              // Check if there is any unpaid invoice past due date
-              const hasPastDueUnpaid = payments.some(p => 
-                (p.status === 'impago' || p.status === 'unpaid') && 
-                !!p.due_date && p.due_date < todayStr
-              );
-              shouldHaveDebt = hasPastDueUnpaid;
-            }
-
-            if (pharm.has_debt !== shouldHaveDebt) {
-              // Update in DB
-              await supabase
-                .from('pharmacies')
-                .update({ has_debt: shouldHaveDebt })
-                .eq('id', pharm.id);
-              pharm.has_debt = shouldHaveDebt; // update local object reference
-            }
-
-            if (shouldHaveDebt) {
-              debtCount++;
-            } else {
-              activeCount++;
-            }
-          }
-        }
-
-        // Fetch pending payments
-        const { data: pendingPayments } = await supabase
-          .from('payments')
-          .select('id')
-          .eq('status', 'en_revision');
-
-        // Fetch paid payments
-        const { data: paidPayments } = await supabase
-          .from('payments')
-          .select('amount')
-          .eq('status', 'pagado');
-
-        // Fetch recent payments activity
-        const { data: recentPayments } = await supabase
-          .from('payments')
-          .select(`
-            id,
-            amount,
-            status,
-            period,
-            transaction_code,
-            receipt_url,
-            ddjj_url,
-            created_at,
-            pharmacies (
-              name,
-              cuit
-            )
-          `)
-          .order('created_at', { ascending: false })
-          .limit(4);
+        // has_debt ya se mantiene sincronizado en la base (trigger en `payments` + job diario),
+        // asi que aca solo leemos - no hay que recalcular ni escribir nada al abrir el dashboard.
+        // Las 5 consultas son independientes entre si, van todas en paralelo en vez de en cadena.
+        const [
+          { count: totalCount },
+          { count: activeCount },
+          { count: debtCount },
+          { count: pendingCount },
+          { data: paidPayments },
+          { data: recentPayments },
+        ] = await Promise.all([
+          supabase.from('pharmacies').select('*', { count: 'exact', head: true }),
+          supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true).eq('has_debt', false),
+          supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true).eq('has_debt', true),
+          supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'en_revision'),
+          supabase.from('payments').select('amount').eq('status', 'pagado'),
+          supabase
+            .from('payments')
+            .select(`
+              id,
+              amount,
+              status,
+              period,
+              transaction_code,
+              receipt_url,
+              ddjj_url,
+              created_at,
+              pharmacies (
+                name,
+                cuit
+              )
+            `)
+            .order('created_at', { ascending: false })
+            .limit(4),
+        ]);
 
         setTotalPharmacies(totalCount || 0);
-        
-        if (allPharmacies) {
-          setActivePharmaciesCount(activeCount);
-          setDebtPharmaciesCount(debtCount);
-        }
-
-        setPendingDeclarationsCount(pendingPayments?.length || 0);
+        setActivePharmaciesCount(activeCount || 0);
+        setDebtPharmaciesCount(debtCount || 0);
+        setPendingDeclarationsCount(pendingCount || 0);
 
         if (paidPayments) {
           const totalRev = paidPayments.reduce((acc, curr) => acc + (curr.amount || 0), 0);
@@ -200,12 +150,9 @@ export default function AdminDashboardPage() {
 
         if (error) throw error;
         
-        if (act.cuit) {
-          await supabase
-            .from('pharmacies')
-            .update({ has_debt: false })
-            .eq('cuit', act.cuit);
-        }
+        // has_debt se recalcula solo (trigger en `payments`) apenas cambia el status arriba;
+        // ya no hace falta pisarlo a mano aca -antes esto ignoraba si la farmacia tenia OTRAS
+        // facturas vencidas y las tapaba con un false incorrecto.
 
         // Auto-generate the next period's payment as 'impago'
         try {

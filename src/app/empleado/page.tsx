@@ -23,32 +23,35 @@ interface BenefitRequest {
   status: 'pending' | 'approved' | 'rejected';
 }
 
+const BENEFIT_LABELS: Record<string, string> = {
+  utiles_escolares_2026: 'Entrega de Útiles Escolares 2026',
+};
+
 export default function EmpleadoPortalPage() {
   const [loading, setLoading] = useState(true);
   const [employeeName, setEmployeeName] = useState('Cargando...');
   const [employeeCuil, setEmployeeCuil] = useState('...');
-  const [affiliateNumber, setAffiliateNumber] = useState('...');
-  const [pharmacyName, setPharmacyName] = useState('Farmacia del Sol');
-
-  const [requests] = useState<BenefitRequest[]>([
-    { id: '1', type: 'Entrega de Útiles Escolares 2026', date: '2026-06-25', status: 'approved' },
-    { id: '2', type: 'Subsidio por Nacimiento', date: '2025-10-14', status: 'approved' },
-  ]);
+  const [pharmacyName, setPharmacyName] = useState('...');
+  const [isLinked, setIsLinked] = useState(false);
+  const [requests, setRequests] = useState<BenefitRequest[]>([]);
 
   useEffect(() => {
     const fetchEmployeeData = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
       if (!isConfigured) {
         // Simulation details
         setEmployeeName('Gonzalo Andrés Rossi');
         setEmployeeCuil('20-36555444-1');
-        setAffiliateNumber('AF-94827-02');
         setPharmacyName('Farmacia Belgrano (Rosario)');
+        setIsLinked(true);
+        setRequests([
+          { id: '1', type: 'Entrega de Útiles Escolares 2026', date: '2026-06-25', status: 'approved' },
+        ]);
         setLoading(false);
         return;
       }
@@ -71,8 +74,42 @@ export default function EmpleadoPortalPage() {
       }
 
       setEmployeeName(profile.full_name || 'Afiliado');
-      setEmployeeCuil('20-' + Math.floor(10000000 + Math.random() * 90000000) + '-1');
-      setAffiliateNumber('AF-' + Math.floor(10000 + Math.random() * 90000) + '-01');
+
+      // Traer la fila real de nómina vinculada a este usuario (ver claim_employee_profile)
+      const { data: employeeRow } = await supabase
+        .from('employees')
+        .select('cuil, is_affiliate, pharmacies(name)')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+
+      if (employeeRow) {
+        setIsLinked(true);
+        setEmployeeCuil(employeeRow.cuil || '—');
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const pharm = employeeRow.pharmacies as any;
+        setPharmacyName((Array.isArray(pharm) ? pharm[0]?.name : pharm?.name) || 'Sin farmacia asociada');
+      } else {
+        setIsLinked(false);
+      }
+
+      // Traer solicitudes de beneficios reales de este afiliado
+      const { data: benefitRows } = await supabase
+        .from('benefit_requests')
+        .select('id, benefit_type, status, created_at')
+        .eq('employee_id', session.user.id)
+        .order('created_at', { ascending: false });
+
+      if (benefitRows) {
+        setRequests(
+          benefitRows.map((r) => ({
+            id: r.id,
+            type: BENEFIT_LABELS[r.benefit_type] || r.benefit_type,
+            date: new Date(r.created_at).toLocaleDateString('es-AR'),
+            status: r.status as BenefitRequest['status'],
+          }))
+        );
+      }
+
       setLoading(false);
     };
 
@@ -149,11 +186,13 @@ export default function EmpleadoPortalPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <span className="text-[8px] text-slate-400 uppercase tracking-wider block">CUIL</span>
-                    <span className="text-xs font-semibold">{employeeCuil}</span>
+                    <span className="text-xs font-semibold">{isLinked ? employeeCuil : '—'}</span>
                   </div>
                   <div>
-                    <span className="text-[8px] text-slate-400 uppercase tracking-wider block">N° Afiliación</span>
-                    <span className="text-xs font-semibold text-secondary">{affiliateNumber}</span>
+                    <span className="text-[8px] text-slate-400 uppercase tracking-wider block">Estado</span>
+                    <span className={`text-xs font-semibold ${isLinked ? 'text-emerald-400' : 'text-amber-400'}`}>
+                      {isLinked ? 'Afiliado Verificado' : 'Vinculación Pendiente'}
+                    </span>
                   </div>
                 </div>
 
@@ -210,6 +249,16 @@ export default function EmpleadoPortalPage() {
 
           {/* Right Side: Benefits tracking */}
           <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-lg glass space-y-6">
+            {!isLinked && (
+              <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl text-amber-700 dark:text-amber-400 text-xs font-semibold">
+                <Clock className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                <span>
+                  Todavía no encontramos tu CUIL en la nómina de ninguna farmacia. Pedile al responsable de tu
+                  farmacia que te declare en su panel — en cuanto lo haga vas a ver tus datos reales acá.
+                </span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between border-b border-border pb-4">
               <h3 className="font-bold text-foreground text-md flex items-center gap-2">
                 <HeartHandshake className="w-5 h-5 text-secondary" />
@@ -221,8 +270,13 @@ export default function EmpleadoPortalPage() {
             </div>
 
             <div className="space-y-4">
+              {requests.length === 0 && (
+                <p className="text-xs text-muted-foreground text-center py-8">
+                  Todavía no presentaste ninguna solicitud de beneficio.
+                </p>
+              )}
               {requests.map((req) => (
-                <div 
+                <div
                   key={req.id}
                   className="border border-border rounded-2xl p-4.5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-card/60"
                 >
@@ -239,6 +293,10 @@ export default function EmpleadoPortalPage() {
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-xs font-bold shadow-sm">
                         <CheckCircle2 className="w-4 h-4" />
                         <span>Aprobado / Listo</span>
+                      </div>
+                    ) : req.status === 'rejected' ? (
+                      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 text-xs font-bold shadow-sm">
+                        <span>Rechazado</span>
                       </div>
                     ) : (
                       <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-bold shadow-sm">
