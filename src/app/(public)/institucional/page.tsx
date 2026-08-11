@@ -4,12 +4,15 @@ import { ShieldCheck, Users, BookOpen } from 'lucide-react';
 
 export default function InstitucionalPage() {
   const comision = [
-    { name: 'Jorge Ariel Rossi', role: 'Secretario General' },
-    { name: 'María Alejandra Gómez', role: 'Prosecretaria General' },
-    { name: 'Carlos Daniel Fernández', role: 'Secretario Gremial' },
-    { name: 'Ana Estela Benítez', role: 'Secretaria de Finanzas' },
-    { name: 'Guillermo Hugo Rossi', role: 'Secretario de Actas' },
-    { name: 'Patricia Mabel Díaz', role: 'Secretaria de Acción Social y Turismo' },
+    { name: 'Gustavo Fabián Rosi', role: 'Titular' },
+    { name: 'Daniel Gaspari', role: 'Titular' },
+    { name: 'Carlos Girolami', role: 'Titular' },
+    { name: 'Fabiana Cotta', role: 'Titular' },
+    { name: 'Carlos Peñaloza', role: 'Titular' },
+    { name: 'Silvina Benítez', role: 'Titular' },
+    { name: 'Sergio Segarra', role: 'Titular' },
+    { name: 'Ramiro Godoy', role: 'Titular' },
+    { name: 'Dante Mihaljevic', role: 'Titular' },
   ];
 
   return (
