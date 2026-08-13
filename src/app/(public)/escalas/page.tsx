@@ -50,13 +50,13 @@ const DEFAULT_PARITARIA_MAYO = {
     { category: 'Farmacéutico', basic: 1962632.78, noRem: 132512.82 + 22085.47, description: 'Profesional a cargo del despacho y dirección técnica.' }
   ],
   july: [
-    { category: 'Cadetes', basic: 1381087.99, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
-    { category: 'Aprendiz Ayudante', basic: 1381087.99, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
-    { category: 'Personal Auxiliar Interno y Externo', basic: 1458428.89, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
-    { category: 'Personal con Asignación Específica', basic: 1550823.66, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
-    { category: 'Ayudante en Gestión de Farmacia', basic: 1550823.66, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
-    { category: 'Personal en Gestión de Farmacia', basic: 1897306.78, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
-    { category: 'Farmacéutico', basic: 2095145.60, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
+    { category: 'Cadetes', basic: 1403185.39, noRem: 0, description: 'Personal menor o mayor dedicado a tareas de mensajería y cadetería general.' },
+    { category: 'Aprendiz Ayudante', basic: 1403185.39, noRem: 0, description: 'Personal ingresante bajo supervisión directa.' },
+    { category: 'Personal Auxiliar Interno y Externo', basic: 1486139.03, noRem: 0, description: 'Personal de depósito, empaque y control de mercadería.' },
+    { category: 'Personal con Asignación Específica', basic: 1580289.30, noRem: 0, description: 'Cajeros, liquidadores, facturistas y vendedores.' },
+    { category: 'Ayudante en Gestión de Farmacia', basic: 1580289.30, noRem: 0, description: 'Personal de asistencia en mostrador y gestión.' },
+    { category: 'Personal en Gestión de Farmacia', basic: 1933355.60, noRem: 0, description: 'Auxiliares de farmacia calificados con responsabilidades.' },
+    { category: 'Farmacéutico', basic: 2134953.36, noRem: 0, description: 'Profesional a cargo del despacho y dirección técnica.' }
   ]
 };
 
@@ -72,9 +72,9 @@ const DEFAULT_PARITARIA_MAYO_ADICIONALES = {
     { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 910307.94, noRem: 61462.07 + 11427.08, description: 'Adicional por título para auxiliares o idóneos.' }
   ],
   july: [
-    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1619616.69, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
-    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1295693.35, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
-    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 971770.01, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
+    { concept: 'Bloqueo de Título del Farmacéutico Director Técnico - Art. 7 inc. a', basic: 1650389.40, noRem: 0, description: 'Compensación por bloqueo de firma del director técnico.' },
+    { concept: 'Título de Farmacéutico (80% del importe del Bloqueo) - Art. 7 inc. b', basic: 1320311.52, noRem: 0, description: 'Adicional por título a profesionales farmacéuticos auxiliares.' },
+    { concept: 'Título de Farmacéutico (60% del importe del Bloqueo) - Art. 7 inc. c', basic: 990233.64, noRem: 0, description: 'Adicional por título para auxiliares o idóneos.' }
   ]
 };
 
@@ -153,7 +153,7 @@ export default function PublicEscalasPage() {
   };
 
   // Tab 2: Calculator States
-  const [calcSalary, setCalcSalary] = useState<number>(1381087.99); // Default basic for July (Cadete)
+  const [calcSalary, setCalcSalary] = useState<number>(1403185.39); // Default basic for July 2026 (Cadete)
   const [vacationDays, setVacationDays] = useState<number>(14);
   const [daysWorked, setDaysWorked] = useState<number>(30);
   const [partTimeHours, setPartTimeHours] = useState<number>(4);
@@ -368,7 +368,7 @@ export default function PublicEscalasPage() {
 
               {/* Title Header */}
               <div className="border border-black bg-[#cbe3b6] text-center py-3 px-4 font-bold text-[11px] sm:text-xs text-black uppercase tracking-wider rounded">
-                ANEXO I PARITARIA CCT 659/13 MAYO DE 2026.
+                ANEXO I PARITARIA CCT 659/13 JULIO DE 2026.
               </div>
 
               {/* Table 1: Categorias */}
@@ -434,7 +434,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>14.558,40</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.381.087,99</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.403.185,39</span></div>
                       </td>
                     </tr>
                     {/* APRENDIZ AYUDANTE */}
@@ -458,7 +458,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>14.558,40</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.381.087,99</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.403.185,39</span></div>
                       </td>
                     </tr>
                     {/* PERSONAL AUXILIAR INTERNO Y EXTERNO */}
@@ -482,7 +482,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>15.373,67</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.458.428,89</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.486.139,03</span></div>
                       </td>
                     </tr>
                     {/* PERSONAL CON ASIGNACION ESPECIFICA */}
@@ -506,7 +506,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>16.347,63</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.550.823,66</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.580.289,30</span></div>
                       </td>
                     </tr>
                     {/* AYUDANTE EN GESTION DE FARMACIA */}
@@ -530,7 +530,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>16.347,63</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.550.823,66</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.580.289,30</span></div>
                       </td>
                     </tr>
                     {/* PERSONAL EN GESTION DE FARMACIA */}
@@ -554,7 +554,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>20.000,00</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.897.306,78</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.933.355,60</span></div>
                       </td>
                     </tr>
                     {/* FARMACEUTICO */}
@@ -578,7 +578,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>22.085,47</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>2.095.145,60</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>2.134.953,36</span></div>
                       </td>
                     </tr>
                   </tbody>
@@ -641,7 +641,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>19.045,13</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.619.616,69</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.650.389,40</span></div>
                       </td>
                     </tr>
                     {/* Articulo 7 inciso b */}
@@ -662,7 +662,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>15.236,10</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.295.693,35</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>1.320.311,52</span></div>
                       </td>
                     </tr>
                     {/* Articulo 7 inciso c */}
@@ -683,7 +683,7 @@ export default function PublicEscalasPage() {
                         <div className="flex justify-between w-full px-1"><span>$</span><span>11.427,08</span></div>
                       </td>
                       <td className="border border-black bg-[#fff2cc] p-2 font-semibold text-right">
-                        <div className="flex justify-between w-full px-1"><span>$</span><span>971.770,01</span></div>
+                        <div className="flex justify-between w-full px-1"><span>$</span><span>990.233,64</span></div>
                       </td>
                     </tr>
                   </tbody>
@@ -694,7 +694,7 @@ export default function PublicEscalasPage() {
               <div className="flex flex-col sm:flex-row items-stretch justify-between gap-6 pt-4">
                 <div className="border border-black bg-[#cbe3b6] p-3.5 text-[9px] sm:text-[10px] leading-relaxed text-black max-w-xl rounded">
                   <p className="mb-2 font-semibold">
-                    El presente Acuerdo se realizó en forma virtual mediante plataforma ZOOM del 28 de mayo de 2026, del mismo participaron en varios procesos de la negociacion, los siguientes representantes:
+                    El presente Acuerdo se realizó en forma virtual mediante plataforma ZOOM del 27 de JULIO de 2026, del mismo participaron en varios procesos de la negociacion, los siguientes representantes:
                   </p>
                   <p className="underline mb-1 font-bold">
                     Por COFA, Roberto Jorge Zgaib, Jorge Bordon y Eduardo Jaime Molina.

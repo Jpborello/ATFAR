@@ -3,16 +3,28 @@
 import { ShieldCheck, Users, BookOpen } from 'lucide-react';
 
 export default function InstitucionalPage() {
-  const comision = [
-    { name: 'Gustavo Fabián Rosi', role: 'Titular' },
-    { name: 'Daniel Gaspari', role: 'Titular' },
-    { name: 'Carlos Girolami', role: 'Titular' },
-    { name: 'Fabiana Cotta', role: 'Titular' },
-    { name: 'Carlos Peñaloza', role: 'Titular' },
-    { name: 'Silvina Benítez', role: 'Titular' },
-    { name: 'Sergio Segarra', role: 'Titular' },
-    { name: 'Ramiro Godoy', role: 'Titular' },
-    { name: 'Dante Mihaljevic', role: 'Titular' },
+  const secretarias = [
+    { name: 'Gustavo Fabián Rosi', role: 'Secretario General' },
+    { name: 'Fabiana Alejandra Cotta', role: 'Secretaria Adjunta' },
+    { name: 'Daniel Alberto Gaspari', role: 'Secretario Administrativo y Finanzas' },
+    { name: 'Sergio Alfredo Segarra', role: 'Secretario de Asuntos Gremiales' },
+    { name: 'Carlos Hugo Girolami', role: 'Secretario de Acción y Obra Social' },
+    { name: 'Dante Oscar Mihaljevic', role: 'Secretario de Prensa y Actas' },
+    { name: 'Claudia Noemí Zabala', role: 'Secretaria de Asuntos del Interior' },
+  ];
+
+  const vocalesTitulares = [
+    { name: 'Ramiro Godoy', role: 'Vocal Titular 1°' },
+    { name: 'Alejandra Erica Salgado', role: 'Vocal Titular 2°' },
+    { name: 'Silvina Mabel Benítez', role: 'Vocal Titular 3°' },
+    { name: 'Stella Maris Scaglione', role: 'Vocal Titular 4°' },
+  ];
+
+  const vocalesSuplentes = [
+    { name: 'Gustavo Fabián Ceballos', role: 'Vocal Suplente 1°' },
+    { name: 'Carlos Antonio Cogno', role: 'Vocal Suplente 2°' },
+    { name: 'Carolina María Niell', role: 'Vocal Suplente 3°' },
+    { name: 'Graciela Rita Zin Córdoba', role: 'Vocal Suplente 4°' },
   ];
 
   return (
@@ -80,21 +92,63 @@ export default function InstitucionalPage() {
               <h2 className="text-xl font-bold text-foreground">Comisión Directiva</h2>
             </div>
 
-            <div className="space-y-4">
-              {comision.map((member, idx) => (
-                <div key={idx} className="flex justify-between items-center py-2 border-b border-border/40 last:border-0 last:pb-0">
-                  <div className="space-y-0.5">
-                    <span className="block text-sm font-bold text-foreground">{member.name}</span>
-                    <span className="block text-xs text-muted-foreground font-medium">{member.role}</span>
+            {/* Secretarías */}
+            <div className="space-y-3">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-secondary block border-b border-border/60 pb-1">
+                Secretarías
+              </span>
+              <div className="space-y-3">
+                {secretarias.map((member, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1.5 border-b border-border/30 last:border-0 last:pb-0">
+                    <div className="space-y-0.5">
+                      <span className="block text-sm font-bold text-foreground">{member.name}</span>
+                      <span className="block text-xs text-muted-foreground font-medium">{member.role}</span>
+                    </div>
+                    <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0 ml-2" />
                   </div>
-                  <ShieldCheck className="w-4 h-4 text-emerald-500 flex-shrink-0" />
-                </div>
-              ))}
+                ))}
+              </div>
+            </div>
+
+            {/* Vocales Titulares */}
+            <div className="space-y-3 pt-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-secondary block border-b border-border/60 pb-1">
+                Vocales Titulares
+              </span>
+              <div className="space-y-2.5">
+                {vocalesTitulares.map((member, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1 border-b border-border/30 last:border-0 last:pb-0">
+                    <div className="space-y-0.5">
+                      <span className="block text-sm font-semibold text-foreground">{member.name}</span>
+                      <span className="block text-xs text-muted-foreground font-medium">{member.role}</span>
+                    </div>
+                    <ShieldCheck className="w-4 h-4 text-primary/70 flex-shrink-0 ml-2" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Vocales Suplentes */}
+            <div className="space-y-3 pt-2">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-secondary block border-b border-border/60 pb-1">
+                Vocales Suplentes
+              </span>
+              <div className="space-y-2.5">
+                {vocalesSuplentes.map((member, idx) => (
+                  <div key={idx} className="flex justify-between items-center py-1 border-b border-border/30 last:border-0 last:pb-0">
+                    <div className="space-y-0.5">
+                      <span className="block text-sm font-medium text-foreground">{member.name}</span>
+                      <span className="block text-xs text-muted-foreground font-medium">{member.role}</span>
+                    </div>
+                    <ShieldCheck className="w-4 h-4 text-muted-foreground/50 flex-shrink-0 ml-2" />
+                  </div>
+                ))}
+              </div>
             </div>
             
             <div className="bg-muted/40 p-4 rounded-2xl border border-border text-center">
               <p className="text-[10px] text-muted-foreground leading-relaxed italic">
-                * Gestión sindical periodo 2024 - 2028. Todos los integrantes son elegidos mediante el voto directo de los trabajadores de farmacia afiliados.
+                * Comisión Directiva electa. Todos los integrantes son elegidos mediante el voto directo de los trabajadores de farmacia afiliados.
               </p>
             </div>
           </div>
