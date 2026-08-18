@@ -100,8 +100,8 @@ function LoginContent() {
         shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
       });
 
-      const container = document.getElementById('map-selector');
-      if (!container) return;
+      const container = document.getElementById('map-selector') as (HTMLElement & { _leaflet_id?: number }) | null;
+      if (!container || container._leaflet_id) return;
 
       const loadedMap = L.map('map-selector').setView([latitude, longitude], 13);
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -138,7 +138,12 @@ function LoginContent() {
       setMapRef(null);
       setMarkerRef(null);
     };
-  }, [activeTab, registerRole, latitude, longitude]);
+    // Solo se inicializa una vez al entrar al paso del mapa: si latitude/longitude
+    // estuvieran en las deps, cada click/drag destruía y recreaba el mapa entero
+    // (era la causa del crash al tocar el mapa). El sync de posición ya lo maneja
+    // el effect de abajo.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, registerRole]);
 
   // Update map position when coordinates are updated by autocompleting
   useEffect(() => {
