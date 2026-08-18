@@ -9,6 +9,7 @@ import {
   AlertCircle,
   Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 export default function AdminReportesPage() {
@@ -21,24 +22,30 @@ export default function AdminReportesPage() {
 
   useEffect(() => {
     async function loadReportStats() {
+      setLoading(true);
       try {
-        const isConfigured = 
-          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured) return;
 
-        // Las 4 consultas son independientes - iban una atras de otra, ahora van en paralelo.
+        // Rango de fechas del período seleccionado (filtra por due_date, que es el
+        // mes/año al que corresponde cada declaración, no la fecha en que se pagó).
+        const yearStart = `${reportPeriod}-01-01`;
+        const yearEnd = `${reportPeriod}-12-31`;
+
+        // Las consultas son independientes entre sí, van todas en paralelo.
         const [
           { data: paid },
           { count: regCount },
           { count: empCount },
           { count: pendCount },
         ] = await Promise.all([
-          supabase.from('payments').select('amount').eq('status', 'pagado'),
+          supabase.from('payments').select('amount').eq('status', 'pagado').gte('due_date', yearStart).lte('due_date', yearEnd),
           supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true),
           supabase.from('employees').select('*', { count: 'exact', head: true }),
-          supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'en_revision'),
+          supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'en_revision').gte('due_date', yearStart).lte('due_date', yearEnd),
         ]);
 
         if (paid) {
@@ -50,12 +57,15 @@ export default function AdminReportesPage() {
         setPendingCount(pendCount || 0);
       } catch (err) {
         console.error("Error loading report stats:", err);
+        toast.error('No pudimos cargar los datos del reporte.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
     }
     loadReportStats();
-  }, []);
+  }, [reportPeriod]);
 
   const revenueBreakdown = [
     { source: 'Aportes Gremiales Obligatorios (CCT 659/13)', amount: totalRevenue * 0.54, percent: 54, color: 'bg-primary' },
@@ -95,14 +105,6 @@ export default function AdminReportesPage() {
     URL.revokeObjectURL(url);
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8">
       {/* Title Header */}
@@ -138,10 +140,13 @@ export default function AdminReportesPage() {
       </div>
 
       {/* Grid of annual stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 transition-opacity ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Recaudación Acumulada</span>
-          <span className="text-2xl font-black text-primary">${totalRevenue.toLocaleString('es-AR')}</span>
+          <span className="text-2xl font-black text-primary flex items-center gap-2">
+            ${totalRevenue.toLocaleString('es-AR')}
+            {loading && <Loader2 className="w-4 h-4 animate-spin text-primary/60" />}
+          </span>
           <span className="text-[10px] text-muted-foreground font-semibold flex items-center gap-0.5">
             <span>Aportes gremiales cobrados</span>
           </span>
@@ -150,13 +155,13 @@ export default function AdminReportesPage() {
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Aportantes Registrados</span>
           <span className="text-2xl font-black text-foreground">{registeredPharmacies} locales</span>
-          <span className="text-[10px] text-muted-foreground font-semibold">Declaraciones activas al mes</span>
+          <span className="text-[10px] text-muted-foreground font-semibold">Total actual (no varía por período)</span>
         </div>
 
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
           <span className="text-[10px] font-bold text-muted-foreground uppercase block">Trabajadores Activos</span>
           <span className="text-2xl font-black text-foreground">{activeEmployees} personas</span>
-          <span className="text-[10px] text-muted-foreground font-semibold">Nóminas del convenio CCT</span>
+          <span className="text-[10px] text-muted-foreground font-semibold">Total actual (no varía por período)</span>
         </div>
 
         <div className="bg-card border border-border rounded-3xl p-5 shadow-premium glass space-y-1.5">
@@ -179,7 +184,7 @@ export default function AdminReportesPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         
         {/* Left Column: Visual Breakdown bar chart */}
-        <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
+        <div className={`lg:col-span-7 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6 transition-opacity ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
           <div className="flex items-center gap-2 border-b border-border pb-4">
             <PieChart className="w-5 h-5 text-secondary" />
             <h2 className="text-base font-bold text-foreground">Distribución de Ingresos</h2>

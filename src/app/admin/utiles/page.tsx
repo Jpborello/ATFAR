@@ -13,8 +13,10 @@ import {
   FileText, 
   ExternalLink
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { BenefitRequest } from '@/types';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 export default function AdminUtilesPage() {
   const [requests, setRequests] = useState<BenefitRequest[]>([]);
@@ -38,6 +40,9 @@ export default function AdminUtilesPage() {
         setRequests(data || []);
       } catch (err) {
         console.error('Error loading benefit requests:', err);
+        toast.error('No pudimos cargar las solicitudes.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -61,14 +66,20 @@ export default function AdminUtilesPage() {
       }
     } catch (err) {
       console.error('Error updating request status:', err);
-      alert('Ocurrió un error al actualizar el estado.');
+      toast.error('Ocurrió un error al actualizar el estado.');
     } finally {
       setActionLoading(null);
     }
   };
 
   const handleDelete = async (id: string, attachmentUrl: string) => {
-    if (!confirm('¿Seguro que deseas eliminar esta solicitud permanentemente?')) return;
+    const confirmed = await confirmDialog({
+      title: 'Eliminar solicitud',
+      message: '¿Seguro que deseas eliminar esta solicitud permanentemente? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!confirmed) return;
     setActionLoading(id);
     try {
       const { error } = await supabase
@@ -94,9 +105,10 @@ export default function AdminUtilesPage() {
       setRequests(prev => prev.filter(req => req.id !== id));
       setIsModalOpen(false);
       setSelectedRequest(null);
+      toast.success('Solicitud eliminada.');
     } catch (err) {
       console.error('Error deleting benefit request:', err);
-      alert('Ocurrió un error al eliminar el registro.');
+      toast.error('Ocurrió un error al eliminar el registro.');
     } finally {
       setActionLoading(null);
     }

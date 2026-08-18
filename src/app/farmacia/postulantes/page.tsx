@@ -14,6 +14,7 @@ import {
   ExternalLink,
   ArrowLeft
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 interface JobApplication {
@@ -45,6 +46,9 @@ export default function FarmaciaPostulantesPage() {
         setApplications(data || []);
       } catch (err) {
         console.error('Error loading applications:', err);
+        toast.error('No pudimos cargar los postulantes.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }

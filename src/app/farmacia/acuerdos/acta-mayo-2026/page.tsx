@@ -129,11 +129,13 @@ export default function ActaAcuerdoMayoPage() {
             
             {/* PDF Downloader button inside sidebar */}
             <div className="pt-5 mt-5 border-t border-border/80">
-              <a 
+              <a
                 href="#"
                 onClick={(e) => {
                   e.preventDefault();
-                  alert('Descargando archivo PDF homologado del Acta Acuerdo Mayo 2026...');
+                  // Sin archivo homologado subido: usamos el diálogo de impresión
+                  // del navegador ("Guardar como PDF") sobre el contenido del acta.
+                  window.print();
                 }}
                 className="w-full inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl bg-slate-800 text-white text-xs font-black uppercase tracking-wider hover:bg-slate-700 transition-all shadow-premium"
               >

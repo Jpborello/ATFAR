@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { GraduationCap, Upload, Send, CheckCircle, AlertCircle, FileText, Plus, Trash, Loader2, LogIn } from 'lucide-react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 interface ChildRequest {
@@ -81,11 +82,11 @@ export default function UtilesPage() {
       const file = e.target.files[0];
       const validTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg'];
       if (!validTypes.includes(file.type)) {
-        alert('Formato de archivo inválido. Subí un archivo PDF o una imagen (JPG, PNG).');
+        toast.warning('Formato de archivo inválido. Subí un archivo PDF o una imagen (JPG, PNG).');
         return;
       }
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('El archivo supera el límite de 5MB.');
+        toast.warning('El archivo supera el límite de 5MB.');
         return;
       }
       setReceiptFile(file);
@@ -95,17 +96,17 @@ export default function UtilesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!userId) {
-      alert('Necesitás iniciar sesión con tu cuenta de afiliado para enviar la solicitud.');
+      toast.warning('Necesitás iniciar sesión con tu cuenta de afiliado para enviar la solicitud.');
       return;
     }
     if (!receiptFile) {
-      alert('Por favor, adjunta una copia de tu último recibo de sueldo para verificar la afiliación.');
+      toast.warning('Adjuntá una copia de tu último recibo de sueldo para verificar la afiliación.');
       return;
     }
 
     const invalidChildren = childrenList.some(child => !child.fullName || !child.age || !child.schoolLevel);
     if (invalidChildren) {
-      alert('Por favor, completa los datos de todos los hijos registrados.');
+      toast.warning('Completá los datos de todos los hijos registrados.');
       return;
     }
 

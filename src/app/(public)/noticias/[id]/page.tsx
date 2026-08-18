@@ -4,6 +4,7 @@
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, User, ArrowLeft, Share2, Printer, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 interface NewsDetail {
@@ -101,6 +102,9 @@ export default function NoticiaDetailPage({ params }: { params: Promise<{ id: st
         }
       } catch (err) {
         console.error("Error loading article:", err);
+        toast.error('No pudimos cargar la noticia.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -163,8 +167,15 @@ export default function NoticiaDetailPage({ params }: { params: Promise<{ id: st
             </div>
             
             <div className="flex items-center gap-3">
-              <button 
-                onClick={() => alert('Compartir link del artículo')}
+              <button
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href);
+                    toast.success('Link copiado al portapapeles.');
+                  } catch {
+                    toast.error('No se pudo copiar el link.');
+                  }
+                }}
                 className="p-1.5 rounded-lg border border-border hover:bg-muted transition-all"
                 title="Compartir"
               >

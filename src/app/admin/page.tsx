@@ -2,20 +2,22 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { 
-  Building2, 
-  CheckCircle2, 
-  AlertTriangle, 
-  XCircle, 
-  TrendingUp, 
-  Clock, 
+import {
+  Building2,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  TrendingUp,
+  Clock,
   ArrowRight,
   ShieldCheck,
   DollarSign,
   X,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Loader2
 } from 'lucide-react';
 
 interface Activity {
@@ -46,6 +48,7 @@ export default function AdminDashboardPage() {
   const [isAuditModalOpen, setIsAuditModalOpen] = useState(false);
   const [selectedActivity, setSelectedActivity] = useState<Activity | null>(null);
   const [auditLoading, setAuditLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadStats() {
@@ -126,6 +129,11 @@ export default function AdminDashboardPage() {
         }
       } catch (err) {
         console.error("Error loading admin stats:", err);
+        toast.error('No pudimos cargar las estadísticas del panel.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
+      } finally {
+        setLoading(false);
       }
     }
     loadStats();
@@ -219,10 +227,11 @@ export default function AdminDashboardPage() {
         
         // Decrement pending count
         setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+        toast.success('Pago aprobado y validado.');
       }
     } catch (err) {
       console.error(err);
-      alert('Error al aprobar el pago.');
+      toast.error('Error al aprobar el pago.');
     } finally {
       setAuditLoading(false);
       setIsAuditModalOpen(false);
@@ -252,10 +261,11 @@ export default function AdminDashboardPage() {
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'impago', action: 'Pago rechazado por administración' } : a));
         setDebtPharmaciesCount(prev => prev + 1);
         setPendingDeclarationsCount(prev => Math.max(0, prev - 1));
+        toast.success('Pago rechazado.');
       }
     } catch (err) {
       console.error(err);
-      alert('Error al rechazar el pago.');
+      toast.error('Error al rechazar el pago.');
     } finally {
       setAuditLoading(false);
       setIsAuditModalOpen(false);
@@ -322,13 +332,16 @@ export default function AdminDashboardPage() {
           </div>
           <div>
             <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Recaudación Mensual (Jun)</span>
-            <span className="text-xl font-black text-primary">${monthlyRevenue.toLocaleString('es-AR')}</span>
+            <span className="text-xl font-black text-primary flex items-center gap-2">
+              ${monthlyRevenue.toLocaleString('es-AR')}
+              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary/60" />}
+            </span>
           </div>
         </div>
       </div>
 
       {/* Grid of indicators */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+      <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 transition-opacity ${loading ? 'opacity-50 pointer-events-none' : ''}`}>
         {cards.map((card, idx) => {
           const Icon = card.icon;
           return (

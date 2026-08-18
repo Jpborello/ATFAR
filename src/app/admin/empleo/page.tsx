@@ -14,7 +14,9 @@ import {
   ExternalLink,
   UserCheck
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface JobApplication {
   id: string;
@@ -46,6 +48,9 @@ export default function AdminEmpleoPage() {
         setApplications(data || []);
       } catch (err) {
         console.error('Error loading applications:', err);
+        toast.error('No pudimos cargar las postulaciones.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -55,9 +60,13 @@ export default function AdminEmpleoPage() {
   }, []);
 
   const handleDelete = async (id: string, cvUrl: string) => {
-    if (!confirm('¿Seguro que deseas eliminar esta postulación de la bolsa de trabajo?')) {
-      return;
-    }
+    const confirmed = await confirmDialog({
+      title: 'Eliminar postulación',
+      message: '¿Seguro que deseas eliminar esta postulación de la bolsa de trabajo?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     setDeletingId(id);
     try {
@@ -83,9 +92,10 @@ export default function AdminEmpleoPage() {
       }
 
       setApplications(prev => prev.filter(app => app.id !== id));
+      toast.success('Postulación eliminada.');
     } catch (err) {
       console.error('Error deleting application:', err);
-      alert('Ocurrió un error al eliminar el registro.');
+      toast.error('Ocurrió un error al eliminar el registro.');
     } finally {
       setDeletingId(null);
     }

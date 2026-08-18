@@ -50,6 +50,16 @@ function LoginContent() {
   const [hrEmail, setHrEmail] = useState('');
   const [hrPhone, setHrPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const markTouched = (field: string) => setTouched((prev) => ({ ...prev, [field]: true }));
+
+  // Validación en vivo (se muestra recién cuando el usuario terminó de completar el campo)
+  const cuitDigitsRegex = /^\d{11}$/;
+  const emailMismatch = touched.emailConfirm && emailConfirm.length > 0 && email !== emailConfirm;
+  const passwordMismatch = touched.passwordConfirm && passwordConfirm.length > 0 && password !== passwordConfirm;
+  const passwordTooShort = touched.password && password.length > 0 && password.length < 6;
+  const cuilInvalid = touched.cuil && cuil.length > 0 && !cuitDigitsRegex.test(cuil);
+  const pharmacyCuitInvalid = touched.pharmacyCuit && pharmacyCuit.length > 0 && !cuitDigitsRegex.test(pharmacyCuit);
 
   // Map coordinate picker states (Rosario default coords)
   const [latitude, setLatitude] = useState(-32.9468);
@@ -278,9 +288,14 @@ function LoginContent() {
     }
 
     if (registerRole === 'pharmacy_owner') {
-      const cuitRegex = /^\d{11}$/;
-      if (!cuitRegex.test(pharmacyCuit)) {
+      if (!cuitDigitsRegex.test(pharmacyCuit)) {
         setErrorMsg('El CUIT debe poseer exactamente 11 dígitos numéricos, sin espacios ni guiones.');
+        setLoading(false);
+        return;
+      }
+    } else if (registerRole === 'employee') {
+      if (!cuitDigitsRegex.test(cuil)) {
+        setErrorMsg('El CUIL debe poseer exactamente 11 dígitos numéricos, sin espacios ni guiones.');
         setLoading(false);
         return;
       }
@@ -323,7 +338,6 @@ function LoginContent() {
       });
 
       if (authError) {
-        alert("Error de Supabase Auth: " + authError.message + " (Status: " + authError.status + ")");
         throw new Error(authError.message);
       }
       if (!authData.user) throw new Error('Error en el registro.');
@@ -646,6 +660,7 @@ function LoginContent() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onBlur={() => markTouched('email')}
                       placeholder="correo@ejemplo.com"
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground"
                     />
@@ -663,10 +678,16 @@ function LoginContent() {
                       required
                       value={emailConfirm}
                       onChange={(e) => setEmailConfirm(e.target.value)}
+                      onBlur={() => markTouched('emailConfirm')}
                       placeholder="correo@ejemplo.com"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 text-sm transition-all text-foreground font-semibold ${
+                        emailMismatch ? 'border-red-400 focus:ring-red-400/40' : 'border-border focus:ring-secondary/55'
+                      }`}
                     />
                   </div>
+                  {emailMismatch && (
+                    <span className="text-[11px] text-red-500 font-semibold">Los correos no coinciden.</span>
+                  )}
                 </div>
               </div>
 
@@ -683,10 +704,16 @@ function LoginContent() {
                       required
                       value={cuil}
                       onChange={(e) => setCuil(e.target.value)}
+                      onBlur={() => markTouched('cuil')}
                       placeholder="Ej. 20304445556"
-                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                      className={`w-full pl-9 pr-3 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 text-sm transition-all ${
+                        cuilInvalid ? 'border-red-400 focus:ring-red-400/40' : 'border-border focus:ring-secondary/55'
+                      }`}
                     />
                   </div>
+                  {cuilInvalid && (
+                    <span className="text-[11px] text-red-500 font-semibold">El CUIL debe tener 11 números, sin guiones ni espacios.</span>
+                  )}
                 </div>
               ) : (
                 /* Pharmacy Owner Fields */
@@ -801,9 +828,15 @@ function LoginContent() {
                         required
                         value={pharmacyCuit}
                         onChange={(e) => setPharmacyCuit(e.target.value)}
+                        onBlur={() => markTouched('pharmacyCuit')}
                         placeholder="Ej. 30777888990"
-                        className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all text-foreground font-mono font-bold"
+                        className={`w-full px-3.5 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 text-sm transition-all text-foreground font-mono font-bold ${
+                          pharmacyCuitInvalid ? 'border-red-400 focus:ring-red-400/40' : 'border-border focus:ring-secondary/50'
+                        }`}
                       />
+                      {pharmacyCuitInvalid && (
+                        <span className="text-[11px] text-red-500 font-semibold">El CUIT debe tener 11 números, sin guiones ni espacios.</span>
+                      )}
                     </div>
                     <div className="space-y-1">
                       <label className="text-xs font-semibold text-muted-foreground">
@@ -917,8 +950,11 @@ function LoginContent() {
                       required
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
+                      onBlur={() => markTouched('password')}
                       placeholder="Mínimo 6 caracteres"
-                      className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground"
+                      className={`w-full pl-9 pr-12 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 text-sm transition-all text-foreground ${
+                        passwordTooShort ? 'border-red-400 focus:ring-red-400/40' : 'border-border focus:ring-secondary/55'
+                      }`}
                     />
                     <button
                       type="button"
@@ -928,6 +964,9 @@ function LoginContent() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {passwordTooShort && (
+                    <span className="text-[11px] text-red-500 font-semibold">La contraseña debe tener al menos 6 caracteres.</span>
+                  )}
                 </div>
 
                 <div className="space-y-1">
@@ -941,10 +980,16 @@ function LoginContent() {
                       required
                       value={passwordConfirm}
                       onChange={(e) => setPasswordConfirm(e.target.value)}
+                      onBlur={() => markTouched('passwordConfirm')}
                       placeholder="Mínimo 6 caracteres"
-                      className="w-full pl-9 pr-12 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
+                      className={`w-full pl-9 pr-12 py-2.5 rounded-xl border bg-background focus:outline-none focus:ring-2 text-sm transition-all text-foreground font-semibold ${
+                        passwordMismatch ? 'border-red-400 focus:ring-red-400/40' : 'border-border focus:ring-secondary/55'
+                      }`}
                     />
                   </div>
+                  {passwordMismatch && (
+                    <span className="text-[11px] text-red-500 font-semibold">Las contraseñas no coinciden.</span>
+                  )}
                 </div>
               </div>
 

@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Briefcase, Upload, Send, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { cctCategories } from '@/lib/dateUtils';
 
@@ -27,11 +28,11 @@ export default function BolsaPage() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       if (file.type !== 'application/pdf') {
-        alert('Por favor, subí solo archivos en formato PDF.');
+        toast.warning('Subí solo archivos en formato PDF.');
         return;
       }
       if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('El archivo supera el límite de 5MB.');
+        toast.warning('El archivo supera el límite de 5MB.');
         return;
       }
       setCvFile(file);
@@ -41,7 +42,7 @@ export default function BolsaPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cvFile) {
-      alert('Por favor, selecciona tu archivo CV en formato PDF.');
+      toast.warning('Seleccioná tu archivo CV en formato PDF.');
       return;
     }
 

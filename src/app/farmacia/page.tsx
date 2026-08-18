@@ -20,8 +20,10 @@ import {
   Briefcase,
   Upload
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory, getReceiptStatus } from '@/lib/dateUtils';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface Employee {
   id: string;
@@ -109,164 +111,171 @@ export default function FarmaciaDashboard() {
 
   useEffect(() => {
     const fetchPharmacy = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
-        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
 
-      if (!isConfigured) {
-        setPharmacyName(profileData.nombreFantasia || profileData.razonSocial);
-        setPharmacyCuit(profileData.cuit);
-        setPharmacyAddress(profileData.declaredAddresses);
-        setLoading(false);
-        return;
-      }
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
-      if (!session) {
-        window.location.href = '/login';
-        return;
-      }
+        if (!isConfigured) {
+          setPharmacyName(profileData.nombreFantasia || profileData.razonSocial);
+          setPharmacyCuit(profileData.cuit);
+          setPharmacyAddress(profileData.declaredAddresses);
+          return;
+        }
 
-      setUserId(session.user.id);
+        if (!session) {
+          window.location.href = '/login';
+          return;
+        }
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, seen_tutorial')
-        .eq('id', session.user.id)
-        .single();
+        setUserId(session.user.id);
 
-      if (profile?.role !== 'pharmacy_owner' && profile?.role !== 'admin') {
-        window.location.href = '/login';
-        return;
-      }
-
-      if (profile?.role === 'pharmacy_owner' && !profile?.seen_tutorial) {
-        setShowTutorial(true);
-      }
-
-      let { data: pharmacy } = await supabase
-        .from('pharmacies')
-        .select('*')
-        .eq('owner_id', session.user.id)
-        .maybeSingle();
-
-      if (!pharmacy) {
-        // Autocreate pharmacy row if missing to prevent page crash
-        const { data: newPharm, error: createError } = await supabase
-          .from('pharmacies')
-          .insert({
-            name: 'Mi Farmacia',
-            cuit: '99-' + Math.floor(10000000 + Math.random() * 90000000) + '-9',
-            address: 'Dirección no declarada',
-            owner_id: session.user.id,
-            registered: true
-          })
-          .select()
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role, seen_tutorial')
+          .eq('id', session.user.id)
           .single();
 
-        if (!createError && newPharm) {
-          pharmacy = newPharm;
+        if (profile?.role !== 'pharmacy_owner' && profile?.role !== 'admin') {
+          window.location.href = '/login';
+          return;
         }
-      }
 
-      if (pharmacy) {
-        // Sync has_debt status dynamically
-        try {
-          const todayStr = new Date().toISOString().split('T')[0];
-          const { data: payments } = await supabase
-            .from('payments')
-            .select('status, due_date')
+        if (profile?.role === 'pharmacy_owner' && !profile?.seen_tutorial) {
+          setShowTutorial(true);
+        }
+
+        let { data: pharmacy } = await supabase
+          .from('pharmacies')
+          .select('*')
+          .eq('owner_id', session.user.id)
+          .maybeSingle();
+
+        if (!pharmacy) {
+          // Autocreate pharmacy row if missing to prevent page crash
+          const { data: newPharm, error: createError } = await supabase
+            .from('pharmacies')
+            .insert({
+              name: 'Mi Farmacia',
+              cuit: '99-' + Math.floor(10000000 + Math.random() * 90000000) + '-9',
+              address: 'Dirección no declarada',
+              owner_id: session.user.id,
+              registered: true
+            })
+            .select()
+            .single();
+
+          if (!createError && newPharm) {
+            pharmacy = newPharm;
+          }
+        }
+
+        if (pharmacy) {
+          // Sync has_debt status dynamically
+          try {
+            const todayStr = new Date().toISOString().split('T')[0];
+            const { data: payments } = await supabase
+              .from('payments')
+              .select('status, due_date')
+              .eq('pharmacy_id', pharmacy.id);
+
+            let shouldHaveDebt = false;
+            if (!payments || payments.length === 0) {
+              shouldHaveDebt = true;
+            } else {
+              const hasPastDueUnpaid = payments.some(p =>
+                (p.status === 'impago' || p.status === 'unpaid') &&
+                p.due_date < todayStr
+              );
+              shouldHaveDebt = hasPastDueUnpaid;
+            }
+
+            if (pharmacy.has_debt !== shouldHaveDebt) {
+              await supabase
+                .from('pharmacies')
+                .update({ has_debt: shouldHaveDebt })
+                .eq('id', pharmacy.id);
+              pharmacy.has_debt = shouldHaveDebt;
+            }
+          } catch (syncErr) {
+            console.error("Error syncing pharmacy debt:", syncErr);
+          }
+
+          setPharmacyId(pharmacy.id);
+          setPharmacyName(pharmacy.nombre_fantasia || pharmacy.name || pharmacy.razon_social);
+          setPharmacyCuit(pharmacy.cuit);
+          setPharmacyAddress(pharmacy.declared_addresses || pharmacy.address);
+          setHasDebt(!!pharmacy.has_debt);
+
+          setProfileData({
+            cuit: pharmacy.cuit || '',
+            razonSocial: pharmacy.razon_social || pharmacy.name || '',
+            nombreFantasia: pharmacy.nombre_fantasia || pharmacy.name || '',
+            whatsapp: pharmacy.whatsapp || '',
+            actividadEconomica: pharmacy.actividad_economica || '',
+            initialPeriod: pharmacy.initial_period || '',
+            declaredEmployeeCount: pharmacy.declared_employee_count || 0,
+            branches: pharmacy.branches || '',
+            notes: pharmacy.notes || '',
+            declaredAddresses: pharmacy.declared_addresses || pharmacy.address || '',
+            respEmail: pharmacy.resp_email || '',
+            respPhone: pharmacy.resp_phone || '',
+            respAltEmail: pharmacy.resp_alt_email || '',
+            hrEmail: pharmacy.hr_email || '',
+            hrPhone: pharmacy.hr_phone || '',
+            hrAltEmail: pharmacy.hr_alt_email || '',
+            hrName: pharmacy.hr_name || '',
+            hrRole: pharmacy.hr_role || ''
+          });
+
+          // Fetch registered employees
+          const { data: list } = await supabase
+            .from('employees')
+            .select('*')
             .eq('pharmacy_id', pharmacy.id);
 
-          let shouldHaveDebt = false;
-          if (!payments || payments.length === 0) {
-            shouldHaveDebt = true;
+          if (list) {
+            setEmployees(list.map(emp => ({
+              id: emp.id,
+              fullName: emp.full_name,
+              cuil: emp.cuil,
+              category: emp.category,
+              entryDate: emp.entry_date,
+              active: emp.active,
+              isAffiliate: !!emp.is_affiliate,
+              receiptUrl: emp.receipt_url,
+              receiptDate: emp.receipt_date
+            })));
           } else {
-            const hasPastDueUnpaid = payments.some(p => 
-              (p.status === 'impago' || p.status === 'unpaid') && 
-              p.due_date < todayStr
-            );
-            shouldHaveDebt = hasPastDueUnpaid;
+            setEmployees([]);
           }
 
-          if (pharmacy.has_debt !== shouldHaveDebt) {
-            await supabase
-              .from('pharmacies')
-              .update({ has_debt: shouldHaveDebt })
-              .eq('id', pharmacy.id);
-            pharmacy.has_debt = shouldHaveDebt;
+          // Fetch announcements
+          const { data: annData } = await supabase
+            .from('announcements')
+            .select('*')
+            .eq('visibility', 'pharmacy')
+            .order('created_at', { ascending: false });
+
+          if (annData && annData.length > 0) {
+            setAnnouncements(annData.map(a => ({
+              id: a.id,
+              title: a.title,
+              summary: a.summary,
+              date: new Date(a.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
+            })));
           }
-        } catch (syncErr) {
-          console.error("Error syncing pharmacy debt:", syncErr);
         }
-
-        setPharmacyId(pharmacy.id);
-        setPharmacyName(pharmacy.nombre_fantasia || pharmacy.name || pharmacy.razon_social);
-        setPharmacyCuit(pharmacy.cuit);
-        setPharmacyAddress(pharmacy.declared_addresses || pharmacy.address);
-        setHasDebt(!!pharmacy.has_debt);
-        
-        setProfileData({
-          cuit: pharmacy.cuit || '',
-          razonSocial: pharmacy.razon_social || pharmacy.name || '',
-          nombreFantasia: pharmacy.nombre_fantasia || pharmacy.name || '',
-          whatsapp: pharmacy.whatsapp || '',
-          actividadEconomica: pharmacy.actividad_economica || '',
-          initialPeriod: pharmacy.initial_period || '',
-          declaredEmployeeCount: pharmacy.declared_employee_count || 0,
-          branches: pharmacy.branches || '',
-          notes: pharmacy.notes || '',
-          declaredAddresses: pharmacy.declared_addresses || pharmacy.address || '',
-          respEmail: pharmacy.resp_email || '',
-          respPhone: pharmacy.resp_phone || '',
-          respAltEmail: pharmacy.resp_alt_email || '',
-          hrEmail: pharmacy.hr_email || '',
-          hrPhone: pharmacy.hr_phone || '',
-          hrAltEmail: pharmacy.hr_alt_email || '',
-          hrName: pharmacy.hr_name || '',
-          hrRole: pharmacy.hr_role || ''
+      } catch (err) {
+        console.error('Error loading pharmacy dashboard:', err);
+        toast.error('No pudimos cargar los datos de tu farmacia.', {
+          description: 'Revisá tu conexión y volvé a intentarlo recargando la página.',
         });
-
-        // Fetch registered employees
-        const { data: list } = await supabase
-          .from('employees')
-          .select('*')
-          .eq('pharmacy_id', pharmacy.id);
-
-        if (list) {
-          setEmployees(list.map(emp => ({
-            id: emp.id,
-            fullName: emp.full_name,
-            cuil: emp.cuil,
-            category: emp.category,
-            entryDate: emp.entry_date,
-            active: emp.active,
-            isAffiliate: !!emp.is_affiliate,
-            receiptUrl: emp.receipt_url,
-            receiptDate: emp.receipt_date
-          })));
-        } else {
-          setEmployees([]);
-        }
-
-        // Fetch announcements
-        const { data: annData } = await supabase
-          .from('announcements')
-          .select('*')
-          .eq('visibility', 'pharmacy')
-          .order('created_at', { ascending: false });
-
-        if (annData && annData.length > 0) {
-          setAnnouncements(annData.map(a => ({
-            id: a.id,
-            title: a.title,
-            summary: a.summary,
-            date: new Date(a.created_at).toLocaleDateString('es-AR', { day: 'numeric', month: 'short' })
-          })));
-        }
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchPharmacy();
@@ -320,7 +329,7 @@ export default function FarmaciaDashboard() {
           .eq('owner_id', session.user.id);
 
         if (error) {
-          alert('Error al guardar en Supabase: ' + error.message);
+          toast.error('Error al guardar', { description: error.message });
           return;
         }
       }
@@ -335,7 +344,7 @@ export default function FarmaciaDashboard() {
   const handleAddEmployee = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newEmpName || !newEmpCuil || !newEmpEntryDate) {
-      alert('Por favor, completa todos los campos requeridos.');
+      toast.warning('Completá todos los campos requeridos.');
       return;
     }
 
@@ -384,7 +393,7 @@ export default function FarmaciaDashboard() {
           .single();
 
         if (error) {
-          alert('Error al guardar empleado: ' + error.message);
+          toast.error('Error al guardar empleado', { description: error.message });
           return;
         }
         if (data) {
@@ -418,7 +427,7 @@ export default function FarmaciaDashboard() {
       setIsEmployeeModalOpen(false);
     } catch (err: unknown) {
       console.error(err);
-      alert('Ocurrió un error al procesar el recibo de sueldo.');
+      toast.error('Ocurrió un error al procesar el recibo de sueldo.');
     } finally {
       setUploadingReceipt(false);
     }
@@ -427,7 +436,7 @@ export default function FarmaciaDashboard() {
   const handleUpdateSingleReceipt = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedEmpForReceipt || !updateReceiptFile) {
-      alert('Por favor selecciona un archivo de recibo válido.');
+      toast.warning('Seleccioná un archivo de recibo válido.');
       return;
     }
 
@@ -476,36 +485,43 @@ export default function FarmaciaDashboard() {
         return emp;
       }));
 
-      alert('¡Recibo de sueldo actualizado exitosamente!');
+      toast.success('Recibo de sueldo actualizado exitosamente.');
       setIsUpdateReceiptModalOpen(false);
       setSelectedEmpForReceipt(null);
       setUpdateReceiptFile(null);
     } catch (err: unknown) {
       console.error(err);
-      alert('Ocurrió un error al subir el recibo de sueldo.');
+      toast.error('Ocurrió un error al subir el recibo de sueldo.');
     } finally {
       setUploadingReceipt(false);
     }
   };
 
   const handleDeleteEmployee = async (id: string) => {
-    if (confirm('¿Seguro que deseas eliminar este empleado del registro de tu nómina?')) {
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+    const confirmed = await confirmDialog({
+      title: 'Eliminar empleado',
+      message: '¿Seguro que deseas eliminar este empleado del registro de tu nómina?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (confirmed) {
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-      
+
       if (isConfigured) {
         const { error } = await supabase
           .from('employees')
           .delete()
           .eq('id', id);
-        
+
         if (error) {
-          alert('Error al eliminar empleado: ' + error.message);
+          toast.error('Error al eliminar empleado', { description: error.message });
           return;
         }
       }
       setEmployees(prev => prev.filter(e => e.id !== id));
+      toast.success('Empleado eliminado.');
     }
   };
 

@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
+import { Toaster } from "sonner";
+import { ConfirmDialogHost } from "@/components/shared/ConfirmDialog";
 import "./globals.css";
 
 const inter = Inter({
@@ -30,6 +32,20 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         {children}
+        <ConfirmDialogHost />
+        <Toaster
+          position="top-center"
+          richColors
+          closeButton
+          toastOptions={{
+            style: {
+              fontFamily: "var(--font-inter)",
+              fontSize: "0.85rem",
+              fontWeight: 600,
+              borderRadius: "0.75rem",
+            },
+          }}
+        />
       </body>
     </html>
   );

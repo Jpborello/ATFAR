@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Pharmacy } from '@/types';
 import { 
@@ -116,6 +117,9 @@ export default function PagosPage() {
         }
       } catch (err) {
         console.error("Error loading invoices:", err);
+        toast.error('No pudimos cargar tus pagos.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -145,7 +149,7 @@ export default function PagosPage() {
   const handleProcessTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!transactionCode || !transferDate || !transactionFileName || !checkoutInvoice || !receiptFile) {
-      alert('Por favor complete todos los campos y adjunte el comprobante de pago.');
+      toast.warning('Completá todos los campos y adjuntá el comprobante de pago.');
       return;
     }
 
@@ -228,7 +232,7 @@ export default function PagosPage() {
       setPaymentSuccess(true);
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al enviar comprobante.';
-      alert(msg);
+      toast.error(msg);
     } finally {
       setPaymentLoading(false);
     }

@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Calendar, User, ArrowRight } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 
 interface NewsItem {
@@ -87,6 +88,9 @@ export default function NoticiasPage() {
         }
       } catch (err) {
         console.error("Error loading news:", err);
+        toast.error('No pudimos cargar las noticias.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       }
     }
 

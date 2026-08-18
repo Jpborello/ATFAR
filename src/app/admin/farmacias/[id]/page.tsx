@@ -20,6 +20,7 @@ import {
   ShieldCheck,
   MessageSquare
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
 import { Payment } from '@/types';
@@ -220,6 +221,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
         }
       } catch (err) {
         console.error("Error loading data from Supabase:", err);
+        toast.error('No pudimos cargar el detalle de la farmacia.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }

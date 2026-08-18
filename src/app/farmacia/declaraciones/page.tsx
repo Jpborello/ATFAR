@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniorityYears, isReceiptValid } from '@/lib/dateUtils';
 
@@ -151,6 +152,9 @@ export default function DeclaracionesPage() {
         }
       } catch (err) {
         console.error("Error loading DDJJ data:", err);
+        toast.error('No pudimos cargar los datos de tu declaración.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -232,15 +236,17 @@ export default function DeclaracionesPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (employees.length === 0) {
-      alert('No tenés empleados activos registrados para declarar. Agregalos primero en el panel de inicio.');
+      toast.warning('No tenés empleados activos registrados para declarar.', {
+        description: 'Agregalos primero en el panel de inicio.',
+      });
       return;
     }
     if (invalidReceiptEmployees.length > 0) {
-      alert('Debés actualizar el recibo de sueldo de tus empleados para emitir la boleta de pago.');
+      toast.warning('Debés actualizar el recibo de sueldo de tus empleados para emitir la boleta de pago.');
       return;
     }
     if (!confirmed) {
-      alert('Debe confirmar los términos de la declaración jurada.');
+      toast.warning('Debés confirmar los términos de la declaración jurada.');
       return;
     }
 
@@ -306,7 +312,7 @@ export default function DeclaracionesPage() {
     } catch (err: unknown) {
       console.error(err);
       const msg = err instanceof Error ? err.message : 'Error al presentar la declaración jurada.';
-      alert(msg);
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

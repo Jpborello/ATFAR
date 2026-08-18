@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { 
-  FileText, 
-  DollarSign, 
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
+import {
+  FileText,
+  DollarSign,
   Upload,
   BookOpen,
   Eye,
@@ -68,6 +70,7 @@ export default function AdminEscalasPage() {
       }
     } catch (err) {
       console.error("Error loading uploaded docs:", err);
+      toast.error('No pudimos cargar los documentos de escala salarial.');
     }
   };
 
@@ -100,6 +103,9 @@ export default function AdminEscalasPage() {
         setScales(data || []);
       } catch (err) {
         console.error("Error loading scales:", err);
+        toast.error('No pudimos cargar la escala salarial.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoadingScales(false);
       }
@@ -126,17 +132,17 @@ export default function AdminEscalasPage() {
 
       setScales(prev => prev.map(s => s.id === id ? { ...s, basic: editBasic, no_rem: editNoRem } : s));
       setEditingId(null);
-      alert('Escala salarial actualizada con éxito y aplicada al sistema.');
+      toast.success('Escala salarial actualizada y aplicada al sistema.');
     } catch (err) {
       console.error(err);
-      alert('Error al actualizar la escala salarial.');
+      toast.error('Error al actualizar la escala salarial.');
     }
   };
 
   const handlePublishNews = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newsTitle || !newsContent || !newsSummary) {
-      alert('Por favor completa todos los campos obligatorios (Título, Copete y Contenido).');
+      toast.warning('Completá todos los campos obligatorios (Título, Copete y Contenido).');
       return;
     }
 
@@ -165,21 +171,21 @@ export default function AdminEscalasPage() {
       setNewsContent('');
       setNewsImageUrl('');
       setNewsVisibility('public');
-      alert('Noticia publicada con éxito en el sistema.');
+      toast.success('Noticia publicada con éxito en el sistema.');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al publicar el comunicado.';
-      alert(msg);
+      toast.error(msg);
     }
   };
 
   const handleUploadPdf = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pdfName || !pdfPeriod) {
-      alert("Completá todos los campos.");
+      toast.warning('Completá todos los campos.');
       return;
     }
     if (!pdfFile) {
-      alert("Seleccioná un archivo (PDF o Imagen).");
+      toast.warning('Seleccioná un archivo (PDF o Imagen).');
       return;
     }
 
@@ -241,10 +247,10 @@ export default function AdminEscalasPage() {
       setPdfFile(null);
       setPdfIsActive(true);
       await loadUploadedDocs();
-      alert('Escala salarial cargada y publicada exitosamente.');
+      toast.success('Escala salarial cargada y publicada exitosamente.');
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al subir la escala.';
-      alert(msg);
+      toast.error(msg);
     } finally {
       setUploading(false);
     }
@@ -274,15 +280,21 @@ export default function AdminEscalasPage() {
       if (error) throw error;
       
       await loadUploadedDocs();
-      alert('Estado de escala salarial actualizado.');
+      toast.success('Estado de escala salarial actualizado.');
     } catch (err) {
       console.error(err);
-      alert('Error al actualizar el estado.');
+      toast.error('Error al actualizar el estado.');
     }
   };
 
   const handleDeleteDoc = async (id: string, fileUrl: string) => {
-    if (!confirm('¿Estás seguro de que querés eliminar este documento de escala salarial?')) return;
+    const confirmed = await confirmDialog({
+      title: 'Eliminar documento',
+      message: '¿Estás seguro de que querés eliminar este documento de escala salarial?',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!confirmed) return;
 
     try {
       const isConfigured = 
@@ -311,10 +323,10 @@ export default function AdminEscalasPage() {
       }
 
       setUploadedDocs(prev => prev.filter(d => d.id !== id));
-      alert('Documento eliminado del sistema.');
+      toast.success('Documento eliminado del sistema.');
     } catch (err) {
       console.error(err);
-      alert('Error al eliminar el documento.');
+      toast.error('Error al eliminar el documento.');
     }
   };
 

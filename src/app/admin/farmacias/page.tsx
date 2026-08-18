@@ -15,7 +15,9 @@ import {
   Filter,
   Loader2
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 // Dynamic import of the map to prevent SSR issues
 const PharmacyMap = dynamic(() => import('@/components/map/PharmacyMap'), {
@@ -138,6 +140,9 @@ export default function FarmaciasPanelPage() {
         setPharmacies(mapped);
       } catch (err) {
         console.error("Error loading pharmacies from Supabase:", err);
+        toast.error('No pudimos cargar el listado de farmacias.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
       } finally {
         setLoading(false);
       }
@@ -155,17 +160,24 @@ export default function FarmaciasPanelPage() {
 
   // Actions
   const handleDelete = async (id: string) => {
-    if (confirm('¿Seguro que deseas eliminar este registro de farmacia?')) {
-      try {
-        const { error } = await supabase
-          .from('pharmacies')
-          .delete()
-          .eq('id', id);
-        if (error) throw error;
-        setPharmacies(prev => prev.filter(p => p.id !== id));
-      } catch (err) {
-        console.error("Error deleting pharmacy:", err);
-      }
+    const confirmed = await confirmDialog({
+      title: 'Eliminar farmacia',
+      message: '¿Seguro que deseas eliminar este registro de farmacia? Esta acción no se puede deshacer.',
+      confirmLabel: 'Eliminar',
+      danger: true,
+    });
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase
+        .from('pharmacies')
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setPharmacies(prev => prev.filter(p => p.id !== id));
+      toast.success('Farmacia eliminada.');
+    } catch (err) {
+      console.error("Error deleting pharmacy:", err);
+      toast.error('Ocurrió un error al eliminar la farmacia.');
     }
   };
 
@@ -184,7 +196,7 @@ export default function FarmaciasPanelPage() {
 
   const handleExportCsv = (rows: Pharmacy[]) => {
     if (rows.length === 0) {
-      alert('No hay farmacias para exportar con los filtros actuales.');
+      toast.warning('No hay farmacias para exportar con los filtros actuales.');
       return;
     }
     const headers = ['Razón Social', 'CUIT', 'Dirección', 'Ciudad', 'Responsable', 'Empleados', 'Estado', 'Última Declaración', 'Estado de Pago'];
