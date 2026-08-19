@@ -3,24 +3,30 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  ArrowRight, 
-  FileText, 
-  Users, 
-  ShieldCheck, 
-  Calendar, 
-  HeartHandshake, 
-  GraduationCap, 
+import {
+  ArrowRight,
+  FileText,
+  Users,
+  ShieldCheck,
+  Calendar,
+  HeartHandshake,
+  GraduationCap,
   Award,
   Sparkles,
   ChevronRight,
   TrendingUp,
-  ChevronLeft
+  ChevronLeft,
+  Ribbon
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+// Banda de luto: reemplaza el carrusel del hero por un comunicado fijo.
+// Se apaga sola después de la fecha límite, no hace falta acordarse de sacarla a mano.
+const MOURNING_MODE_UNTIL = new Date('2026-08-24T00:00:00-03:00');
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const isMourningMode = new Date() < MOURNING_MODE_UNTIL;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeScaleSlide, setActiveScaleSlide] = useState<any | null>(null);
 
@@ -231,7 +237,37 @@ export default function HomePage() {
 
   return (
     <div className="bg-background text-foreground min-h-screen space-y-20 pb-16 relative">
-      {/* Hero Carousel Section */}
+      {isMourningMode ? (
+        /* Banda de luto — reemplaza temporalmente el carrusel del hero */
+        <section className="relative w-full pt-16">
+          <div className="relative min-h-[420px] sm:min-h-[460px] flex items-center bg-black overflow-hidden">
+            {/* Franja diagonal sutil, referencia a la cinta de luto */}
+            <div className="absolute inset-0 opacity-[0.07] bg-[repeating-linear-gradient(135deg,#ffffff_0px,#ffffff_1px,transparent_1px,transparent_28px)]" />
+
+            <div className="relative max-w-4xl mx-auto w-full px-6 sm:px-8 py-16 text-center flex flex-col items-center gap-6">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-white/90 text-[10px] font-bold tracking-widest uppercase">
+                <Ribbon className="w-3.5 h-3.5" />
+                <span>Comunicado Oficial ATFAR</span>
+              </div>
+
+              <h1 className="font-serif text-2xl sm:text-3xl md:text-4xl font-bold text-white leading-snug">
+                Nuestro gremio está de luto
+              </h1>
+
+              <div className="w-12 h-px bg-white/25" />
+
+              <p className="text-sm sm:text-base text-slate-200/90 leading-relaxed font-medium max-w-2xl">
+                ATFAR expresa su profunda consternación y repudio ante el grave hecho de violencia ocurrido en una farmacia de Rosario, donde nuestra compañera <span className="font-bold text-white">Candelas Carina Andrea</span> perdió la vida mientras cumplía sus tareas. Acompañamos con dolor a su familia y a los trabajadores afectados, y reafirmamos nuestro compromiso de trabajar por una revisión integral de las condiciones de seguridad en los lugares de trabajo, para prevenir hechos de violencia.
+              </p>
+
+              <span className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider pt-2">
+                Rosario, 19 de agosto de 2026
+              </span>
+            </div>
+          </div>
+        </section>
+      ) : (
+      /* Hero Carousel Section */
       <section className="relative w-full pt-16">
         <div className="relative h-[480px] sm:h-[540px] lg:h-[600px] overflow-hidden bg-slate-950">
           {/* Slides */}
@@ -325,6 +361,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Services Section */}
       <section className="bg-slate-50 border-b border-border py-20 px-4 sm:px-6 lg:px-8">
