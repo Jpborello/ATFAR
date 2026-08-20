@@ -43,6 +43,10 @@ export default function PagosPage() {
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
 
+  // Plus Pagos online checkout
+  const [onlineCheckoutLoading, setOnlineCheckoutLoading] = useState(false);
+  const [onlinePaymentUnavailable, setOnlinePaymentUnavailable] = useState(false);
+
 
 
   // Transfer States
@@ -132,12 +136,41 @@ export default function PagosPage() {
     setCheckoutInvoice(invoice);
     setPaymentSuccess(false);
     setPaymentMethod('transfer');
+    setOnlinePaymentUnavailable(false);
     setTransactionFileName('');
     setTransactionCode(invoice.invoiceNumber); // Prefill transactionCode with invoice number!
     setTransferDate(new Date().toISOString().split('T')[0]); // Prefill transfer date with today's date!
     setReceiptFile(null);
     setDdjjFile(null);
     setDdjjFileName('');
+  };
+
+  const handleStartOnlinePayment = async () => {
+    if (!checkoutInvoice) return;
+    setOnlineCheckoutLoading(true);
+    try {
+      const res = await fetch('/api/payments/plus-pagos/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: checkoutInvoice.id }),
+      });
+      const data = await res.json();
+
+      if (res.status === 501 || data.notConfigured) {
+        setOnlinePaymentUnavailable(true);
+        return;
+      }
+      if (!res.ok) {
+        throw new Error(data.error || 'No pudimos iniciar el pago online.');
+      }
+
+      window.location.href = data.checkoutUrl;
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'No pudimos iniciar el pago online.';
+      toast.error(msg);
+    } finally {
+      setOnlineCheckoutLoading(false);
+    }
   };
 
   const handleCopyCbu = () => {
@@ -528,7 +561,7 @@ export default function PagosPage() {
           <div className="lg:col-span-4">
             {checkoutInvoice ? (
               <div className={`bg-card border-2 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden animate-fadeIn transition-colors ${
-                paymentMethod === 'online' ? 'border-[#009ee3]' : 'border-emerald-500'
+                paymentMethod === 'online' ? 'border-primary' : 'border-emerald-500'
               }`}>
                 {/* Header with Switcher Tabs */}
                 <div className="space-y-3">
@@ -538,7 +571,7 @@ export default function PagosPage() {
                       onClick={() => setPaymentMethod('online')}
                       className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
                         paymentMethod === 'online'
-                          ? 'bg-card text-[#009ee3] shadow-sm'
+                          ? 'bg-card text-primary shadow-sm'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -571,7 +604,7 @@ export default function PagosPage() {
                       </h4>
                       <p className="text-[10px] text-muted-foreground leading-relaxed">
                         {paymentMethod === 'online' ? (
-                          `El pago de **$${checkoutInvoice.amount.toLocaleString('es-AR')}** fue validado por Mercado Pago y acreditado en tu estado de cuenta.`
+                          `El pago de **$${checkoutInvoice.amount.toLocaleString('es-AR')}** fue validado y acreditado en tu estado de cuenta.`
                         ) : (
                           `El comprobante por **$${checkoutInvoice.amount.toLocaleString('es-AR')}** fue cargado con éxito. Queda en revisión por el sindicato.`
                         )}
@@ -580,7 +613,7 @@ export default function PagosPage() {
                     <button
                       onClick={() => setCheckoutInvoice(null)}
                       className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase text-white cursor-pointer ${
-                        paymentMethod === 'online' ? 'bg-[#009ee3] hover:bg-[#008ac6]' : 'bg-emerald-600 hover:bg-emerald-700'
+                        paymentMethod === 'online' ? 'bg-primary hover:bg-primary/90' : 'bg-emerald-600 hover:bg-emerald-700'
                       }`}
                     >
                       Volver
@@ -588,15 +621,34 @@ export default function PagosPage() {
                   </div>
                 ) : paymentMethod === 'online' ? (
                   <div className="space-y-5 text-center py-6">
-                    <div className="inline-flex p-4 bg-[#009ee3]/10 text-[#009ee3] rounded-full">
+                    <div className="inline-flex p-4 bg-primary/10 text-primary rounded-full">
                       <CreditCard className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-extrabold text-foreground text-sm">Pago Online (Mercado Pago)</h4>
+                      <h4 className="font-extrabold text-foreground text-sm">Pago Online (Plus Pagos)</h4>
                       <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
-                        Esta función estará disponible próximamente. Por el momento, por favor realizá tus pagos mediante transferencia bancaria y adjuntá el comprobante en la pestaña de **Transferencia**.
+                        {onlinePaymentUnavailable
+                          ? 'Esta función estará disponible próximamente. Por el momento, por favor realizá tus pagos mediante transferencia bancaria y adjuntá el comprobante en la pestaña de **Transferencia**.'
+                          : 'Pagá esta boleta online con Plus Pagos (Banco de Santa Fe): tarjeta de débito, QR o saldo de billetera.'}
                       </p>
                     </div>
+                    {!onlinePaymentUnavailable && (
+                      <button
+                        type="button"
+                        onClick={handleStartOnlinePayment}
+                        disabled={onlineCheckoutLoading}
+                        className="w-full py-2.5 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-1.5"
+                      >
+                        {onlineCheckoutLoading ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            Conectando con Plus Pagos...
+                          </>
+                        ) : (
+                          'Pagar con Plus Pagos'
+                        )}
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('transfer')}

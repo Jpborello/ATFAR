@@ -311,6 +311,13 @@ CREATE TABLE IF NOT EXISTS public.payments (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
+-- Prep for online payment gateway integration (Plus Pagos / Banco de Santa Fe)
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS payment_provider TEXT; -- 'transfer' | 'plus_pagos'
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS external_reference TEXT; -- id at the gateway, used to reconcile webhooks
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS checkout_url TEXT; -- pending online checkout link
+
+CREATE INDEX IF NOT EXISTS idx_payments_external_reference ON public.payments(external_reference);
+
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 
 -- Policies

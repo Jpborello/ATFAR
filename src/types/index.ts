@@ -68,6 +68,9 @@ export interface Payment {
   pay_date?: string;
   transaction_code?: string;
   receipt_url?: string | null;
+  payment_provider?: 'transfer' | 'plus_pagos' | null;
+  external_reference?: string | null;
+  checkout_url?: string | null;
   created_at?: string;
 }
 
