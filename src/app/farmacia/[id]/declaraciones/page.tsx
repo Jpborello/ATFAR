@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniorityYears, isReceiptValid } from '@/lib/dateUtils';
+import { calculateSeniorityYears, isReceiptValid, getCurrentCategory } from '@/lib/dateUtils';
 
 import { Employee, Pharmacy, SalaryScale } from '@/types';
 
@@ -170,7 +170,10 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
   }, [period, pharmacyId]);
 
   const getEmployeeCalculation = (emp: Employee) => {
-    const categoryName = emp.category || 'Cadetes';
+    const registeredCategory = emp.category || 'Cadetes';
+    // La categoría que se liquida es la promovida por antigüedad (cada 5 años),
+    // aunque el empleador nunca haya actualizado el campo "categoría" a mano.
+    const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate);
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
     let noRem = 0;
 
@@ -217,7 +220,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       noRem,
       unionAporte,
       mutualAporte,
-      totalAporte
+      totalAporte,
+      categoryName,
+      promoted
     };
   };
 
@@ -472,7 +477,14 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                             <tr key={employee.id} className="hover:bg-muted/5 transition-colors">
                               <td className="py-2 px-3 font-semibold">
                                 {employee.fullName}
-                                <span className="block text-[9px] text-muted-foreground font-mono">{employee.cuil} • <span className="font-sans font-medium text-slate-500">{employee.category}</span></span>
+                                <span className="block text-[9px] text-muted-foreground font-mono">
+                                  {employee.cuil} • <span className="font-sans font-medium text-slate-500">{calc.categoryName}</span>
+                                  {calc.promoted && (
+                                    <span className="ml-1 inline-flex items-center px-1 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[8px] font-black uppercase border border-emerald-500/20 align-middle">
+                                      Promovido
+                                    </span>
+                                  )}
+                                </span>
                               </td>
                               <td className="py-2 px-3 text-center">
                                 {employee.isAffiliate ? (
