@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, useCallback, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import {
   Building2,
@@ -28,8 +28,10 @@ interface MembershipRow {
   pharmacies: Pharmacy;
 }
 
-export default function MisFarmaciasPage() {
+function MisFarmaciasContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const forceManage = searchParams.get('manage') === '1';
   const [loading, setLoading] = useState(true);
   const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
@@ -102,7 +104,7 @@ export default function MisFarmaciasPage() {
       const rows = (memberships || []) as unknown as MembershipRow[];
       const list = rows.map((r) => r.pharmacies).filter(Boolean);
 
-      if (list.length === 1) {
+      if (list.length === 1 && !forceManage) {
         router.replace(`/farmacia/${list[0].id}`);
         return;
       }
@@ -123,7 +125,7 @@ export default function MisFarmaciasPage() {
     } finally {
       setLoading(false);
     }
-  }, [router]);
+  }, [router, forceManage]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -717,5 +719,17 @@ export default function MisFarmaciasPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function MisFarmaciasPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    }>
+      <MisFarmaciasContent />
+    </Suspense>
   );
 }

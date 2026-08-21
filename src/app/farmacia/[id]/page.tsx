@@ -552,15 +552,14 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         )}
 
         <div className="flex items-center gap-3">
-          {hasMultiplePharmacies && (
-            <Link
-              href="/farmacia"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer bg-white"
-            >
-              <Building2 className="w-4 h-4 text-primary" />
-              <span>Mis Farmacias</span>
-            </Link>
-          )}
+          <Link
+            href="/farmacia?manage=1"
+            title="Ver todas tus farmacias o vincular una nueva"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer bg-white"
+          >
+            <Building2 className="w-4 h-4 text-primary" />
+            <span>Mis Farmacias</span>
+          </Link>
           <button
           onClick={handleLogout}
           className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-red-500 hover:bg-red-50/50 text-xs font-bold transition-all cursor-pointer bg-white"
