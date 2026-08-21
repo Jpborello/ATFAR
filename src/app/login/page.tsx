@@ -51,6 +51,12 @@ function LoginContent() {
   const [hrPhone, setHrPhone] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
+
+  // Recuperar contraseña
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSent, setForgotSent] = useState(false);
   const markTouched = (field: string) => setTouched((prev) => ({ ...prev, [field]: true }));
 
   // Validación en vivo (se muestra recién cuando el usuario terminó de completar el campo)
@@ -267,6 +273,36 @@ function LoginContent() {
       setErrorMsg(err instanceof Error ? err.message : 'Error al iniciar sesión.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setForgotLoading(true);
+    setErrorMsg('');
+
+    try {
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+        !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+      if (!isConfigured) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setForgotSent(true);
+        return;
+      }
+
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw new Error(error.message);
+      setForgotSent(true);
+    } catch (err: unknown) {
+      console.error(err);
+      setErrorMsg(err instanceof Error ? err.message : 'Error al enviar el correo de recuperación.');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -534,7 +570,66 @@ function LoginContent() {
             </div>
           )}
 
-          {activeTab === 'login' ? (
+          {activeTab === 'login' && showForgotPassword ? (
+            /* Forgot Password Form */
+            <div className="space-y-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowForgotPassword(false);
+                  setForgotSent(false);
+                  setErrorMsg('');
+                }}
+                className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors cursor-pointer bg-transparent border-0"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Volver a iniciar sesión</span>
+              </button>
+
+              {forgotSent ? (
+                <div className="text-center py-4 space-y-3">
+                  <div className="inline-flex p-3 bg-emerald-500/10 text-emerald-600 rounded-full">
+                    <Mail className="w-6 h-6" />
+                  </div>
+                  <p className="text-sm text-foreground font-semibold">
+                    Te enviamos un correo a <strong>{forgotEmail}</strong> con un link para elegir una nueva contraseña.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Si no lo ves en unos minutos, revisá la carpeta de spam.
+                  </p>
+                </div>
+              ) : (
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <p className="text-xs text-muted-foreground font-semibold">
+                    Ingresá tu correo y te mandamos un link para elegir una nueva contraseña.
+                  </p>
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Correo Electrónico
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                      <input
+                        type="email"
+                        required
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="ejemplo@correo.com"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                  >
+                    {forgotLoading ? 'Enviando...' : 'Enviar Link de Recuperación'}
+                  </button>
+                </form>
+              )}
+            </div>
+          ) : activeTab === 'login' ? (
             /* Login Form */
             <form onSubmit={handleLogin} className="space-y-4">
               <div className="space-y-1">
@@ -559,9 +654,17 @@ function LoginContent() {
                   <label className="text-xs font-semibold text-muted-foreground">
                     Contraseña
                   </label>
-                  <a href="#" className="text-xs text-secondary hover:underline font-semibold">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowForgotPassword(true);
+                      setForgotEmail(email);
+                      setErrorMsg('');
+                    }}
+                    className="text-xs text-secondary hover:underline font-semibold cursor-pointer bg-transparent border-0"
+                  >
                     ¿La olvidaste?
-                  </a>
+                  </button>
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
