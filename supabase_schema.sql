@@ -475,14 +475,12 @@ ON CONFLICT (pharmacy_id, user_id) DO NOTHING;
 
 -- Policies for pharmacy_members
 DROP POLICY IF EXISTS "Users can view their own memberships" ON public.pharmacy_members;
+-- OJO: no agregar aca un EXISTS que vuelva a consultar pharmacy_members
+-- (ej. para ver "otros miembros de mi farmacia") - Postgres lo detecta
+-- como "infinite recursion detected in policy for relation
+-- pharmacy_members" y rompe la carga de "Mis Farmacias" para todos.
 CREATE POLICY "Users can view their own memberships" ON public.pharmacy_members
-    FOR SELECT USING (
-        auth.uid() = user_id
-        OR EXISTS (
-            SELECT 1 FROM public.pharmacy_members pm2
-            WHERE pm2.pharmacy_id = pharmacy_members.pharmacy_id AND pm2.user_id = auth.uid()
-        )
-    );
+    FOR SELECT USING (auth.uid() = user_id);
 
 -- Un usuario solo puede auto-vincularse a una farmacia sin dueño (o donde ya
 -- figura como owner_id), nunca a una que ya pertenece a otro usuario.
