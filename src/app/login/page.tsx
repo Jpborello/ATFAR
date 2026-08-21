@@ -344,6 +344,7 @@ function LoginContent() {
 
       if (registerRole === 'pharmacy_owner') {
         let pharmacyError;
+        let linkedPharmacyId: string | null = null;
         if (selectedPharmacyId) {
           // Update the pre-registered pharmacy to link to owner, mark as registered, and set real CUIT
           const { error: updateError } = await supabase
@@ -366,6 +367,7 @@ function LoginContent() {
             })
             .eq('id', selectedPharmacyId);
           pharmacyError = updateError;
+          linkedPharmacyId = selectedPharmacyId;
         } else {
           // Check if the pharmacy already exists in the database by CUIT
           const { data: existingPharm, error: fetchError } = await supabase
@@ -397,9 +399,10 @@ function LoginContent() {
               })
               .eq('id', existingPharm.id);
             pharmacyError = updateError;
+            linkedPharmacyId = existingPharm.id;
           } else {
             // Insert a new pharmacy
-            const { error: insertError } = await supabase
+            const { data: insertedPharm, error: insertError } = await supabase
               .from('pharmacies')
               .insert({
                 name: pharmacyName,
@@ -416,12 +419,23 @@ function LoginContent() {
                 owner_id: authData.user.id,
                 registered: true,
                 has_debt: true
-              });
+              })
+              .select('id')
+              .single();
             pharmacyError = insertError;
+            linkedPharmacyId = insertedPharm?.id ?? null;
           }
         }
 
         if (pharmacyError) throw new Error(`Error al registrar farmacia: ${pharmacyError.message}`);
+
+        if (linkedPharmacyId) {
+          const { error: memberError } = await supabase
+            .from('pharmacy_members')
+            .insert({ pharmacy_id: linkedPharmacyId, user_id: authData.user.id, role: 'owner' });
+          if (memberError) console.error('Error al vincular pharmacy_members:', memberError.message);
+        }
+
         router.push('/farmacia');
       } else {
         // Vincular esta cuenta con la fila de nómina que su farmacia ya declaró (por CUIL).

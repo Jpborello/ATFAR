@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState, useEffect } from 'react';
+import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -17,7 +17,8 @@ import {
   Copy,
   Check,
   Clock,
-  FileText
+  FileText,
+  Building2
 } from 'lucide-react';
 
 interface Invoice {
@@ -32,7 +33,8 @@ interface Invoice {
   receiptUrl?: string;
 }
 
-export default function PagosPage() {
+export default function PagosPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: pharmacyId } = use(params);
   const [loading, setLoading] = useState(true);
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
@@ -91,8 +93,14 @@ export default function PagosPage() {
         const { data: pharmacyData } = await supabase
           .from('pharmacies')
           .select('*')
-          .eq('owner_id', session.user.id)
-          .single();
+          .eq('id', pharmacyId)
+          .maybeSingle();
+
+        if (!pharmacyData) {
+          toast.error('No tenés acceso a esta farmacia.');
+          window.location.href = '/farmacia';
+          return;
+        }
 
         if (pharmacyData) {
           setPharmacy(pharmacyData);
@@ -130,7 +138,7 @@ export default function PagosPage() {
     }
 
     loadInvoices();
-  }, []);
+  }, [pharmacyId]);
 
   const handleOpenCheckout = (invoice: Invoice) => {
     setCheckoutInvoice(invoice);
@@ -429,7 +437,7 @@ export default function PagosPage() {
       {/* Top Header */}
       <header className="bg-card border-b border-border/80 py-4 px-6 flex items-center justify-between shadow-premium">
         <div className="flex items-center gap-3">
-          <Link href="/farmacia">
+          <Link href={`/farmacia/${pharmacyId}`}>
             <img src="/images/logo.jpg" alt="Logo" className="h-9 w-auto object-contain bg-white p-0.5 rounded border border-border" />
           </Link>
           <div>
@@ -438,8 +446,15 @@ export default function PagosPage() {
           </div>
         </div>
 
-        <Link 
-          href="/farmacia"
+        {pharmacy && (
+          <span className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-primary/5 border border-primary/10 text-primary text-xs font-bold max-w-xs truncate">
+            <Building2 className="w-3.5 h-3.5 flex-shrink-0" />
+            <span className="truncate">Estás pagando por: {pharmacy.nombre_fantasia || pharmacy.name}</span>
+          </span>
+        )}
+
+        <Link
+          href={`/farmacia/${pharmacyId}`}
           className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />

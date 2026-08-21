@@ -5,12 +5,13 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { 
-  LayoutDashboard, 
-  MapPin, 
-  GraduationCap, 
-  Briefcase, 
-  FileText, 
-  LogOut, 
+  LayoutDashboard,
+  MapPin,
+  GraduationCap,
+  Briefcase,
+  FileText,
+  ClipboardCheck,
+  LogOut,
   Menu, 
   X, 
   User, 
@@ -83,6 +84,7 @@ export default function AdminLayout({
   const menuItems = [
     { label: 'Vista General', href: '/admin', icon: LayoutDashboard },
     { label: 'Farmacias y Mapa', href: '/admin/farmacias', icon: MapPin },
+    { label: 'Declaraciones Pendientes', href: '/admin/declaraciones', icon: ClipboardCheck },
     { label: 'Útiles Escolares', href: '/admin/utiles', icon: GraduationCap },
     { label: 'Bolsa de Empleo', href: '/admin/empleo', icon: Briefcase },
     { label: 'Novedades y Escalas', href: '/admin/escalas', icon: FileText },
@@ -190,7 +192,7 @@ export default function AdminLayout({
         <header className="bg-card border-b border-border/80 px-6 py-4 flex items-center justify-between shadow-premium z-20">
           <div className="flex items-center gap-4">
             <span className="text-xs font-bold text-muted-foreground hidden sm:inline">
-              Administración / {pathname === '/admin' ? 'Vista General' : pathname.includes('/farmacias') ? 'Farmacias' : pathname.includes('/utiles') ? 'Útiles' : 'Gestión'}
+              Administración / {pathname === '/admin' ? 'Vista General' : pathname.includes('/declaraciones') ? 'Declaraciones Pendientes' : pathname.includes('/farmacias') ? 'Farmacias' : pathname.includes('/utiles') ? 'Útiles' : 'Gestión'}
             </span>
           </div>
 

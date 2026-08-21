@@ -124,7 +124,7 @@ export default function HomePage() {
       description: 'Acceso online para que los empleadores declaren su nómina de personal de manera ágil.',
       icon: FileText,
       linkText: 'Presentar DDJJ online',
-      href: '/farmacia/declaraciones',
+      href: '/farmacia',
     },
     {
       title: 'Bolsa de Empleo',

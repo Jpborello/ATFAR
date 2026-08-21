@@ -448,3 +448,129 @@ CREATE POLICY "Admins can do everything on scales docs" ON public.salary_scales_
 -- 9. Migration: Calculation based on affiliation
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAULT false NOT NULL;
 
+-- ----------------------------------------------------
+-- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,
+-- ej. estudios contables que llevan varias farmacias con un solo login)
+-- ----------------------------------------------------
+
+CREATE TABLE IF NOT EXISTS public.pharmacy_members (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    pharmacy_id UUID REFERENCES public.pharmacies(id) ON DELETE CASCADE NOT NULL,
+    user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+    role TEXT DEFAULT 'owner' NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    UNIQUE (pharmacy_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_pharmacy_members_user_id ON public.pharmacy_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_pharmacy_members_pharmacy_id ON public.pharmacy_members(pharmacy_id);
+
+ALTER TABLE public.pharmacy_members ENABLE ROW LEVEL SECURITY;
+
+-- Backfill: cada owner_id actual pasa a ser miembro 'owner' de su farmacia
+INSERT INTO public.pharmacy_members (pharmacy_id, user_id, role)
+SELECT id, owner_id, 'owner' FROM public.pharmacies
+WHERE owner_id IS NOT NULL
+ON CONFLICT (pharmacy_id, user_id) DO NOTHING;
+
+-- Policies for pharmacy_members
+DROP POLICY IF EXISTS "Users can view their own memberships" ON public.pharmacy_members;
+CREATE POLICY "Users can view their own memberships" ON public.pharmacy_members
+    FOR SELECT USING (
+        auth.uid() = user_id
+        OR EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm2
+            WHERE pm2.pharmacy_id = pharmacy_members.pharmacy_id AND pm2.user_id = auth.uid()
+        )
+    );
+
+-- Un usuario solo puede auto-vincularse a una farmacia sin dueño (o donde ya
+-- figura como owner_id), nunca a una que ya pertenece a otro usuario.
+-- Vincular a una farmacia ya reclamada por otro requiere que un admin lo haga.
+DROP POLICY IF EXISTS "Users can add themselves to a pharmacy" ON public.pharmacy_members;
+DROP POLICY IF EXISTS "Users can claim an unclaimed pharmacy" ON public.pharmacy_members;
+CREATE POLICY "Users can claim an unclaimed pharmacy" ON public.pharmacy_members
+    FOR INSERT WITH CHECK (
+        auth.uid() = user_id
+        AND EXISTS (
+            SELECT 1 FROM public.pharmacies p
+            WHERE p.id = pharmacy_members.pharmacy_id
+            AND (p.owner_id IS NULL OR p.owner_id = auth.uid())
+        )
+    );
+
+DROP POLICY IF EXISTS "Users can remove their own membership" ON public.pharmacy_members;
+CREATE POLICY "Users can remove their own membership" ON public.pharmacy_members
+    FOR DELETE USING (auth.uid() = user_id);
+
+DROP POLICY IF EXISTS "Admins can do everything on pharmacy_members" ON public.pharmacy_members;
+CREATE POLICY "Admins can do everything on pharmacy_members" ON public.pharmacy_members
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.profiles
+            WHERE profiles.id = auth.uid() AND profiles.role = 'admin'
+        )
+    );
+
+-- Pharmacies UPDATE: allow claiming unowned rows, or updates by any member
+DROP POLICY IF EXISTS "Owners can update their own pharmacy" ON public.pharmacies;
+DROP POLICY IF EXISTS "Members can update their pharmacy" ON public.pharmacies;
+CREATE POLICY "Members can update their pharmacy" ON public.pharmacies
+    FOR UPDATE USING (
+        owner_id IS NULL
+        OR auth.uid() = owner_id
+        OR EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = pharmacies.id AND pm.user_id = auth.uid()
+        )
+    )
+    WITH CHECK (
+        auth.uid() = owner_id
+        OR EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = pharmacies.id AND pm.user_id = auth.uid()
+        )
+    );
+
+-- Employees: replace owner_id checks with membership checks
+DROP POLICY IF EXISTS "Owners can see their own employees" ON public.employees;
+DROP POLICY IF EXISTS "Members can see their pharmacy employees" ON public.employees;
+CREATE POLICY "Members can see their pharmacy employees" ON public.employees
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = employees.pharmacy_id AND pm.user_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Owners can manage their own employees" ON public.employees;
+DROP POLICY IF EXISTS "Members can manage their pharmacy employees" ON public.employees;
+CREATE POLICY "Members can manage their pharmacy employees" ON public.employees
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = employees.pharmacy_id AND pm.user_id = auth.uid()
+        )
+    );
+
+-- Payments: replace owner_id checks with membership checks
+DROP POLICY IF EXISTS "Owners can view own payments" ON public.payments;
+DROP POLICY IF EXISTS "Members can view their pharmacy payments" ON public.payments;
+CREATE POLICY "Members can view their pharmacy payments" ON public.payments
+    FOR SELECT USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = payments.pharmacy_id AND pm.user_id = auth.uid()
+        )
+    );
+
+DROP POLICY IF EXISTS "Owners can manage own payments" ON public.payments;
+DROP POLICY IF EXISTS "Members can manage their pharmacy payments" ON public.payments;
+CREATE POLICY "Members can manage their pharmacy payments" ON public.payments
+    FOR ALL USING (
+        EXISTS (
+            SELECT 1 FROM public.pharmacy_members pm
+            WHERE pm.pharmacy_id = payments.pharmacy_id AND pm.user_id = auth.uid()
+        )
+    );
+
