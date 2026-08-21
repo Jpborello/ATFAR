@@ -593,6 +593,13 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
           <div className="flex flex-wrap items-center gap-3">
             <Link
+              href="/farmacia?manage=1"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-secondary/30 bg-secondary/10 text-secondary hover:bg-secondary/20 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Mis Farmacias</span>
+            </Link>
+            <Link
               href="/farmacia/postulantes"
               className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-slate-800 hover:bg-slate-50 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer bg-white shadow-sm"
             >
