@@ -25,6 +25,7 @@ export interface Pharmacy {
   registered?: boolean;
   owner_id?: string | null;
   has_debt?: boolean;
+  debt_override_until?: string | null;
   resp_name?: string | null;
   resp_email?: string | null;
   resp_phone?: string | null;

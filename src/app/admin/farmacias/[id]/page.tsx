@@ -24,6 +24,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
 import { Payment } from '@/types';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface PharmacyDetail {
   id: string;
@@ -232,6 +233,25 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
     loadData();
   }, [id]);
 
+  const handleMarkPaidTransition = async () => {
+    if (!pharmacy) return;
+    const confirmed = await confirmDialog({
+      title: 'Marcar como Al Día',
+      message: `¿"${pharmacy.razonSocial}" ya pagó por fuera del sistema este mes? Va a figurar "Al Día" hasta fin de mes, y después el cálculo normal vuelve a aplicar solo.`,
+      confirmLabel: 'Marcar Al Día',
+    });
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.rpc('set_pharmacy_debt_override', { p_pharmacy_id: id, p_clear: false });
+      if (error) throw error;
+      setPharmacy(prev => prev ? { ...prev, paymentStatus: 'al_dia' } : prev);
+      toast.success('Farmacia marcada como Al Día hasta fin de mes.');
+    } catch (err) {
+      console.error('Error marking pharmacy as paid:', err);
+      toast.error('Ocurrió un error al actualizar el estado de la farmacia.');
+    }
+  };
+
   if (loading || !pharmacy) {
     return (
       <div className="min-h-[400px] flex items-center justify-center">
@@ -263,6 +283,16 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             <span className={`w-2 h-2 rounded-full ${pharmacy.paymentStatus === 'al_dia' ? 'bg-emerald-500' : 'bg-red-500'}`} />
             {pharmacy.paymentStatus === 'al_dia' ? 'Estado: Al Día' : 'Estado: Con Deuda'}
           </span>
+          {pharmacy.paymentStatus === 'con_deuda' && (
+            <button
+              onClick={handleMarkPaidTransition}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all cursor-pointer"
+              title="Ya pagó por fuera del sistema este mes"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Marcar Al Día</span>
+            </button>
+          )}
         </div>
       </div>
 

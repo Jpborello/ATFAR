@@ -4,8 +4,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { 
-  Search, 
-  Map, 
+  Search,
+  Map,
   Eye,
   Trash2,
   ArrowUpDown,
@@ -13,7 +13,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Filter,
-  Loader2
+  Loader2,
+  CheckCircle2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -178,6 +179,24 @@ export default function FarmaciasPanelPage() {
     } catch (err) {
       console.error("Error deleting pharmacy:", err);
       toast.error('Ocurrió un error al eliminar la farmacia.');
+    }
+  };
+
+  const handleMarkPaidTransition = async (id: string, razonSocial: string) => {
+    const confirmed = await confirmDialog({
+      title: 'Marcar como Al Día',
+      message: `¿"${razonSocial}" ya pagó por fuera del sistema este mes? Va a figurar "Al Día" hasta fin de mes, y después el cálculo normal vuelve a aplicar solo.`,
+      confirmLabel: 'Marcar Al Día',
+    });
+    if (!confirmed) return;
+    try {
+      const { error } = await supabase.rpc('set_pharmacy_debt_override', { p_pharmacy_id: id, p_clear: false });
+      if (error) throw error;
+      setPharmacies(prev => prev.map(p => p.id === id ? { ...p, paymentStatus: 'al_dia' } : p));
+      toast.success('Farmacia marcada como Al Día hasta fin de mes.');
+    } catch (err) {
+      console.error("Error marking pharmacy as paid:", err);
+      toast.error('Ocurrió un error al actualizar el estado de la farmacia.');
     }
   };
 
@@ -425,6 +444,15 @@ export default function FarmaciasPanelPage() {
                         >
                           <Eye className="w-3.5 h-3.5" />
                         </Link>
+                        {pharmacy.paymentStatus === 'con_deuda' && (
+                          <button
+                            onClick={() => handleMarkPaidTransition(pharmacy.id, pharmacy.razonSocial)}
+                            className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-emerald-600 hover:border-emerald-200 transition-all bg-card shadow-sm"
+                            title="Marcar Al Día (ya pagó por fuera del sistema este mes)"
+                          >
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                         <button
                           onClick={() => handleDelete(pharmacy.id)}
                           className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-red-500 hover:border-red-200 transition-all bg-card shadow-sm"

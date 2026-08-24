@@ -103,3 +103,44 @@ export function getReceiptStatus(receiptDateStr: string | null | undefined): { v
   return { valid: false, label: 'Vencido (+6m)', color: 'red' };
 }
 
+export type PharmacyDebtStatus = 'al_dia' | 'en_proceso' | 'con_deuda';
+
+interface DebtStatusPharmacy {
+  has_debt?: boolean | null;
+  debt_override_until?: string | null;
+}
+
+interface DebtStatusPayment {
+  status?: string | null;
+  due_date?: string | null;
+}
+
+/**
+ * `has_debt` en la base ya es la fuente de verdad (la calcula un trigger +
+ * un job diario, con 7 días de gracia sobre boletas recién vencidas y
+ * respetando la excepción manual del admin). Acá solo distinguimos, para
+ * mostrar, si un false es "genuinamente al día" o "al día por gracia/
+ * excepción" (En Proceso) — nunca reimplementa el cálculo de deuda.
+ */
+export function getPharmacyDebtStatus(
+  pharmacy: DebtStatusPharmacy,
+  payments: DebtStatusPayment[] = []
+): { status: PharmacyDebtStatus; label: string } {
+  if (pharmacy.has_debt) {
+    return { status: 'con_deuda', label: 'Con Deuda' };
+  }
+
+  const todayStr = new Date().toISOString().split('T')[0];
+  const overrideActive = !!pharmacy.debt_override_until && pharmacy.debt_override_until >= todayStr;
+  const graceActive = payments.some((p) => {
+    if (p.status !== 'impago' && p.status !== 'unpaid') return false;
+    return !!p.due_date && p.due_date < todayStr;
+  });
+
+  if (overrideActive || graceActive) {
+    return { status: 'en_proceso', label: 'En Proceso' };
+  }
+
+  return { status: 'al_dia', label: 'Al Día' };
+}
+

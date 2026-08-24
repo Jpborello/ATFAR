@@ -18,11 +18,12 @@ import {
   Loader2,
   X,
   Briefcase,
-  Upload
+  Upload,
+  Clock
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory, getReceiptStatus } from '@/lib/dateUtils';
+import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus } from '@/lib/dateUtils';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface Employee {
@@ -44,7 +45,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [pharmacyName, setPharmacyName] = useState('...');
   const [pharmacyCuit, setPharmacyCuit] = useState('...');
   const [pharmacyAddress, setPharmacyAddress] = useState('...');
-  const [hasDebt, setHasDebt] = useState(false);
+  const [debtStatus, setDebtStatus] = useState<{ status: PharmacyDebtStatus; label: string }>({ status: 'al_dia', label: 'Al Día' });
   
   // Tutorial states
   const [showTutorial, setShowTutorial] = useState(false);
@@ -170,40 +171,25 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         }
 
         if (pharmacy) {
-          // Sync has_debt status dynamically
+          // El estado de deuda (has_debt) ya lo calcula la base (trigger +
+          // job diario, con margen de gracia y excepción manual del admin).
+          // Acá solo lo leemos y buscamos los pagos para poder distinguir
+          // "Al Día" de "En Proceso" (gracia/excepción) en el badge.
           try {
-            const todayStr = new Date().toISOString().split('T')[0];
             const { data: payments } = await supabase
               .from('payments')
               .select('status, due_date')
               .eq('pharmacy_id', pharmacy.id);
 
-            let shouldHaveDebt = false;
-            if (!payments || payments.length === 0) {
-              shouldHaveDebt = true;
-            } else {
-              const hasPastDueUnpaid = payments.some(p =>
-                (p.status === 'impago' || p.status === 'unpaid') &&
-                p.due_date < todayStr
-              );
-              shouldHaveDebt = hasPastDueUnpaid;
-            }
-
-            if (pharmacy.has_debt !== shouldHaveDebt) {
-              await supabase
-                .from('pharmacies')
-                .update({ has_debt: shouldHaveDebt })
-                .eq('id', pharmacy.id);
-              pharmacy.has_debt = shouldHaveDebt;
-            }
+            setDebtStatus(getPharmacyDebtStatus(pharmacy, payments || []));
           } catch (syncErr) {
-            console.error("Error syncing pharmacy debt:", syncErr);
+            console.error("Error calculando estado de deuda:", syncErr);
+            setDebtStatus(getPharmacyDebtStatus(pharmacy, []));
           }
 
           setPharmacyName(pharmacy.nombre_fantasia || pharmacy.name || pharmacy.razon_social);
           setPharmacyCuit(pharmacy.cuit);
           setPharmacyAddress(pharmacy.declared_addresses || pharmacy.address);
-          setHasDebt(!!pharmacy.has_debt);
 
           setProfileData({
             cuit: pharmacy.cuit || '',
@@ -613,10 +599,15 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               <Building2 className="w-4 h-4 text-primary" />
               <span>Editar Perfil</span>
             </button>
-            {hasDebt ? (
+            {debtStatus.status === 'con_deuda' ? (
               <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-red-500/10 text-red-600 text-xs font-bold shadow-sm animate-pulse">
                 <AlertTriangle className="w-4 h-4" />
                 <span>Con Deuda</span>
+              </span>
+            ) : debtStatus.status === 'en_proceso' ? (
+              <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-amber-500/10 text-amber-600 text-xs font-bold shadow-sm">
+                <Clock className="w-4 h-4" />
+                <span>En Proceso</span>
               </span>
             ) : (
               <span className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-emerald-500/10 text-emerald-600 text-xs font-bold shadow-sm">
@@ -688,8 +679,10 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               </div>
               <div className="flex justify-between">
                 <span>Estado de Pago Aportes:</span>
-                {hasDebt ? (
+                {debtStatus.status === 'con_deuda' ? (
                   <span className="text-red-600 font-bold bg-red-500/10 px-2.5 py-0.5 rounded">Con Deuda</span>
+                ) : debtStatus.status === 'en_proceso' ? (
+                  <span className="text-amber-600 font-bold bg-amber-500/10 px-2.5 py-0.5 rounded">En Proceso</span>
                 ) : (
                   <span className="text-emerald-600 font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded">Al Día</span>
                 )}

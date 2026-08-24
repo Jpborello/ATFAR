@@ -22,14 +22,18 @@ import {
   Eye,
   EyeOff,
   AlertCircle,
+  Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { Pharmacy } from '@/types';
+import { getPharmacyDebtStatus } from '@/lib/dateUtils';
+
+type PharmacyWithPayments = Pharmacy & { payments?: { status: string; due_date: string }[] };
 
 interface MembershipRow {
   pharmacy_id: string;
-  pharmacies: Pharmacy;
+  pharmacies: PharmacyWithPayments;
 }
 
 function MisFarmaciasContent() {
@@ -37,7 +41,7 @@ function MisFarmaciasContent() {
   const searchParams = useSearchParams();
   const forceManage = searchParams.get('manage') === '1';
   const [loading, setLoading] = useState(true);
-  const [pharmacies, setPharmacies] = useState<Pharmacy[]>([]);
+  const [pharmacies, setPharmacies] = useState<PharmacyWithPayments[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
   // "Vincular otra farmacia" modal state
@@ -141,7 +145,7 @@ function MisFarmaciasContent() {
 
       const { data: memberships, error } = await supabase
         .from('pharmacy_members')
-        .select('pharmacy_id, pharmacies(*)')
+        .select('pharmacy_id, pharmacies(*, payments(status, due_date))')
         .eq('user_id', session.user.id);
 
       if (error) throw error;
@@ -413,7 +417,9 @@ function MisFarmaciasContent() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {pharmacies.map((pharm) => (
+            {pharmacies.map((pharm) => {
+              const debtStatus = getPharmacyDebtStatus(pharm, pharm.payments || []);
+              return (
               <Link
                 key={pharm.id}
                 href={`/farmacia/${pharm.id}`}
@@ -423,10 +429,15 @@ function MisFarmaciasContent() {
                   <div className="p-3 bg-primary/5 text-primary border border-primary/10 rounded-2xl">
                     <Building2 className="w-6 h-6 text-secondary" />
                   </div>
-                  {pharm.has_debt ? (
+                  {debtStatus.status === 'con_deuda' ? (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 text-[10px] font-bold">
                       <AlertTriangle className="w-3.5 h-3.5" />
                       <span>Con Deuda</span>
+                    </span>
+                  ) : debtStatus.status === 'en_proceso' ? (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 text-[10px] font-bold">
+                      <Clock className="w-3.5 h-3.5" />
+                      <span>En Proceso</span>
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 text-[10px] font-bold">
@@ -446,7 +457,8 @@ function MisFarmaciasContent() {
                   </span>
                 </div>
               </Link>
-            ))}
+              );
+            })}
           </div>
         )}
       </main>

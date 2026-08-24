@@ -572,3 +572,96 @@ CREATE POLICY "Members can manage their pharmacy payments" ON public.payments
         )
     );
 
+
+-- ----------------------------------------------------
+-- EXCEPCION MANUAL DE DEUDA + PERIODO DE GRACIA
+--
+-- Nota: `has_debt` ya se mantenia sincronizado por un trigger en
+-- `payments` (trg_recompute_pharmacy_debt) mas un job diario de pg_cron
+-- (recompute_all_pharmacy_debt, corre a las 6am) armados antes de este
+-- archivo, por eso no estan documentados mas arriba. Este bloque solo
+-- actualiza esas dos funciones para sumar:
+--   1) una excepcion manual que el admin puede activar por farmacia
+--      (para las que ya pagaron por fuera del sistema durante la
+--      transicion), que se auto-vence sola a fin del mes en curso;
+--   2) un margen de 7 dias de gracia antes de que una DDJJ recien
+--      presentada y ya vencida cuente como "deuda" de verdad.
+-- ----------------------------------------------------
+
+ALTER TABLE public.pharmacies ADD COLUMN IF NOT EXISTS debt_override_until DATE;
+
+CREATE OR REPLACE FUNCTION public.recompute_pharmacy_debt(p_pharmacy_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  UPDATE public.pharmacies p
+  SET has_debt = (
+    CASE
+      WHEN p.debt_override_until IS NOT NULL AND p.debt_override_until >= CURRENT_DATE THEN false
+      WHEN NOT EXISTS (SELECT 1 FROM public.payments pay WHERE pay.pharmacy_id = p_pharmacy_id) THEN true
+      WHEN EXISTS (
+        SELECT 1 FROM public.payments pay
+        WHERE pay.pharmacy_id = p_pharmacy_id
+          AND pay.status IN ('impago', 'unpaid')
+          AND pay.due_date < (CURRENT_DATE - INTERVAL '7 days')
+      ) THEN true
+      ELSE false
+    END
+  )
+  WHERE p.id = p_pharmacy_id;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.recompute_all_pharmacy_debt()
+RETURNS void
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+  UPDATE public.pharmacies p
+  SET has_debt = sub.should_have_debt
+  FROM (
+    SELECT ph.id,
+      CASE
+        WHEN ph.debt_override_until IS NOT NULL AND ph.debt_override_until >= CURRENT_DATE THEN false
+        WHEN NOT EXISTS (SELECT 1 FROM public.payments pay WHERE pay.pharmacy_id = ph.id) THEN true
+        WHEN EXISTS (
+          SELECT 1 FROM public.payments pay
+          WHERE pay.pharmacy_id = ph.id AND pay.status IN ('impago', 'unpaid') AND pay.due_date < (CURRENT_DATE - INTERVAL '7 days')
+        ) THEN true
+        ELSE false
+      END AS should_have_debt
+    FROM public.pharmacies ph
+    WHERE ph.registered = true
+  ) sub
+  WHERE p.id = sub.id AND p.has_debt IS DISTINCT FROM sub.should_have_debt;
+$function$;
+
+-- RPC para que un admin marque/desmarque la excepcion desde el panel.
+-- Pone la fecha limite al ultimo dia del mes en curso automaticamente.
+CREATE OR REPLACE FUNCTION public.set_pharmacy_debt_override(p_pharmacy_id uuid, p_clear boolean DEFAULT false)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public'
+AS $function$
+BEGIN
+  IF NOT public.is_admin() THEN
+    RAISE EXCEPTION 'Solo un administrador puede marcar esta excepcion.';
+  END IF;
+
+  UPDATE public.pharmacies
+  SET debt_override_until = CASE
+    WHEN p_clear THEN NULL
+    ELSE (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month' - INTERVAL '1 day')::date
+  END
+  WHERE id = p_pharmacy_id;
+
+  PERFORM public.recompute_pharmacy_debt(p_pharmacy_id);
+END;
+$function$;
+
+GRANT EXECUTE ON FUNCTION public.set_pharmacy_debt_override(uuid, boolean) TO authenticated;
