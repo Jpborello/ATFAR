@@ -665,3 +665,11 @@ END;
 $function$;
 
 GRANT EXECUTE ON FUNCTION public.set_pharmacy_debt_override(uuid, boolean) TO authenticated;
+
+-- ----------------------------------------------------
+-- SALARY SCALES DOCS: vincular cada PDF con su acuerdo y guardar el
+-- texto de firma (representantes/fecha), para que la grilla publica
+-- de /escalas se arme sola a partir de la ultima paritaria cargada.
+-- ----------------------------------------------------
+ALTER TABLE public.salary_scales_docs ADD COLUMN IF NOT EXISTS signing_note TEXT;
+ALTER TABLE public.salary_scales_docs ADD COLUMN IF NOT EXISTS agreement TEXT;
