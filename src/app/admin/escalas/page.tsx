@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
@@ -10,7 +11,8 @@ import {
   Upload,
   BookOpen,
   Eye,
-  Trash2
+  Trash2,
+  Plus
 } from 'lucide-react';
 
 interface SalaryScaleDoc {
@@ -24,12 +26,69 @@ interface SalaryScaleDoc {
   created_at: string;
 }
 
+const PERIOD_LABELS: Record<string, string> = {
+  jan: 'Enero', feb: 'Febrero', march: 'Marzo', april: 'Abril', may: 'Mayo', june: 'Junio',
+  july: 'Julio', aug: 'Agosto', sep: 'Septiembre', oct: 'Octubre', nov: 'Noviembre', dec: 'Diciembre',
+};
+const PERIOD_ORDER = Object.keys(PERIOD_LABELS);
+
+function agreementLabel(key: string): string {
+  const match = key.match(/^([a-z]+)(\d{4})$/i);
+  if (!match) return key;
+  return `${PERIOD_LABELS[match[1].toLowerCase()] || match[1]} ${match[2]}`;
+}
+
 export default function AdminEscalasPage() {
-  const [agreement, setAgreement] = useState<'may2026' | 'feb2026'>('may2026');
-  const [period, setPeriod] = useState<string>('july');
+  // Se arma solo a partir de lo que haya en la base — ya no está limitado
+  // a los 2 acuerdos viejos hardcodeados.
+  const [agreementOptions, setAgreementOptions] = useState<{ key: string; periods: string[] }[]>([]);
+  const [agreement, setAgreement] = useState<string>('');
+  const [period, setPeriod] = useState<string>('');
+  const [loadingAgreements, setLoadingAgreements] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [scales, setScales] = useState<any[]>([]);
   const [loadingScales, setLoadingScales] = useState(true);
+
+  useEffect(() => {
+    async function loadAgreements() {
+      try {
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+        if (!isConfigured) return;
+
+        const { data, error } = await supabase
+          .from('salary_scales')
+          .select('agreement, period, created_at')
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        if (!data || data.length === 0) return;
+
+        const map = new Map<string, Set<string>>();
+        data.forEach((row) => {
+          if (!map.has(row.agreement)) map.set(row.agreement, new Set());
+          map.get(row.agreement)!.add(row.period);
+        });
+
+        const options = Array.from(map.entries()).map(([key, periodsSet]) => ({
+          key,
+          periods: PERIOD_ORDER.filter((p) => periodsSet.has(p)),
+        }));
+
+        setAgreementOptions(options);
+        // El primer registro (más reciente) marca el acuerdo vigente por defecto
+        setAgreement(data[0].agreement);
+        setPeriod(data[0].period);
+      } catch (err) {
+        console.error('Error loading agreements:', err);
+      } finally {
+        setLoadingAgreements(false);
+      }
+    }
+    loadAgreements();
+  }, []);
 
   // Salary editing states
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -82,11 +141,13 @@ export default function AdminEscalasPage() {
   }, []);
 
   useEffect(() => {
+    if (!agreement || !period) return;
+
     async function loadScales() {
       setLoadingScales(true);
       try {
-        const isConfigured = 
-          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured) return;
@@ -113,9 +174,10 @@ export default function AdminEscalasPage() {
     loadScales();
   }, [agreement, period]);
 
-  const handleAgreementChange = (val: 'may2026' | 'feb2026') => {
+  const handleAgreementChange = (val: string) => {
     setAgreement(val);
-    setPeriod(val === 'may2026' ? 'july' : 'may');
+    const opt = agreementOptions.find((o) => o.key === val);
+    setPeriod(opt?.periods[0] || '');
   };
 
   const handleSaveSalary = async (id: string) => {
@@ -333,59 +395,85 @@ export default function AdminEscalasPage() {
   return (
     <div className="space-y-8">
       {/* Title Header */}
-      <div className="border-b border-border pb-6">
-        <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
-          Novedades y Escalas Salariales
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Gestión de sueldos básicos por convenio, carga de actas paritarias y publicación de comunicados.
-        </p>
+      <div className="border-b border-border pb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-extrabold text-foreground tracking-tight">
+            Novedades y Escalas Salariales
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Gestión de sueldos básicos por convenio, carga de actas paritarias y publicación de comunicados.
+          </p>
+        </div>
+        <Link
+          href="/admin/escalas/nueva"
+          className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-primary text-primary-foreground font-black text-xs uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer whitespace-nowrap"
+        >
+          <Plus className="w-4 h-4" />
+          Cargar Paritaria Nueva
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Edit Salaries Grid */}
         <div className="lg:col-span-7 bg-card border border-border rounded-3xl p-6 shadow-lg glass space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-border pb-4 gap-4">
-            <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-              <DollarSign className="w-5 h-5 text-secondary" />
-              Básicos y No Remunerativos
-            </h2>
-            
+            <div>
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <DollarSign className="w-5 h-5 text-secondary" />
+                Corregir Valores Cargados
+              </h2>
+              <p className="text-[11px] text-muted-foreground font-semibold mt-0.5">
+                Para arreglar un número mal cargado en una paritaria existente. Para cargar una paritaria
+                nueva, usá el botón &quot;Cargar Paritaria Nueva&quot; de arriba.
+              </p>
+            </div>
+
             {/* Agreement & Period Selectors */}
             <div className="flex gap-2">
               <select
                 value={agreement}
-                onChange={(e) => handleAgreementChange(e.target.value as 'may2026' | 'feb2026')}
-                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground"
+                onChange={(e) => handleAgreementChange(e.target.value)}
+                disabled={loadingAgreements || agreementOptions.length === 0}
+                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground disabled:opacity-50"
               >
-                <option value="may2026">Acuerdo Mayo 2026</option>
-                <option value="feb2026">Acuerdo Febrero 2026</option>
+                {agreementOptions.length === 0 ? (
+                  <option value="">Sin paritarias cargadas</option>
+                ) : (
+                  agreementOptions.map((opt) => (
+                    <option key={opt.key} value={opt.key}>Acuerdo {agreementLabel(opt.key)}</option>
+                  ))
+                )}
               </select>
 
               <select
                 value={period}
                 onChange={(e) => setPeriod(e.target.value)}
-                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground"
+                disabled={loadingAgreements || agreementOptions.length === 0}
+                className="px-2.5 py-1.5 rounded-xl border border-border bg-background text-xs font-bold focus:outline-none text-foreground disabled:opacity-50"
               >
-                {agreement === 'may2026' ? (
-                  <>
-                    <option value="may">Mayo 2026</option>
-                    <option value="june">Junio 2026</option>
-                    <option value="july">Julio 2026</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="feb">Febrero 2026</option>
-                    <option value="march">Marzo 2026</option>
-                    <option value="april">Abril 2026</option>
-                    <option value="may">Mayo 2026</option>
-                  </>
-                )}
+                {(agreementOptions.find((o) => o.key === agreement)?.periods || []).map((p) => (
+                  <option key={p} value={p}>{PERIOD_LABELS[p] || p}</option>
+                ))}
               </select>
             </div>
           </div>
 
-          {loadingScales ? (
+          {loadingAgreements ? (
+            <div className="h-60 w-full flex items-center justify-center text-xs font-semibold text-muted-foreground">
+              Cargando paritarias cargadas...
+            </div>
+          ) : agreementOptions.length === 0 ? (
+            <div className="h-60 w-full flex flex-col items-center justify-center gap-3 text-xs text-muted-foreground border border-dashed border-border rounded-2xl text-center px-6">
+              <span>Todavía no hay ninguna paritaria cargada en el sistema.</span>
+              <Link
+                href="/admin/escalas/nueva"
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:bg-primary/95 transition-all shadow-sm cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                Cargar la primera Paritaria
+              </Link>
+            </div>
+          ) : loadingScales ? (
             <div className="h-60 w-full flex items-center justify-center text-xs font-semibold text-muted-foreground">
               Cargando grilla salarial...
             </div>
