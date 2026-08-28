@@ -19,6 +19,25 @@ import {
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
+/**
+ * A veces, sobre todo en el primer inicio de sesión del día, el cliente de
+ * Supabase se queda esperando una respuesta que ya llegó (un problema
+ * conocido de la librería cuando compite con el refresco automático de una
+ * sesión guardada de un día anterior) y el botón queda trabado en
+ * "Validando..." para siempre. Este helper le pone un límite de tiempo a
+ * cualquier llamada a Supabase: si no responde a tiempo, en vez de colgarse
+ * muestra un error y deja reintentar.
+ */
+function withTimeout<T>(promise: PromiseLike<T>, ms: number, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(message)), ms);
+    promise.then(
+      (value) => { clearTimeout(timer); resolve(value); },
+      (err) => { clearTimeout(timer); reject(err); }
+    );
+  });
+}
+
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -244,20 +263,21 @@ function LoginContent() {
         return;
       }
 
-      const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      const { data: authData, error: authError } = await withTimeout(
+        supabase.auth.signInWithPassword({ email, password }),
+        10000,
+        'La respuesta está tardando más de lo normal. Probá iniciar sesión de nuevo.'
+      );
 
       if (authError) throw new Error(authError.message);
       if (!authData.user) throw new Error('Usuario no encontrado.');
 
       // Fetch profile role
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', authData.user.id)
-        .single();
+      const { data: profile, error: profileError } = await withTimeout(
+        supabase.from('profiles').select('role').eq('id', authData.user.id).single(),
+        10000,
+        'La respuesta está tardando más de lo normal. Probá iniciar sesión de nuevo.'
+      );
 
       if (profileError) throw new Error('Error al consultar el perfil de usuario.');
 
