@@ -125,11 +125,21 @@ export default function PublicEscalasPage() {
   }, [regularRows]);
 
   const additionalConceptOrder = useMemo(() => {
-    const ordered: string[] = [];
+    // Orden natural del Art. 7 (a, b, c); lo que no matchee queda al final,
+    // en el orden en que aparezca, para no perder conceptos futuros.
+    const seen: string[] = [];
     additionalRows.forEach((r) => {
-      if (!ordered.includes(r.category)) ordered.push(r.category);
+      if (!seen.includes(r.category)) seen.push(r.category);
     });
-    return ordered;
+    return [...seen].sort((a, b) => {
+      const incLetter = (s: string) => s.match(/inc\.\s*([a-z])\b/i)?.[1]?.toLowerCase() || null;
+      const la = incLetter(a);
+      const lb = incLetter(b);
+      if (la && lb) return la.localeCompare(lb);
+      if (la) return -1;
+      if (lb) return 1;
+      return 0;
+    });
   }, [additionalRows]);
 
   const activeDoc = useMemo(
