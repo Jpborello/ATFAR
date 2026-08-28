@@ -19,7 +19,8 @@ import {
   X,
   Briefcase,
   Upload,
-  Clock
+  Clock,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -1188,6 +1189,18 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                     <option key={idx} value={cat}>{cat}</option>
                   ))}
                 </select>
+              </div>
+
+              <div className="flex items-start gap-2.5 p-3.5 bg-secondary/5 border border-secondary/20 rounded-2xl">
+                <Sparkles className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
+                <p className="text-[11px] text-slate-700 leading-relaxed font-semibold">
+                  <span className="font-black text-secondary">Promoción automática por antigüedad:</span> por convenio, cada 5 años el
+                  sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá.
+                  <span className="block mt-1 text-slate-500 font-medium">
+                    Ej: ingresó en 2021 como <strong className="text-slate-700">Cadetes</strong> → hoy el sistema ya lo liquida como{' '}
+                    <strong className="text-slate-700">Aprendiz Ayudante</strong> en las declaraciones, sin que tengas que cambiarle la categoría vos.
+                  </span>
+                </p>
               </div>
 
               <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
