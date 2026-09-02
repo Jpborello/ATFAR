@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Menu, X, LogOut, Shield, MapPin, ClipboardList, User, Sparkles } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 import { UserProfile } from '@/types';
 
 export default function Navbar() {
@@ -143,6 +144,7 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            <SupportContact />
           </div>
 
           {/* Auth Buttons */}
@@ -210,6 +212,10 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
+            <div className="px-4 pt-2 pb-1">
+              <SupportContact />
+            </div>
 
             <div className="border-t border-border pt-4 pb-2 px-4 mt-2">
               {profile ? (
