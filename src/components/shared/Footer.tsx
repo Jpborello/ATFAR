@@ -135,8 +135,12 @@ export default function Footer() {
           <p>© {currentYear} ATFAR Rosario. Todos los derechos reservados.</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 normal-case font-semibold text-slate-500 text-right">
             <span>
-              Desarrollado por <span className="font-extrabold text-emerald-950">neo core sys</span>
+              Soporte técnico del portal — <span className="font-extrabold text-emerald-950">neo core sys</span>
             </span>
+            <span className="hidden sm:inline text-emerald-300">|</span>
+            <a href="mailto:neocoresystem@gmail.com" className="hover:text-emerald-700 transition-colors font-bold">
+              neocoresystem@gmail.com
+            </a>
             <span className="hidden sm:inline text-emerald-300">|</span>
             <a href="tel:+543417981212" className="hover:text-emerald-700 transition-colors font-bold">
               Tel: +54 341 798-1212

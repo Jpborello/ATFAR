@@ -23,6 +23,7 @@ import {
   Search
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 
 export default function AdminLayout({
   children,
@@ -206,6 +207,8 @@ export default function AdminLayout({
                 className="w-full pl-9 pr-4 py-2 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
               />
             </div>
+
+            <SupportContact />
 
             {/* Notifications Bell */}
             <button className="p-2 rounded-xl border border-border text-muted-foreground hover:text-foreground relative bg-card hover:bg-muted/40 transition-all cursor-pointer">

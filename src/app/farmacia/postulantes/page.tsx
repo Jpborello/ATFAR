@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 
 interface JobApplication {
   id: string;
@@ -86,6 +87,7 @@ export default function FarmaciaPostulantesPage() {
             <span className="text-[9px] text-muted-foreground block font-bold">Portal de Farmacias / Bolsa de Empleo</span>
           </div>
         </div>
+        <SupportContact />
       </header>
 
       {/* Main container */}

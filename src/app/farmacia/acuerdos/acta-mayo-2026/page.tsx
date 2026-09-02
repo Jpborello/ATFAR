@@ -12,6 +12,7 @@ import {
   BookOpen
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 
 export default function ActaAcuerdoMayoPage() {
   const [loading, setLoading] = useState(true);
@@ -91,9 +92,12 @@ export default function ActaAcuerdoMayoPage() {
             <span className="text-[9px] text-muted-foreground block font-bold">Portal de Farmacias / Circulares Privadas</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3.5 py-1.5 rounded-full text-[10px] font-bold shadow-sm">
-          <ShieldCheck className="w-4 h-4" />
-          <span>Acceso Responsable Farmacia</span>
+        <div className="flex items-center gap-3">
+          <SupportContact />
+          <div className="hidden lg:flex items-center gap-2 bg-emerald-500/10 text-emerald-600 px-3.5 py-1.5 rounded-full text-[10px] font-bold shadow-sm">
+            <ShieldCheck className="w-4 h-4" />
+            <span>Acceso Responsable Farmacia</span>
+          </div>
         </div>
       </header>
 

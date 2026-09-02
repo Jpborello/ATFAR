@@ -18,6 +18,7 @@ import {
   EyeOff
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 
 /**
  * A veces, sobre todo en el primer inicio de sesión del día, el cliente de
@@ -531,6 +532,11 @@ function LoginContent() {
           <ArrowLeft className="w-4 h-4" />
           <span>Volver al sitio</span>
         </Link>
+      </div>
+
+      {/* Support contact */}
+      <div className="absolute top-6 right-6 z-10 hidden sm:block">
+        <SupportContact />
       </div>
 
       <div className="w-full max-w-lg space-y-8 relative">

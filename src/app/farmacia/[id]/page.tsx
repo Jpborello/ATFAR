@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus } from '@/lib/dateUtils';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
+import SupportContact from '@/components/shared/SupportContact';
 
 interface Employee {
   id: string;
@@ -539,6 +540,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         )}
 
         <div className="flex items-center gap-3">
+          <SupportContact />
           <Link
             href="/farmacia?manage=1"
             title="Ver todas tus farmacias o vincular una nueva"

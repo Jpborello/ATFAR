@@ -7,6 +7,7 @@ import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCi
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniorityYears, isReceiptValid, getCurrentCategory } from '@/lib/dateUtils';
+import SupportContact from '@/components/shared/SupportContact';
 
 import { Employee, Pharmacy, SalaryScale } from '@/types';
 
@@ -137,7 +138,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
 
           const { data: scales } = await supabase
             .from('salary_scales')
-            .select('*');
+            .select('*')
+            .order('created_at', { ascending: false });
           if (scales) {
             setSalaryScales(scales);
           }
@@ -205,8 +207,14 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       // Mutual: 1.5% de lo remunerativo
       mutualAporte = grossSalary * 0.015;
     } else {
-      // No Afiliado: 2% de lo no remunerativo (nada sobre lo remunerativo, sin mutual)
-      unionAporte = noRem * 0.02;
+      // No Afiliado (aporte solidario, art. 50 inc. a CCT 659/13): antes esto calculaba
+      // el 2% SOLO sobre "noRem" (lo no remunerativo), que en la mayoría de los períodos
+      // es $0 o un monto chico -> el aporte daba un importe irrisorio o directamente $0.
+      // El aporte solidario se calcula igual que el sindical del afiliado (2% sobre
+      // remunerativo + no remunerativo), pero sin mutual (eso es exclusivo del afiliado).
+      // TODO: confirmar con el sindicato el % exacto vigente para no afiliados (ver ADR
+      // docs/adr/0001-calculo-aportes-sindicales-mutuales.md) antes de la próxima liquidación.
+      unionAporte = (grossSalary + noRem) * 0.02;
       mutualAporte = 0;
     }
 
@@ -362,13 +370,16 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
           </span>
         )}
 
-        <Link
-          href={`/farmacia/${pharmacyId}`}
-          className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Panel</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <SupportContact />
+          <Link
+            href={`/farmacia/${pharmacyId}`}
+            className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Volver al Panel</span>
+          </Link>
+        </div>
       </header>
 
       {/* Main Container */}

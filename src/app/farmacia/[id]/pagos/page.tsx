@@ -5,6 +5,7 @@ import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 import { Pharmacy } from '@/types';
 import { 
   CreditCard, 
@@ -453,13 +454,16 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           </span>
         )}
 
-        <Link
-          href={`/farmacia/${pharmacyId}`}
-          className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Volver al Panel</span>
-        </Link>
+        <div className="flex items-center gap-3">
+          <SupportContact />
+          <Link
+            href={`/farmacia/${pharmacyId}`}
+            className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Volver al Panel</span>
+          </Link>
+        </div>
       </header>
 
       {/* Main Container */}

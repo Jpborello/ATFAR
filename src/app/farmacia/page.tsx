@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
+import SupportContact from '@/components/shared/SupportContact';
 import { Pharmacy } from '@/types';
 import { getPharmacyDebtStatus } from '@/lib/dateUtils';
 
@@ -354,6 +355,7 @@ function MisFarmaciasContent() {
         </div>
 
         <div className="flex items-center gap-3">
+          <SupportContact />
           <button
             onClick={openPasswordModal}
             className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer bg-white"
