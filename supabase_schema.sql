@@ -448,6 +448,9 @@ CREATE POLICY "Admins can do everything on scales docs" ON public.salary_scales_
 -- 9. Migration: Calculation based on affiliation
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAULT false NOT NULL;
 
+-- 10. Migration: Sueldo personalizado / override para casos extraordinarios (jornada reducida, licencias, etc.)
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_salary NUMERIC DEFAULT NULL;
+
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,
 -- ej. estudios contables que llevan varias farmacias con un solo login)

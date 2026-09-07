@@ -55,6 +55,8 @@ export interface Employee {
   receiptUrl?: string;
   receipt_date?: string;
   receiptDate?: string;
+  custom_salary?: number | null;
+  customSalary?: number | null;
   created_at?: string;
 }
 

@@ -20,7 +20,10 @@ import {
   Briefcase,
   Upload,
   Clock,
-  Sparkles
+  Sparkles,
+  Pencil,
+  DollarSign,
+  Info
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -34,10 +37,12 @@ interface Employee {
   cuil: string;
   category: string;
   entryDate: string;
+  weeklyHours?: number;
   active: boolean;
   isAffiliate: boolean;
   receiptUrl?: string;
   receiptDate?: string;
+  customSalary?: number | null;
 }
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
@@ -95,6 +100,21 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [newEmpEntryDate, setNewEmpEntryDate] = useState('');
   const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
   const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(false);
+  const [newEmpSalaryType, setNewEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
+  const [newEmpCustomSalary, setNewEmpCustomSalary] = useState('');
+
+  // Employee Edit form state
+  const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const [editEmpName, setEditEmpName] = useState('');
+  const [editEmpCuil, setEditEmpCuil] = useState('');
+  const [editEmpCategory, setEditEmpCategory] = useState('Personal en Gestión de Farmacia');
+  const [editEmpEntryDate, setEditEmpEntryDate] = useState('');
+  const [editEmpWeeklyHours, setEditEmpWeeklyHours] = useState(44);
+  const [editEmpIsAffiliate, setEditEmpIsAffiliate] = useState(false);
+  const [editEmpSalaryType, setEditEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
+  const [editEmpCustomSalary, setEditEmpCustomSalary] = useState('');
+  const [savingEditEmployee, setSavingEditEmployee] = useState(false);
 
   const [employees, setEmployees] = useState<Employee[]>([]);
 
@@ -227,10 +247,12 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               cuil: emp.cuil,
               category: emp.category,
               entryDate: emp.entry_date,
+              weeklyHours: emp.weekly_hours,
               active: emp.active,
               isAffiliate: !!emp.is_affiliate,
               receiptUrl: emp.receipt_url,
-              receiptDate: emp.receipt_date
+              receiptDate: emp.receipt_date,
+              customSalary: emp.custom_salary ? Number(emp.custom_salary) : null
             })));
           } else {
             setEmployees([]);
@@ -356,6 +378,13 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         }
       }
 
+      const parsedCustomSalary = newEmpSalaryType === 'manual' && newEmpCustomSalary ? Number(newEmpCustomSalary) : null;
+      if (newEmpSalaryType === 'manual' && (!newEmpCustomSalary || Number(newEmpCustomSalary) <= 0)) {
+        toast.warning('Ingresá un sueldo bruto válido para el cálculo manual.');
+        setUploadingReceipt(false);
+        return;
+      }
+
       let newId = Math.random().toString();
 
       if (isConfigured && pharmacyId) {
@@ -370,6 +399,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             weekly_hours: newEmpWeeklyHours,
             active: true,
             is_affiliate: newEmpIsAffiliate,
+            custom_salary: parsedCustomSalary,
             receipt_url: uploadedReceiptUrl || null,
             receipt_date: uploadedReceiptUrl ? nowIso : null
           })
@@ -393,10 +423,12 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           cuil: newEmpCuil,
           category: newEmpCategory,
           entryDate: newEmpEntryDate,
+          weeklyHours: newEmpWeeklyHours,
           active: true,
           isAffiliate: newEmpIsAffiliate,
           receiptUrl: uploadedReceiptUrl || undefined,
-          receiptDate: uploadedReceiptUrl ? nowIso : undefined
+          receiptDate: uploadedReceiptUrl ? nowIso : undefined,
+          customSalary: parsedCustomSalary
         }
       ]);
 
@@ -407,6 +439,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setNewEmpEntryDate('');
       setNewEmpWeeklyHours(44);
       setNewEmpIsAffiliate(false);
+      setNewEmpSalaryType('automatico');
+      setNewEmpCustomSalary('');
       setNewEmpReceiptFile(null);
       setIsEmployeeModalOpen(false);
     } catch (err: unknown) {
@@ -414,6 +448,81 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       toast.error('Ocurrió un error al procesar el recibo de sueldo.');
     } finally {
       setUploadingReceipt(false);
+    }
+  };
+
+  const handleOpenEditEmployee = (emp: Employee) => {
+    setEditingEmployee(emp);
+    setEditEmpName(emp.fullName);
+    setEditEmpCuil(emp.cuil);
+    setEditEmpCategory(emp.category);
+    setEditEmpEntryDate(emp.entryDate);
+    setEditEmpWeeklyHours(emp.weeklyHours || 44);
+    setEditEmpIsAffiliate(emp.isAffiliate);
+    if (emp.customSalary && emp.customSalary > 0) {
+      setEditEmpSalaryType('manual');
+      setEditEmpCustomSalary(emp.customSalary.toString());
+    } else {
+      setEditEmpSalaryType('automatico');
+      setEditEmpCustomSalary('');
+    }
+    setIsEditEmployeeModalOpen(true);
+  };
+
+  const handleSaveEditEmployee = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEmployee) return;
+
+    const parsedCustomSalary = editEmpSalaryType === 'manual' && editEmpCustomSalary ? Number(editEmpCustomSalary) : null;
+    if (editEmpSalaryType === 'manual' && (!editEmpCustomSalary || Number(editEmpCustomSalary) <= 0)) {
+      toast.warning('Ingresá un sueldo bruto válido para el cálculo manual.');
+      return;
+    }
+
+    setSavingEditEmployee(true);
+    const isConfigured =
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+      !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    try {
+      if (isConfigured) {
+        const { error } = await supabase
+          .from('employees')
+          .update({
+            full_name: editEmpName,
+            cuil: editEmpCuil,
+            category: editEmpCategory,
+            entry_date: editEmpEntryDate,
+            weekly_hours: editEmpWeeklyHours,
+            is_affiliate: editEmpIsAffiliate,
+            custom_salary: parsedCustomSalary
+          })
+          .eq('id', editingEmployee.id);
+
+        if (error) {
+          toast.error('Error al actualizar empleado', { description: error.message });
+          return;
+        }
+      }
+
+      setEmployees(prev => prev.map(emp => emp.id === editingEmployee.id ? {
+        ...emp,
+        fullName: editEmpName,
+        cuil: editEmpCuil,
+        category: editEmpCategory,
+        entryDate: editEmpEntryDate,
+        weeklyHours: editEmpWeeklyHours,
+        isAffiliate: editEmpIsAffiliate,
+        customSalary: parsedCustomSalary
+      } : emp));
+
+      toast.success('Empleado y régimen de sueldo actualizados exitosamente.');
+      setIsEditEmployeeModalOpen(false);
+    } catch (err: unknown) {
+      console.error(err);
+      toast.error('Ocurrió un error al guardar los cambios.');
+    } finally {
+      setSavingEditEmployee(false);
     }
   };
 
@@ -727,13 +836,27 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
+            {/* Aviso explicativo para contadores / farmacias */}
+            <div className="flex items-start gap-3 p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-950 text-xs">
+              <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="space-y-0.5 leading-relaxed">
+                <p className="font-bold">
+                  <span className="text-amber-800 uppercase tracking-wider text-[10px] font-black mr-1">Régimen Salarial:</span>
+                  Por defecto, los sueldos se calculan automáticamente con la escala CCT 659/13 vigente y la antigüedad acumulada.
+                </p>
+                <p className="text-[11px] text-amber-900/80 font-medium">
+                  Si un empleado tiene una situación extraordinaria (jornada reducida, licencias, adicionales especiales), hacé clic en el botón <strong className="text-amber-950">Editar (✏️)</strong> para fijar su sueldo bruto manual pactado. El sistema usará ese valor sin modificarlo.
+                </p>
+              </div>
+            </div>
+
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="border-b border-border text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
                     <th className="py-3 px-4">Nombre y Apellido</th>
                     <th className="py-3 px-4">CUIL</th>
-                    <th className="py-3 px-4">Categoría Profesional</th>
+                    <th className="py-3 px-4">Categoría Profesional / Régimen</th>
                     <th className="py-3 px-4 text-center">Afiliado</th>
                     <th className="py-3 px-4 text-center">Recibo Sueldo (6m)</th>
                     <th className="py-3 px-4 text-center">Ingreso</th>
@@ -751,11 +874,21 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                         <td className="py-3.5 px-4 font-mono text-slate-500">{emp.cuil}</td>
                         <td className="py-3.5 px-4 text-slate-500">
                           <div className="flex flex-col">
-                            <span>{catInfo.category}</span>
-                            {catInfo.promoted && (
-                              <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded w-max mt-0.5">
-                                Promovido (+{catInfo.steps} cat.)
+                            <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
+                            {emp.customSalary && emp.customSalary > 0 ? (
+                              <span className="inline-flex items-center gap-1 text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded w-max mt-1" title="Sueldo bruto manual fijado por la farmacia">
+                                <DollarSign className="w-3 h-3 text-amber-700" />
+                                <span>Sueldo Fijo: ${emp.customSalary.toLocaleString('es-AR')}</span>
                               </span>
+                            ) : (
+                              <div className="flex items-center gap-1 mt-0.5">
+                                <span className="text-[9px] text-slate-400 font-semibold">CCT Automático</span>
+                                {catInfo.promoted && (
+                                  <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
+                                    Promovido (+{catInfo.steps} cat.)
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
                         </td>
@@ -796,6 +929,13 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                         <td className="py-3.5 px-4 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>
                         <td className="py-3.5 px-4 text-center">
                           <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => handleOpenEditEmployee(emp)}
+                              className="p-1.5 rounded-lg border border-border hover:bg-primary/10 text-slate-600 hover:text-primary hover:border-primary/30 transition-colors bg-white cursor-pointer shadow-sm"
+                              title="Editar empleado o fijar sueldo personalizado"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
                             <button
                               onClick={() => {
                                 setSelectedEmpForReceipt(emp);
@@ -1234,6 +1374,86 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">Rango: 1 hs (mínimo) a 44 hs (jornada completa)</span>
               </div>
 
+              {/* Régimen de Sueldo (Automático vs Manual para casos extraordinarios) */}
+              <div className="border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-primary" />
+                    <span>Régimen de Sueldo para Aportes</span>
+                  </label>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                    newEmpSalaryType === 'manual' 
+                      ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
+                      : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                  }`}>
+                    {newEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewEmpSalaryType('automatico');
+                      setNewEmpCustomSalary('');
+                    }}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                      newEmpSalaryType === 'automatico'
+                        ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
+                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="font-extrabold flex items-center gap-1">
+                      ✓ Automático por Convenio
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
+                      Calcula según escala CCT 659/13 vigente + 1% anual por antigüedad.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setNewEmpSalaryType('manual')}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                      newEmpSalaryType === 'manual'
+                        ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
+                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="font-extrabold flex items-center gap-1">
+                      ✏️ Sueldo Personalizado
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
+                      Para casos extraordinarios (jornada reducida, licencias, acuerdos).
+                    </span>
+                  </button>
+                </div>
+
+                {newEmpSalaryType === 'manual' && (
+                  <div className="pt-2 border-t border-border/60 space-y-2 animate-fadeIn">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      Sueldo Bruto Mensual Pactado ($ ARS) *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        value={newEmpCustomSalary}
+                        onChange={(e) => setNewEmpCustomSalary(e.target.value)}
+                        placeholder="Ej: 1450000.00"
+                        className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                        required={newEmpSalaryType === 'manual'}
+                      />
+                    </div>
+                    <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
+                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en este monto pactado y <u>no lo modificará</u> con aumentos de escala ni antigüedad.
+                    </p>
+                  </div>
+                )}
+              </div>
+
               <div>
                 <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
                   Recibo de Sueldo (PDF / Imagen) *
@@ -1263,6 +1483,209 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50"
                 >
                   {uploadingReceipt ? 'Guardando...' : 'Registrar Empleado'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Employee Modal */}
+      {isEditEmployeeModalOpen && editingEmployee && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-premium-lg relative animate-scaleIn">
+            <button
+              onClick={() => setIsEditEmployeeModalOpen(false)}
+              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight mb-1 flex items-center gap-2">
+              <Pencil className="w-5.5 h-5.5 text-primary" />
+              <span>Editar Empleado y Régimen de Sueldo</span>
+            </h3>
+            <p className="text-xs text-muted-foreground mb-6">
+              Ajustá los datos laborales o fijá un sueldo bruto personalizado para casos extraordinarios.
+            </p>
+
+            <form onSubmit={handleSaveEditEmployee} className="space-y-4">
+              <div>
+                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre y Apellido</label>
+                <input 
+                  type="text" 
+                  value={editEmpName} 
+                  onChange={(e) => setEditEmpName(e.target.value)} 
+                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">CUIL</label>
+                  <input 
+                    type="text" 
+                    value={editEmpCuil} 
+                    onChange={(e) => setEditEmpCuil(e.target.value)} 
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Fecha de Ingreso</label>
+                  <input 
+                    type="date" 
+                    value={editEmpEntryDate} 
+                    onChange={(e) => setEditEmpEntryDate(e.target.value)} 
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Categoría Profesional CCT</label>
+                <select
+                  value={editEmpCategory}
+                  onChange={(e) => setEditEmpCategory(e.target.value)}
+                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                >
+                  {cctCategories.map((cat, idx) => (
+                    <option key={idx} value={cat}>{cat}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
+                <input
+                  type="checkbox"
+                  id="edit-emp-affiliate"
+                  checked={editEmpIsAffiliate}
+                  onChange={(e) => setEditEmpIsAffiliate(e.target.checked)}
+                  className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
+                />
+                <label htmlFor="edit-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
+                  Afiliado Sindical (Aporta cuota completa y aportes mutuales)
+                </label>
+              </div>
+
+              <div>
+                <div className="flex justify-between items-center mb-1">
+                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Horas Semanales</label>
+                  <span className="text-xs font-extrabold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">{editEmpWeeklyHours} hs</span>
+                </div>
+                <input 
+                  type="range" 
+                  min="1" 
+                  max="44" 
+                  value={editEmpWeeklyHours} 
+                  onChange={(e) => setEditEmpWeeklyHours(parseInt(e.target.value))} 
+                  className="w-full accent-primary h-2 bg-slate-200 rounded-lg cursor-pointer"
+                />
+              </div>
+
+              {/* Régimen de Sueldo (Automático vs Manual) */}
+              <div className="border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-primary" />
+                    <span>Régimen de Sueldo para Aportes</span>
+                  </label>
+                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
+                    editEmpSalaryType === 'manual' 
+                      ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
+                      : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                  }`}>
+                    {editEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditEmpSalaryType('automatico');
+                      setEditEmpCustomSalary('');
+                    }}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                      editEmpSalaryType === 'automatico'
+                        ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
+                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="font-extrabold flex items-center gap-1">
+                      ✓ Automático por Convenio
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
+                      Calcula según escala CCT 659/13 vigente + 1% anual por antigüedad.
+                    </span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setEditEmpSalaryType('manual')}
+                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                      editEmpSalaryType === 'manual'
+                        ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
+                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                    }`}
+                  >
+                    <span className="font-extrabold flex items-center gap-1">
+                      ✏️ Sueldo Personalizado
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
+                      Para casos extraordinarios (jornada reducida, licencias, acuerdos).
+                    </span>
+                  </button>
+                </div>
+
+                {editEmpSalaryType === 'manual' && (
+                  <div className="pt-2 border-t border-border/60 space-y-2 animate-fadeIn">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
+                      Sueldo Bruto Mensual Pactado ($ ARS) *
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                      <input
+                        type="number"
+                        min="1"
+                        step="0.01"
+                        value={editEmpCustomSalary}
+                        onChange={(e) => setEditEmpCustomSalary(e.target.value)}
+                        placeholder="Ej: 1450000.00"
+                        className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                        required={editEmpSalaryType === 'manual'}
+                      />
+                    </div>
+                    <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
+                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en este monto pactado y <u>no lo modificará</u> con aumentos de escala ni antigüedad.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsEditEmployeeModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={savingEditEmployee}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                >
+                  {savingEditEmployee ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Guardando...</span>
+                    </>
+                  ) : (
+                    <span>Guardar Cambios</span>
+                  )}
                 </button>
               </div>
             </form>

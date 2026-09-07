@@ -129,6 +129,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               active: emp.active,
               is_affiliate: !!emp.is_affiliate,
               isAffiliate: !!emp.is_affiliate,
+              custom_salary: emp.custom_salary ? Number(emp.custom_salary) : null,
+              customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
               receipt_url: emp.receipt_url,
               receiptUrl: emp.receipt_url,
               receipt_date: emp.receipt_date,
@@ -196,7 +198,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
 
     const years = calculateSeniorityYears(emp.entryDate);
     const seniorityAmount = basic * years * 0.01;
-    const grossSalary = basic + seniorityAmount;
+
+    // Si el empleado tiene un sueldo personalizado/manual para casos extraordinarios (jornada reducida, licencias, acuerdos especiales),
+    // se respeta ese valor exacto como sueldo bruto y NO se pisa con la escala ni con la antigüedad.
+    const isCustomSalary = Boolean(emp.customSalary && emp.customSalary > 0);
+    const grossSalary = isCustomSalary ? Number(emp.customSalary) : (basic + seniorityAmount);
 
     let unionAporte = 0;
     let mutualAporte = 0;
@@ -207,13 +213,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       // Mutual: 1.5% de lo remunerativo
       mutualAporte = grossSalary * 0.015;
     } else {
-      // No Afiliado (aporte solidario, art. 50 inc. a CCT 659/13): antes esto calculaba
-      // el 2% SOLO sobre "noRem" (lo no remunerativo), que en la mayoría de los períodos
-      // es $0 o un monto chico -> el aporte daba un importe irrisorio o directamente $0.
-      // El aporte solidario se calcula igual que el sindical del afiliado (2% sobre
-      // remunerativo + no remunerativo), pero sin mutual (eso es exclusivo del afiliado).
-      // TODO: confirmar con el sindicato el % exacto vigente para no afiliados (ver ADR
-      // docs/adr/0001-calculo-aportes-sindicales-mutuales.md) antes de la próxima liquidación.
+      // No Afiliado (aporte solidario, art. 50 inc. a CCT 659/13)
       unionAporte = (grossSalary + noRem) * 0.02;
       mutualAporte = 0;
     }
@@ -230,7 +230,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       mutualAporte,
       totalAporte,
       categoryName,
-      promoted
+      promoted,
+      isCustomSalary
     };
   };
 
@@ -490,11 +491,15 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 {employee.fullName}
                                 <span className="block text-[9px] text-muted-foreground font-mono">
                                   {employee.cuil} • <span className="font-sans font-medium text-slate-500">{calc.categoryName}</span>
-                                  {calc.promoted && (
+                                  {calc.isCustomSalary ? (
+                                    <span className="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[8px] font-black uppercase border border-amber-500/30 align-middle" title="Sueldo pactado manualmente para casos extraordinarios">
+                                      ✏️ Sueldo Fijo
+                                    </span>
+                                  ) : calc.promoted ? (
                                     <span className="ml-1 inline-flex items-center px-1 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[8px] font-black uppercase border border-emerald-500/20 align-middle">
                                       Promovido
                                     </span>
-                                  )}
+                                  ) : null}
                                 </span>
                               </td>
                               <td className="py-2 px-3 text-center">
@@ -509,7 +514,12 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-600">
-                                ${calc.grossSalary.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <div>${calc.grossSalary.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                {calc.isCustomSalary ? (
+                                  <span className="text-[8px] font-bold text-amber-700 uppercase tracking-wider block">Manual</span>
+                                ) : (
+                                  <span className="text-[8px] text-slate-400 block font-sans">Escala + Antig.</span>
+                                )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-600">
                                 ${calc.noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

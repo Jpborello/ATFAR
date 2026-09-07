@@ -74,6 +74,7 @@ interface Employee {
   entryDate: string;
   active: boolean;
   isAffiliate: boolean;
+  customSalary?: number | null;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -160,7 +161,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           category: e.category || 'Cadetes',
           entryDate: e.entry_date || '',
           active: e.active,
-          isAffiliate: !!e.is_affiliate
+          isAffiliate: !!e.is_affiliate,
+          customSalary: e.custom_salary ? Number(e.custom_salary) : null
         })) : [];
 
         // Fetch real payments
@@ -668,11 +670,15 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                           <td className="py-3.5 px-4 text-slate-500">
                             <div className="flex flex-col">
                               <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
-                              {catInfo.promoted && (
+                              {emp.customSalary && emp.customSalary > 0 ? (
+                                <span className="text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 px-2 py-0.5 rounded w-max mt-1 border border-amber-500/30">
+                                  ✏️ Sueldo Fijo: ${emp.customSalary.toLocaleString('es-AR')} (Manual)
+                                </span>
+                              ) : catInfo.promoted ? (
                                 <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded w-max mt-1 border border-emerald-500/20">
                                   Promovido por Antigüedad (+{catInfo.steps} cat.)
                                 </span>
-                              )}
+                              ) : null}
                             </div>
                           </td>
                           <td className="py-3.5 px-4 text-center">
