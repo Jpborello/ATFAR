@@ -43,6 +43,7 @@ interface Employee {
   receiptUrl?: string;
   receiptDate?: string;
   customSalary?: number | null;
+  customNoRem?: number | null;
 }
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
@@ -102,6 +103,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(false);
   const [newEmpSalaryType, setNewEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [newEmpCustomSalary, setNewEmpCustomSalary] = useState('');
+  const [newEmpCustomNoRem, setNewEmpCustomNoRem] = useState('0');
 
   // Employee Edit form state
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
@@ -114,6 +116,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [editEmpIsAffiliate, setEditEmpIsAffiliate] = useState(false);
   const [editEmpSalaryType, setEditEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [editEmpCustomSalary, setEditEmpCustomSalary] = useState('');
+  const [editEmpCustomNoRem, setEditEmpCustomNoRem] = useState('0');
   const [savingEditEmployee, setSavingEditEmployee] = useState(false);
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -252,7 +255,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               isAffiliate: !!emp.is_affiliate,
               receiptUrl: emp.receipt_url,
               receiptDate: emp.receipt_date,
-              customSalary: emp.custom_salary ? Number(emp.custom_salary) : null
+              customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
+              customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null
             })));
           } else {
             setEmployees([]);
@@ -379,6 +383,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       }
 
       const parsedCustomSalary = newEmpSalaryType === 'manual' && newEmpCustomSalary ? Number(newEmpCustomSalary) : null;
+      const parsedCustomNoRem = newEmpSalaryType === 'manual' && newEmpCustomNoRem !== '' ? Number(newEmpCustomNoRem) : null;
       if (newEmpSalaryType === 'manual' && (!newEmpCustomSalary || Number(newEmpCustomSalary) <= 0)) {
         toast.warning('Ingresá un sueldo bruto válido para el cálculo manual.');
         setUploadingReceipt(false);
@@ -400,6 +405,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             active: true,
             is_affiliate: newEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
+            custom_no_rem: parsedCustomNoRem,
             receipt_url: uploadedReceiptUrl || null,
             receipt_date: uploadedReceiptUrl ? nowIso : null
           })
@@ -428,7 +434,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           isAffiliate: newEmpIsAffiliate,
           receiptUrl: uploadedReceiptUrl || undefined,
           receiptDate: uploadedReceiptUrl ? nowIso : undefined,
-          customSalary: parsedCustomSalary
+          customSalary: parsedCustomSalary,
+          customNoRem: parsedCustomNoRem
         }
       ]);
 
@@ -441,6 +448,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setNewEmpIsAffiliate(false);
       setNewEmpSalaryType('automatico');
       setNewEmpCustomSalary('');
+      setNewEmpCustomNoRem('0');
       setNewEmpReceiptFile(null);
       setIsEmployeeModalOpen(false);
     } catch (err: unknown) {
@@ -462,9 +470,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     if (emp.customSalary && emp.customSalary > 0) {
       setEditEmpSalaryType('manual');
       setEditEmpCustomSalary(emp.customSalary.toString());
+      setEditEmpCustomNoRem(emp.customNoRem !== null && emp.customNoRem !== undefined ? emp.customNoRem.toString() : '0');
     } else {
       setEditEmpSalaryType('automatico');
       setEditEmpCustomSalary('');
+      setEditEmpCustomNoRem('0');
     }
     setIsEditEmployeeModalOpen(true);
   };
@@ -474,6 +484,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     if (!editingEmployee) return;
 
     const parsedCustomSalary = editEmpSalaryType === 'manual' && editEmpCustomSalary ? Number(editEmpCustomSalary) : null;
+    const parsedCustomNoRem = editEmpSalaryType === 'manual' && editEmpCustomNoRem !== '' ? Number(editEmpCustomNoRem) : null;
     if (editEmpSalaryType === 'manual' && (!editEmpCustomSalary || Number(editEmpCustomSalary) <= 0)) {
       toast.warning('Ingresá un sueldo bruto válido para el cálculo manual.');
       return;
@@ -495,7 +506,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             entry_date: editEmpEntryDate,
             weekly_hours: editEmpWeeklyHours,
             is_affiliate: editEmpIsAffiliate,
-            custom_salary: parsedCustomSalary
+            custom_salary: parsedCustomSalary,
+            custom_no_rem: parsedCustomNoRem
           })
           .eq('id', editingEmployee.id);
 
@@ -513,7 +525,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         entryDate: editEmpEntryDate,
         weeklyHours: editEmpWeeklyHours,
         isAffiliate: editEmpIsAffiliate,
-        customSalary: parsedCustomSalary
+        customSalary: parsedCustomSalary,
+        customNoRem: parsedCustomNoRem
       } : emp));
 
       toast.success('Empleado y régimen de sueldo actualizados exitosamente.');
@@ -876,10 +889,17 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                           <div className="flex flex-col">
                             <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
                             {emp.customSalary && emp.customSalary > 0 ? (
-                              <span className="inline-flex items-center gap-1 text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded w-max mt-1" title="Sueldo bruto manual fijado por la farmacia">
-                                <DollarSign className="w-3 h-3 text-amber-700" />
-                                <span>Sueldo Fijo: ${emp.customSalary.toLocaleString('es-AR')}</span>
-                              </span>
+                              <div className="flex flex-col gap-0.5 mt-1">
+                                <span className="inline-flex items-center gap-1 text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded w-max" title="Base Remunerativa pactada">
+                                  <DollarSign className="w-3 h-3 text-amber-700" />
+                                  <span>Rem: ${emp.customSalary.toLocaleString('es-AR')}</span>
+                                </span>
+                                {emp.customNoRem !== null && emp.customNoRem !== undefined && (
+                                  <span className="text-[8px] text-amber-900/80 font-bold tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded w-max border border-amber-500/20" title="Concepto No Remunerativo pactado">
+                                    No Rem: ${emp.customNoRem.toLocaleString('es-AR')}
+                                  </span>
+                                )}
+                              </div>
                             ) : (
                               <div className="flex items-center gap-1 mt-0.5">
                                 <span className="text-[9px] text-slate-400 font-semibold">CCT Automático</span>
@@ -1430,25 +1450,50 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 </div>
 
                 {newEmpSalaryType === 'manual' && (
-                  <div className="pt-2 border-t border-border/60 space-y-2 animate-fadeIn">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
-                      Sueldo Bruto Mensual Pactado ($ ARS) *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                      <input
-                        type="number"
-                        min="1"
-                        step="0.01"
-                        value={newEmpCustomSalary}
-                        onChange={(e) => setNewEmpCustomSalary(e.target.value)}
-                        placeholder="Ej: 1450000.00"
-                        className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required={newEmpSalaryType === 'manual'}
-                      />
+                  <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
+                          Conceptos Remunerativos ($ ARS) *
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="0.01"
+                            value={newEmpCustomSalary}
+                            onChange={(e) => setNewEmpCustomSalary(e.target.value)}
+                            placeholder="Ej: 1450000.00"
+                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                            required={newEmpSalaryType === 'manual'}
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
+                          Conceptos No Remunerativos ($ ARS)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={newEmpCustomNoRem}
+                            onChange={(e) => setNewEmpCustomNoRem(e.target.value)}
+                            placeholder="Ej: 0.00"
+                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
+                      </div>
                     </div>
+
                     <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
-                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en este monto pactado y <u>no lo modificará</u> con aumentos de escala ni antigüedad.
+                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
                     </p>
                   </div>
                 )}
@@ -1641,25 +1686,50 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 </div>
 
                 {editEmpSalaryType === 'manual' && (
-                  <div className="pt-2 border-t border-border/60 space-y-2 animate-fadeIn">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">
-                      Sueldo Bruto Mensual Pactado ($ ARS) *
-                    </label>
-                    <div className="relative">
-                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                      <input
-                        type="number"
-                        min="1"
-                        step="0.01"
-                        value={editEmpCustomSalary}
-                        onChange={(e) => setEditEmpCustomSalary(e.target.value)}
-                        placeholder="Ej: 1450000.00"
-                        className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required={editEmpSalaryType === 'manual'}
-                      />
+                  <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
+                          Conceptos Remunerativos ($ ARS) *
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                          <input
+                            type="number"
+                            min="1"
+                            step="0.01"
+                            value={editEmpCustomSalary}
+                            onChange={(e) => setEditEmpCustomSalary(e.target.value)}
+                            placeholder="Ej: 1450000.00"
+                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                            required={editEmpSalaryType === 'manual'}
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
+                      </div>
+
+                      <div>
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
+                          Conceptos No Remunerativos ($ ARS)
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={editEmpCustomNoRem}
+                            onChange={(e) => setEditEmpCustomNoRem(e.target.value)}
+                            placeholder="Ej: 0.00"
+                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                          />
+                        </div>
+                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
+                      </div>
                     </div>
+
                     <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
-                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en este monto pactado y <u>no lo modificará</u> con aumentos de escala ni antigüedad.
+                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
                     </p>
                   </div>
                 )}

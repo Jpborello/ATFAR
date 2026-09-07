@@ -450,6 +450,7 @@ ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAU
 
 -- 10. Migration: Sueldo personalizado / override para casos extraordinarios (jornada reducida, licencias, etc.)
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_salary NUMERIC DEFAULT NULL;
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_no_rem NUMERIC DEFAULT NULL;
 
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,

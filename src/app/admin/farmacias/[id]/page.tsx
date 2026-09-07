@@ -75,6 +75,7 @@ interface Employee {
   active: boolean;
   isAffiliate: boolean;
   customSalary?: number | null;
+  customNoRem?: number | null;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -162,7 +163,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           entryDate: e.entry_date || '',
           active: e.active,
           isAffiliate: !!e.is_affiliate,
-          customSalary: e.custom_salary ? Number(e.custom_salary) : null
+          customSalary: e.custom_salary ? Number(e.custom_salary) : null,
+          customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null
         })) : [];
 
         // Fetch real payments
@@ -671,9 +673,16 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                             <div className="flex flex-col">
                               <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
                               {emp.customSalary && emp.customSalary > 0 ? (
-                                <span className="text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 px-2 py-0.5 rounded w-max mt-1 border border-amber-500/30">
-                                  ✏️ Sueldo Fijo: ${emp.customSalary.toLocaleString('es-AR')} (Manual)
-                                </span>
+                                <div className="flex flex-col gap-0.5 mt-1">
+                                  <span className="text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 px-2 py-0.5 rounded w-max border border-amber-500/30">
+                                    ✏️ Rem: ${emp.customSalary.toLocaleString('es-AR')} (Manual)
+                                  </span>
+                                  {emp.customNoRem !== null && emp.customNoRem !== undefined && (
+                                    <span className="text-[8px] text-amber-900/80 font-bold tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded w-max border border-amber-500/20">
+                                      No Rem: ${emp.customNoRem.toLocaleString('es-AR')}
+                                    </span>
+                                  )}
+                                </div>
                               ) : catInfo.promoted ? (
                                 <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-2 py-0.5 rounded w-max mt-1 border border-emerald-500/20">
                                   Promovido por Antigüedad (+{catInfo.steps} cat.)

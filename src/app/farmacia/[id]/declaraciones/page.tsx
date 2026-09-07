@@ -131,6 +131,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               isAffiliate: !!emp.is_affiliate,
               custom_salary: emp.custom_salary ? Number(emp.custom_salary) : null,
               customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
+              custom_no_rem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
+              customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
               receipt_url: emp.receipt_url,
               receiptUrl: emp.receipt_url,
               receipt_date: emp.receipt_date,
@@ -204,6 +206,12 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
     const isCustomSalary = Boolean(emp.customSalary && emp.customSalary > 0);
     const grossSalary = isCustomSalary ? Number(emp.customSalary) : (basic + seniorityAmount);
 
+    // Si el empleado tiene fijado un concepto no remunerativo manual, se respeta ese monto en vez del de la escala.
+    const isCustomNoRem = isCustomSalary && emp.customNoRem !== null && emp.customNoRem !== undefined;
+    if (isCustomNoRem) {
+      noRem = Number(emp.customNoRem);
+    }
+
     let unionAporte = 0;
     let mutualAporte = 0;
 
@@ -231,7 +239,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       totalAporte,
       categoryName,
       promoted,
-      isCustomSalary
+      isCustomSalary,
+      isCustomNoRem
     };
   };
 
@@ -522,7 +531,12 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-600">
-                                ${calc.noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                <div>${calc.noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                                {calc.isCustomNoRem ? (
+                                  <span className="text-[8px] font-bold text-amber-700 uppercase tracking-wider block">Manual</span>
+                                ) : (
+                                  <span className="text-[8px] text-slate-400 block font-sans">Escala CCT</span>
+                                )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
                                 <div className="flex flex-col items-end leading-tight">

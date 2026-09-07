@@ -57,6 +57,8 @@ export interface Employee {
   receiptDate?: string;
   custom_salary?: number | null;
   customSalary?: number | null;
+  custom_no_rem?: number | null;
+  customNoRem?: number | null;
   created_at?: string;
 }
 
