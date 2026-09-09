@@ -67,11 +67,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const [history, setHistory] = useState<DeclarationItem[]>([
-    { period: 'Mayo 2026', submitDate: '24/05/2026', amount: 45000, status: 'validada' },
-    { period: 'Abril 2026', submitDate: '25/04/2026', amount: 45000, status: 'validada' },
-    { period: 'Marzo 2026', submitDate: '28/03/2026', amount: 41800, status: 'validada' },
-  ]);
+  const [history, setHistory] = useState<DeclarationItem[]>([]);
 
   useEffect(() => {
     async function loadData() {
@@ -161,6 +157,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               amount: Number(p.amount),
               status: p.status === 'pagado' ? 'validada' : 'pendiente'
             })));
+          } else {
+            setHistory([]);
           }
         }
       } catch (err) {
