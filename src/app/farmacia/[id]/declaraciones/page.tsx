@@ -295,8 +295,14 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         const yearMonth = `${parsedPeriod.year}${String(parsedPeriod.monthIndex + 1).padStart(2, '0')}`;
         generatedInvoiceNum = `BLT-${yearMonth}-${shortId}`;
 
-        // Vencimiento: el 10 del mes siguiente al período declarado (calculado, no hardcodeado)
-        const dueDateObj = new Date(parsedPeriod.year, parsedPeriod.monthIndex + 1, 10);
+        // Vencimiento: el 20 del mes siguiente al período declarado (entre el 15 y el 20)
+        let dueDateObj = new Date(parsedPeriod.year, parsedPeriod.monthIndex + 1, 20);
+        // Margen de seguridad: si se genera cerca o posterior a esa fecha, asegurar al menos 7 días para abonar
+        const now = new Date();
+        const minDueDate = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 7);
+        if (dueDateObj < minDueDate) {
+          dueDateObj = minDueDate;
+        }
         const dueDate = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, '0')}-${String(dueDateObj.getDate()).padStart(2, '0')}`;
 
         const { error } = await supabase

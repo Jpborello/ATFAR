@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import SupportContact from '@/components/shared/SupportContact';
 import { Pharmacy } from '@/types';
+import { formatDateAR } from '@/lib/dateUtils';
 import { 
   CreditCard, 
   ArrowLeft, 
@@ -119,8 +120,8 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
               period: p.period,
               amount: Number(p.amount),
               status: p.status as 'pagado' | 'impago' | 'en_revision',
-              dueDate: new Date(p.due_date).toLocaleDateString('es-AR'),
-              payDate: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : '---',
+              dueDate: formatDateAR(p.due_date),
+              payDate: p.pay_date ? formatDateAR(p.pay_date) : '---',
               transactionCode: p.transaction_code || '',
               receiptUrl: p.receipt_url || ''
             })));
@@ -264,7 +265,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
             ? { 
                 ...inv, 
                 status: 'en_revision', 
-                payDate: new Date(transferDate + 'T00:00:00').toLocaleDateString('es-AR'),
+                payDate: formatDateAR(transferDate),
                 transactionCode: transactionCode
               }
             : inv

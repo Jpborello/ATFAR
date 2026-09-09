@@ -144,3 +144,18 @@ export function getPharmacyDebtStatus(
   return { status: 'al_dia', label: 'Al Día' };
 }
 
+/**
+ * Formatea una fecha YYYY-MM-DD o ISO a DD/MM/AAAA en horario local sin desfase de zona horaria UTC.
+ */
+export function formatDateAR(dateStr: string | null | undefined): string {
+  if (!dateStr) return '---';
+  const clean = dateStr.split('T')[0];
+  const parts = clean.split('-');
+  if (parts.length === 3) {
+    const [y, m, d] = parts;
+    return `${d}/${m}/${y}`;
+  }
+  return new Date(dateStr).toLocaleDateString('es-AR');
+}
+
+
