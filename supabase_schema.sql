@@ -42,14 +42,15 @@ CREATE TABLE IF NOT EXISTS public.employees (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
     pharmacy_id UUID REFERENCES public.pharmacies(id) ON DELETE CASCADE,
     full_name TEXT NOT NULL,
-    cuil TEXT NOT NULL UNIQUE,
+    cuil TEXT NOT NULL,
     category TEXT, -- Modified to support registration without initial category
     entry_date DATE, -- Modified to support registration without initial entry_date
     weekly_hours INTEGER DEFAULT 44 NOT NULL,
     active BOOLEAN DEFAULT true NOT NULL,
     receipt_url TEXT,
     receipt_date TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT employees_pharmacy_cuil_key UNIQUE (pharmacy_id, cuil)
 );
 
 ALTER TABLE public.employees ENABLE ROW LEVEL SECURITY;
