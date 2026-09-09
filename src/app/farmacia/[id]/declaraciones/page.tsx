@@ -487,7 +487,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                             <th className="py-2.5 px-3 text-center">Afiliado</th>
                             <th className="py-2.5 px-3 text-right">Base Remun.</th>
                             <th className="py-2.5 px-3 text-right">No Remun.</th>
-                            <th className="py-2.5 px-3 text-right">Aportes (Sind / Mut)</th>
+                            <th className="py-2.5 px-3 text-right">Aportes (Sindical / Mutual)</th>
                             <th className="py-2.5 px-3 text-right font-black">Total Aporte</th>
                           </tr>
                         </thead>
@@ -538,9 +538,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
                                 <div className="flex flex-col items-end leading-tight">
-                                  <span>Sind (2%): ${calc.unionAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                  <span>Sindical (2%): ${calc.unionAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                   {calc.mutualAporte > 0 && (
-                                    <span className="text-[9px] text-slate-400">Mut (1.5%): ${calc.mutualAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                    <span className="text-[9px] text-slate-400">Mutual (1.5%): ${calc.mutualAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
                                   )}
                                 </div>
                               </td>
