@@ -1374,7 +1374,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
                 />
                 <label htmlFor="new-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                  Afiliado Sindical (Aporta cuota completa y aportes mutuales)
+                  Afiliado Sindical (Afiliado a ATFAR)
                 </label>
               </div>
 
@@ -1611,7 +1611,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
                 />
                 <label htmlFor="edit-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                  Afiliado Sindical (Aporta cuota completa y aportes mutuales)
+                  Afiliado Sindical (Afiliado a ATFAR)
                 </label>
               </div>
 

@@ -319,7 +319,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
             <div class="logo-text">ATFAR</div>
             <div class="subtitle">Asociación de Trabajadores de Farmacias de Rosario</div>
             <div class="subtitle" style="font-size: 10px; margin-top: 2px;">Personería Gremial Nº 1391 • CUIT 30-54827379-1</div>
-            <div class="title">BOLETA DE APORTES SINDICALES Y MUTUAL (CCT 659/13)</div>
+            <div class="title">BOLETA DE APORTES SINDICALES (CCT 659/13)</div>
           </div>
 
           <div class="section">

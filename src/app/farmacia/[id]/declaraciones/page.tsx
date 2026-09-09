@@ -210,21 +210,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       noRem = Number(emp.customNoRem);
     }
 
-    let unionAporte = 0;
-    let mutualAporte = 0;
-
-    if (emp.isAffiliate) {
-      // Afiliado: 2% de lo remunerativo + 2% de lo no remunerativo
-      unionAporte = (grossSalary + noRem) * 0.02;
-      // Mutual: 1.5% de lo remunerativo
-      mutualAporte = grossSalary * 0.015;
-    } else {
-      // No Afiliado (aporte solidario, art. 50 inc. a CCT 659/13)
-      unionAporte = (grossSalary + noRem) * 0.02;
-      mutualAporte = 0;
-    }
-
-    const totalAporte = unionAporte + mutualAporte;
+    // En ATFAR lo único que se calcula es el 2% sobre lo remunerativo y el 2% sobre lo no remunerativo (sea afiliado o no).
+    // No se cobra mutual en esta liquidación.
+    const unionAporte = (grossSalary + noRem) * 0.02;
+    const mutualAporte = 0;
+    const totalAporte = unionAporte;
 
     return {
       basic,
@@ -493,7 +483,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                             <th className="py-2.5 px-3 text-center">Afiliado</th>
                             <th className="py-2.5 px-3 text-right">Base Remun.</th>
                             <th className="py-2.5 px-3 text-right">No Remun.</th>
-                            <th className="py-2.5 px-3 text-right">Aportes (Sindical / Mutual)</th>
+                            <th className="py-2.5 px-3 text-right">Aporte Sindical (2%)</th>
                             <th className="py-2.5 px-3 text-right font-black">Total Aporte</th>
                           </tr>
                         </thead>
@@ -543,12 +533,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
-                                <div className="flex flex-col items-end leading-tight">
-                                  <span>Sindical (2%): ${calc.unionAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                  {calc.mutualAporte > 0 && (
-                                    <span className="text-[9px] text-slate-400">Mutual (1.5%): ${calc.mutualAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-                                  )}
-                                </div>
+                                <span className="text-[9px] text-slate-400 block font-sans">2% (Rem + No Rem)</span>
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-extrabold text-primary">
                                 ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
