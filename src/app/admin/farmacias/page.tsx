@@ -78,6 +78,13 @@ const PAYMENT_STYLE: Record<PaymentStatus, string> = {
 // (secuencial, no es un CUIT real) — sirve para mostrarlo claramente marcado.
 const isPlaceholderCuit = (cuit: string) => /^990000\d{5}$/.test(cuit);
 
+// Cuántas tarjetas se muestran por página. Con esto la lista no se vuelve un
+// scroll interminable a medida que se van afiliando más farmacias (hoy hay
+// decenas, pero el padrón tiene ~1000): en vez de scroll infinito usamos
+// paginación con números de página, que es más predecible para quien no usa
+// mucho estas pantallas ("¿cuánto me falta para llegar al final?").
+const PAGE_SIZE = 12;
+
 export default function FarmaciasPanelPage() {
   const [tab, setTab] = useState<'registradas' | 'padron'>('registradas');
 
@@ -86,6 +93,7 @@ export default function FarmaciasPanelPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [showMap, setShowMap] = useState(false);
+  const [page, setPage] = useState(1);
 
   // Padrón completo (farmacias de Rosario que todavía no se afiliaron)
   const [padronQuery, setPadronQuery] = useState('');
@@ -306,6 +314,19 @@ export default function FarmaciasPanelPage() {
     );
   }, [pharmacies, searchQuery]);
 
+  // Si el admin busca algo o la lista cambia de tamaño, volvemos a la página 1
+  // para no quedar "perdido" en una página que ya no tiene resultados.
+  useEffect(() => {
+    setPage(1);
+  }, [searchQuery]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredRegistradas.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginatedRegistradas = filteredRegistradas.slice(
+    (currentPage - 1) * PAGE_SIZE,
+    currentPage * PAGE_SIZE
+  );
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
@@ -416,7 +437,7 @@ export default function FarmaciasPanelPage() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-              {filteredRegistradas.map((pharmacy) => (
+              {paginatedRegistradas.map((pharmacy) => (
                 <div
                   key={pharmacy.id}
                   className="bg-card border border-border rounded-3xl p-6 shadow-premium glass flex flex-col gap-4"
@@ -472,6 +493,35 @@ export default function FarmaciasPanelPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Paginación: en vez de scroll infinito, números de página claros */}
+          {filteredRegistradas.length > PAGE_SIZE && (
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Mostrando {(currentPage - 1) * PAGE_SIZE + 1}–
+                {Math.min(currentPage * PAGE_SIZE, filteredRegistradas.length)} de {filteredRegistradas.length} farmacias
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-4 py-2 rounded-xl border border-border text-sm font-bold text-foreground hover:bg-muted/40 transition-all bg-card disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card"
+                >
+                  Anterior
+                </button>
+                <span className="text-sm font-bold text-foreground px-2 whitespace-nowrap">
+                  Página {currentPage} de {totalPages}
+                </span>
+                <button
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-4 py-2 rounded-xl border border-border text-sm font-bold text-foreground hover:bg-muted/40 transition-all bg-card disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-card"
+                >
+                  Siguiente
+                </button>
+              </div>
             </div>
           )}
         </div>

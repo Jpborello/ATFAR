@@ -73,11 +73,11 @@ export default function InstitucionalPage() {
                 <span className="block text-[10px] font-bold text-muted-foreground uppercase">Fundación</span>
               </div>
               <div className="text-center space-y-1">
-                <span className="block text-2xl font-black text-primary">120+</span>
+                <span className="block text-2xl font-black text-primary">900+</span>
                 <span className="block text-[10px] font-bold text-muted-foreground uppercase">Farmacias</span>
               </div>
               <div className="text-center space-y-1">
-                <span className="block text-2xl font-black text-primary">N° 379</span>
+                <span className="block text-2xl font-black text-primary">N° 521</span>
                 <span className="block text-[10px] font-bold text-muted-foreground uppercase">Pers. Gremial</span>
               </div>
             </div>
