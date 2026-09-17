@@ -60,7 +60,7 @@ interface PharmacyDetail {
   
   registeredDate: string;
   employees: number;
-  paymentStatus: 'al_dia' | 'con_deuda';
+  paymentStatus: 'al_dia' | 'con_deuda' | 'pendiente';
   declarations: { month: string; date: string; employees: number; status: 'validada' | 'pendiente' }[];
   payments: { invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
   documents: { name: string; type: string; size: string; url?: string | null }[];
@@ -185,6 +185,27 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             }))
           : [];
 
+        // Las Declaraciones Juradas se derivan de los pagos que tienen un DDJJ
+        // adjunto (ddjj_url). No hay una tabla dedicada de declaraciones: cada
+        // período de aporte lleva su propia DDJJ, así que la usamos como la
+        // fuente real en vez de dejar esta sección siempre vacía.
+        const mappedDeclarations = (payList || [])
+          .filter((p: Payment) => !!p.ddjj_url)
+          .map((p: Payment) => ({
+            month: p.period || 'Periodo',
+            date: p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR') : 'Sin fecha',
+            employees: pharmData?.declared_employee_count || mappedEmployees.length,
+            status: (p.status === 'pagado' ? 'validada' : 'pendiente') as 'validada' | 'pendiente'
+          }));
+
+        // Estado de pago: mismo criterio que el listado de farmacias, para que
+        // una farmacia no muestre "Con deuda" en la lista y "Al día" acá adentro.
+        const hasImpago = (payList || []).some((p: Payment) => p.status === 'impago');
+        const hasEnRevision = (payList || []).some((p: Payment) => p.status === 'en_revision');
+        let realPaymentStatus: 'al_dia' | 'con_deuda' | 'pendiente' = 'al_dia';
+        if (pharmData?.has_debt || hasImpago) realPaymentStatus = 'con_deuda';
+        else if (hasEnRevision) realPaymentStatus = 'pendiente';
+
         setEmployees(mappedEmployees);
 
         if (pharmData) {
@@ -218,8 +239,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             hrAltEmail: pharmData.hr_alt_email || undefined,
             registeredDate: new Date(pharmData.created_at).toLocaleDateString('es-AR'),
             employees: mappedEmployees.length,
-            paymentStatus: pharmData.has_debt ? 'con_deuda' : 'al_dia',
-            declarations: [],
+            paymentStatus: realPaymentStatus,
+            declarations: mappedDeclarations,
             payments: mappedPayments,
             documents: []
           });
@@ -280,14 +301,22 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
         </Link>
         <div className="flex items-center gap-2">
           <span className={`px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border ${
-            pharmacy.paymentStatus === 'al_dia' 
-              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
+            pharmacy.paymentStatus === 'al_dia'
+              ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20'
+              : pharmacy.paymentStatus === 'pendiente'
+              ? 'bg-amber-500/10 text-amber-600 border-amber-500/20'
               : 'bg-red-500/10 text-red-600 border-red-500/20'
           }`}>
-            <span className={`w-2 h-2 rounded-full ${pharmacy.paymentStatus === 'al_dia' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-            {pharmacy.paymentStatus === 'al_dia' ? 'Estado: Al Día' : 'Estado: Con Deuda'}
+            <span className={`w-2 h-2 rounded-full ${
+              pharmacy.paymentStatus === 'al_dia'
+                ? 'bg-emerald-500'
+                : pharmacy.paymentStatus === 'pendiente'
+                ? 'bg-amber-500'
+                : 'bg-red-500'
+            }`} />
+            {pharmacy.paymentStatus === 'al_dia' ? 'Estado: Al Día' : pharmacy.paymentStatus === 'pendiente' ? 'Estado: En Revisión' : 'Estado: Con Deuda'}
           </span>
-          {pharmacy.paymentStatus === 'con_deuda' && (
+          {pharmacy.paymentStatus !== 'al_dia' && (
             <button
               onClick={handleMarkPaidTransition}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all cursor-pointer"
@@ -404,6 +433,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           <span>DDJJ y Estado de Cuenta</span>
           {pharmacy.paymentStatus === 'con_deuda' && (
             <span className="ml-1 w-2 h-2 rounded-full bg-red-400 animate-ping" />
+          )}
+          {pharmacy.paymentStatus === 'pendiente' && (
+            <span className="ml-1 w-2 h-2 rounded-full bg-amber-400" />
           )}
         </button>
 

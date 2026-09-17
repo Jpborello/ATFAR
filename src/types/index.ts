@@ -76,6 +76,7 @@ export interface Payment {
   payment_provider?: 'transfer' | 'plus_pagos' | null;
   external_reference?: string | null;
   checkout_url?: string | null;
+  ddjj_url?: string | null;
   created_at?: string;
 }
 

@@ -59,20 +59,25 @@ export default function AdminDashboardPage() {
 
         if (!isConfigured) return;
 
-        // has_debt ya se mantiene sincronizado en la base (trigger en `payments` + job diario),
-        // asi que aca solo leemos - no hay que recalcular ni escribir nada al abrir el dashboard.
-        // Las 5 consultas son independientes entre si, van todas en paralelo en vez de en cadena.
+        // OJO: "Farmacias Registradas" tiene que contar SOLO registered=true (las
+        // afiliadas de verdad), nunca el total de la tabla `pharmacies` — esa tabla
+        // también tiene ~980 filas del padrón comercial de Rosario importado en bloque,
+        // que nunca se afiliaron y no deben sumar acá.
+        //
+        // Además, `has_debt` es un flag que se recalcula por un trigger + job diario
+        // (ver supabase_schema.sql), así que puede quedar desactualizado unos minutos
+        // frente a un pago recién marcado "impago". Por eso, igual que en el panel de
+        // Farmacias, una farmacia cuenta como "con deuda" si `has_debt` es true O si
+        // tiene algún pago con estado "impago" todavía sin reflejar en el flag.
+        //
+        // Las consultas son independientes entre si, van todas en paralelo en vez de en cadena.
         const [
-          { count: totalCount },
-          { count: activeCount },
-          { count: debtCount },
+          { data: registeredStatusData },
           { count: pendingCount },
           { data: paidPayments },
           { data: recentPayments },
         ] = await Promise.all([
-          supabase.from('pharmacies').select('*', { count: 'exact', head: true }),
-          supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true).eq('has_debt', false),
-          supabase.from('pharmacies').select('*', { count: 'exact', head: true }).eq('registered', true).eq('has_debt', true),
+          supabase.from('pharmacies').select('id, has_debt, payments(status)').eq('registered', true),
           supabase.from('payments').select('*', { count: 'exact', head: true }).eq('status', 'en_revision'),
           supabase.from('payments').select('amount').eq('status', 'pagado'),
           supabase
@@ -95,9 +100,16 @@ export default function AdminDashboardPage() {
             .limit(4),
         ]);
 
-        setTotalPharmacies(totalCount || 0);
-        setActivePharmaciesCount(activeCount || 0);
-        setDebtPharmaciesCount(debtCount || 0);
+        const registered = registeredStatusData || [];
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const debtRegisteredCount = registered.filter((p: any) => {
+          const hasImpago = p.payments?.some((pay: { status?: string }) => pay.status === 'impago');
+          return p.has_debt || hasImpago;
+        }).length;
+
+        setTotalPharmacies(registered.length);
+        setActivePharmaciesCount(registered.length - debtRegisteredCount);
+        setDebtPharmaciesCount(debtRegisteredCount);
         setPendingDeclarationsCount(pendingCount || 0);
 
         if (paidPayments) {
@@ -273,12 +285,12 @@ export default function AdminDashboardPage() {
   };
 
   const cards = [
-    { 
-      label: 'Farmacias Registradas', 
-      value: totalPharmacies.toString(), 
-      detail: 'Padrón total comercial', 
+    {
+      label: 'Farmacias Registradas',
+      value: totalPharmacies.toString(),
+      detail: 'Afiliadas al sindicato',
       color: 'text-primary bg-primary/5 border-primary/10',
-      icon: Building2 
+      icon: Building2
     },
     { 
       label: 'Farmacias Activas', 

@@ -458,6 +458,28 @@ function LoginContent() {
             pharmacyError = updateError;
             linkedPharmacyId = existingPharm.id;
           } else {
+            // Antes de crear una farmacia nueva, chequeamos que no exista ya
+            // una farmacia REGISTRADA con el mismo nombre. El CUIT es único
+            // en la base, así que dos personas nunca pueden chocar por ese
+            // lado, pero nada impedía que dos titulares distintos registraran
+            // la misma farmacia con CUITs diferentes (por ejemplo, un error
+            // de tipeo en el CUIT) y terminaran duplicando la farmacia en el
+            // sistema. Si el nombre ya está registrado, frenamos el alta acá
+            // en vez de crear una fila nueva en silencio.
+            const normalizedName = pharmacyName.trim();
+            const { data: possibleDuplicate } = await supabase
+              .from('pharmacies')
+              .select('id, cuit')
+              .eq('registered', true)
+              .ilike('name', normalizedName)
+              .maybeSingle();
+
+            if (possibleDuplicate) {
+              throw new Error(
+                `Ya existe una farmacia registrada con el nombre "${normalizedName}" (CUIT ${possibleDuplicate.cuit}). Si creés que es un error, o si hay varios titulares para la misma farmacia, contactate con el sindicato antes de registrarte de nuevo para evitar una farmacia duplicada.`
+              );
+            }
+
             // Insert a new pharmacy
             const { data: insertedPharm, error: insertError } = await supabase
               .from('pharmacies')
