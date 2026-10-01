@@ -18,7 +18,8 @@ import {
   Users,
   Loader2,
   ShieldCheck,
-  MessageSquare
+  MessageSquare,
+  Trash2
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -62,7 +63,7 @@ interface PharmacyDetail {
   employees: number;
   paymentStatus: 'al_dia' | 'con_deuda' | 'pendiente';
   declarations: { month: string; date: string; employees: number; status: 'validada' | 'pendiente' }[];
-  payments: { invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
+  payments: { id: string; invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
   documents: { name: string; type: string; size: string; url?: string | null }[];
 }
 
@@ -84,6 +85,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
   const [pharmacy, setPharmacy] = useState<PharmacyDetail | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeTab, setActiveTab] = useState<'info' | 'contactos' | 'empleados' | 'pagos' | 'documentos'>('info');
+  const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -176,6 +178,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
 
         const mappedPayments = payList && payList.length > 0
           ? payList.map((p: Payment) => ({
+              id: p.id,
               invoice: p.invoice_number || 'N/A',
               period: p.period || 'Periodo',
               amount: Number(p.amount || 0),
@@ -274,6 +277,41 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
     } catch (err) {
       console.error('Error marking pharmacy as paid:', err);
       toast.error('Ocurrió un error al actualizar el estado de la farmacia.');
+    }
+  };
+
+  const handleDeletePayment = async (payId: string, invoiceNum: string, period: string) => {
+    const ok = await confirmDialog({
+      title: 'Eliminar Boleta',
+      message: `¿Estás seguro de que querés eliminar la boleta "${invoiceNum}" (${period})? Esta acción borrará el registro de la base de datos de forma permanente.`,
+      confirmLabel: 'Sí, eliminar boleta',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+    if (!ok) return;
+
+    setDeletingPaymentId(payId);
+    try {
+      const res = await fetch('/api/payments/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: payId }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Error al eliminar la boleta.');
+      }
+      toast.success(data.message || 'Boleta eliminada correctamente.');
+      setPharmacy((prev) => {
+        if (!prev) return null;
+        const updated = prev.payments.filter((p) => p.id !== payId);
+        return { ...prev, payments: updated };
+      });
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al eliminar la boleta.';
+      toast.error(msg);
+    } finally {
+      setDeletingPaymentId(null);
     }
   };
 
@@ -844,6 +882,19 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                             <span>Impago</span>
                           </span>
                         )}
+
+                        <button
+                          onClick={() => handleDeletePayment(pay.id, pay.invoice, pay.period)}
+                          disabled={deletingPaymentId === pay.id}
+                          className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-[10px] font-bold transition-all bg-white hover:text-red-700 cursor-pointer disabled:opacity-50"
+                          title="Eliminar Boleta"
+                        >
+                          {deletingPaymentId === pay.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}

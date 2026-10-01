@@ -295,18 +295,46 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         }
         const dueDate = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, '0')}-${String(dueDateObj.getDate()).padStart(2, '0')}`;
 
-        const { error } = await supabase
+        // Chequear si ya existe una boleta para este período
+        const { data: existingPayment } = await supabase
           .from('payments')
-          .insert({
-            pharmacy_id: pharmacy.id,
-            invoice_number: generatedInvoiceNum,
-            period: period,
-            amount: totalAmount,
-            status: 'impago',
-            due_date: dueDate
-          });
+          .select('id, status')
+          .eq('pharmacy_id', pharmacy.id)
+          .eq('period', period)
+          .maybeSingle();
 
-        if (error) throw error;
+        if (existingPayment) {
+          if (existingPayment.status === 'pagado') {
+            throw new Error(`El período "${period}" ya se encuentra pagado y no puede regenerarse.`);
+          }
+          if (existingPayment.status === 'en_revision') {
+            throw new Error(`El período "${period}" ya tiene un pago en revisión por ATFAR.`);
+          }
+          // Actualizar la boleta impaga existente con los nuevos cálculos en lugar de duplicarla
+          const { error: updateError } = await supabase
+            .from('payments')
+            .update({
+              amount: totalAmount,
+              due_date: dueDate,
+              invoice_number: generatedInvoiceNum
+            })
+            .eq('id', existingPayment.id);
+
+          if (updateError) throw updateError;
+        } else {
+          const { error } = await supabase
+            .from('payments')
+            .insert({
+              pharmacy_id: pharmacy.id,
+              invoice_number: generatedInvoiceNum,
+              period: period,
+              amount: totalAmount,
+              status: 'impago',
+              due_date: dueDate
+            });
+
+          if (error) throw error;
+        }
       } else {
         generatedInvoiceNum = `BLT-202607-MOCK`;
         console.warn("Supabase not configured, simulating invoice generation.");

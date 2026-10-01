@@ -20,8 +20,10 @@ import {
   Check,
   Clock,
   FileText,
-  Building2
+  Building2,
+  Trash2
 } from 'lucide-react';
+import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface Invoice {
   id: string;
@@ -46,6 +48,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
   const [checkoutInvoice, setCheckoutInvoice] = useState<Invoice | null>(null);
   const [paymentLoading, setPaymentLoading] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
 
   // Plus Pagos online checkout
   const [onlineCheckoutLoading, setOnlineCheckoutLoading] = useState(false);
@@ -180,6 +183,40 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
       toast.error(msg);
     } finally {
       setOnlineCheckoutLoading(false);
+    }
+  };
+
+  const handleDeleteInvoice = async (invoice: Invoice) => {
+    const ok = await confirmDialog({
+      title: 'Eliminar Boleta Mal Generada',
+      message: `¿Estás seguro de que querés eliminar la boleta "${invoice.invoiceNumber}" (${invoice.period})? Podrás volver a generar una nueva declaración jurada si hubo un error en los datos cargados.`,
+      confirmLabel: 'Sí, eliminar boleta',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+    if (!ok) return;
+
+    setDeletingInvoiceId(invoice.id);
+    try {
+      const res = await fetch('/api/payments/delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId: invoice.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'No se pudo eliminar la boleta.');
+      }
+      toast.success(data.message || 'Boleta eliminada correctamente.');
+      setInvoices((prev) => prev.filter((inv) => inv.id !== invoice.id));
+      if (checkoutInvoice?.id === invoice.id) {
+        setCheckoutInvoice(null);
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al eliminar la boleta.';
+      toast.error(msg);
+    } finally {
+      setDeletingInvoiceId(null);
     }
   };
 
@@ -562,6 +599,18 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                           title="Ver Boleta Detallada"
                         >
                           <FileText className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => handleDeleteInvoice(inv)}
+                          disabled={deletingInvoiceId === inv.id}
+                          className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 cursor-pointer transition-colors disabled:opacity-50"
+                          title="Eliminar boleta mal generada"
+                        >
+                          {deletingInvoiceId === inv.id ? (
+                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-3.5 h-3.5" />
+                          )}
                         </button>
                         <button
                           onClick={() => handleOpenCheckout(inv)}
