@@ -59,6 +59,8 @@ export interface Employee {
   customSalary?: number | null;
   custom_no_rem?: number | null;
   customNoRem?: number | null;
+  has_pharmacist_title?: boolean;
+  hasPharmacistTitle?: boolean;
   created_at?: string;
 }
 

@@ -59,26 +59,45 @@ export function calculateSeniority(entryDateStr: string | null | undefined): str
   return parts.join(' y ');
 }
 
-export function getCurrentCategory(registeredCategory: string, entryDateStr: string | null | undefined): { category: string; promoted: boolean; steps: number } {
+export function getCurrentCategory(
+  registeredCategory: string,
+  entryDateStr: string | null | undefined,
+  hasPharmacistTitle: boolean = false
+): { category: string; promoted: boolean; steps: number; pendingTitleConfirmation: boolean } {
   const years = calculateSeniorityYears(entryDateStr);
   const steps = Math.floor(years / 5);
-  
+
   const baseIndex = cctCategories.indexOf(registeredCategory);
   if (baseIndex === -1) {
-    return { category: registeredCategory, promoted: false, steps: 0 };
+    return { category: registeredCategory, promoted: false, steps: 0, pendingTitleConfirmation: false };
   }
-  
+
   if (steps === 0) {
-    return { category: registeredCategory, promoted: false, steps: 0 };
+    return { category: registeredCategory, promoted: false, steps: 0, pendingTitleConfirmation: false };
   }
-  
-  const targetIndex = Math.min(cctCategories.length - 1, baseIndex + steps);
+
+  const farmaceuticoIndex = cctCategories.length - 1;
+
+  // La categoría "Farmacéutico" exige título universitario (CCT 659/13): la
+  // escalera automática por antigüedad nunca puede llegar sola hasta ahí.
+  // Se frena un escalón antes ("Personal en Gestión de Farmacia") hasta que
+  // la farmacia confirme a mano que la persona tiene el título.
+  const autoCeilingIndex = hasPharmacistTitle ? farmaceuticoIndex : farmaceuticoIndex - 1;
+  const uncappedTargetIndex = Math.min(farmaceuticoIndex, baseIndex + steps);
+  // Si ya estaba contratada directamente como Farmacéutico (categoría
+  // registrada a mano), eso no se toca: el tope automático nunca baja una
+  // categoría ya asignada.
+  const targetIndex = Math.max(baseIndex, Math.min(autoCeilingIndex, uncappedTargetIndex));
+
   const promoted = targetIndex > baseIndex;
-  
+  const pendingTitleConfirmation =
+    !hasPharmacistTitle && baseIndex < farmaceuticoIndex && uncappedTargetIndex === farmaceuticoIndex;
+
   return {
     category: cctCategories[targetIndex],
     promoted,
-    steps: targetIndex - baseIndex
+    steps: targetIndex - baseIndex,
+    pendingTitleConfirmation
   };
 }
 

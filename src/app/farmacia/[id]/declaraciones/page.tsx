@@ -132,7 +132,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               receipt_url: emp.receipt_url,
               receiptUrl: emp.receipt_url,
               receipt_date: emp.receipt_date,
-              receiptDate: emp.receipt_date
+              receiptDate: emp.receipt_date,
+              has_pharmacist_title: !!emp.has_pharmacist_title,
+              hasPharmacistTitle: !!emp.has_pharmacist_title
             })));
           }
 
@@ -177,7 +179,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
     const registeredCategory = emp.category || 'Cadetes';
     // La categoría que se liquida es la promovida por antigüedad (cada 5 años),
     // aunque el empleador nunca haya actualizado el campo "categoría" a mano.
-    const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate);
+    // La promoción automática nunca llega sola a "Farmacéutico" (exige título
+    // universitario, CCT 659/13): solo si la farmacia confirmó el título.
+    const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate, !!emp.hasPharmacistTitle);
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
     let noRem = 0;
 

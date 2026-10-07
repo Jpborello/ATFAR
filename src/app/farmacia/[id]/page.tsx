@@ -44,6 +44,7 @@ interface Employee {
   receiptDate?: string;
   customSalary?: number | null;
   customNoRem?: number | null;
+  hasPharmacistTitle: boolean;
 }
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
@@ -256,7 +257,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               receiptUrl: emp.receipt_url,
               receiptDate: emp.receipt_date,
               customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
-              customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null
+              customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
+              hasPharmacistTitle: !!emp.has_pharmacist_title
             })));
           } else {
             setEmployees([]);
@@ -435,7 +437,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           receiptUrl: uploadedReceiptUrl || undefined,
           receiptDate: uploadedReceiptUrl ? nowIso : undefined,
           customSalary: parsedCustomSalary,
-          customNoRem: parsedCustomNoRem
+          customNoRem: parsedCustomNoRem,
+          hasPharmacistTitle: false
         }
       ]);
 
@@ -629,6 +632,34 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setEmployees(prev => prev.filter(e => e.id !== id));
       toast.success('Empleado eliminado.');
     }
+  };
+
+  const handleConfirmPharmacistTitle = async (emp: Employee) => {
+    const confirmed = await confirmDialog({
+      title: 'Confirmar título de Farmacéutico',
+      message: `Confirmá que "${emp.fullName}" posee título universitario de Farmacéutico (nacional o revalidado por una universidad nacional, según el CCT 659/13). Esto va a actualizar su categoría y su sueldo de liquidación automática a partir de ahora.`,
+      confirmLabel: 'Sí, tiene título',
+    });
+    if (!confirmed) return;
+
+    const isConfigured =
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
+      !!process.env.NEXT_PUBLIC_SUPABASE_URL;
+
+    if (isConfigured) {
+      const { error } = await supabase
+        .from('employees')
+        .update({ has_pharmacist_title: true })
+        .eq('id', emp.id);
+
+      if (error) {
+        toast.error('Error al confirmar el título', { description: error.message });
+        return;
+      }
+    }
+
+    setEmployees(prev => prev.map(e => (e.id === emp.id ? { ...e, hasPharmacistTitle: true } : e)));
+    toast.success('Título confirmado: la categoría Farmacéutico ya se aplica en la liquidación.');
   };
 
   if (loading) {
@@ -879,7 +910,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 </thead>
                 <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                   {employees.map((emp) => {
-                    const catInfo = getCurrentCategory(emp.category, emp.entryDate);
+                    const catInfo = getCurrentCategory(emp.category, emp.entryDate, emp.hasPharmacistTitle);
                     const receiptStatus = getReceiptStatus(emp.receiptDate);
                     return (
                       <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
@@ -908,6 +939,19 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                                     Promovido (+{catInfo.steps} cat.)
                                   </span>
                                 )}
+                              </div>
+                            )}
+                            {catInfo.pendingTitleConfirmation && (
+                              <div className="mt-1.5 p-2 bg-amber-50 border border-amber-200 rounded-lg max-w-xs">
+                                <p className="text-[9px] text-amber-800 font-bold leading-snug">
+                                  Cumplió la antigüedad para Farmacéutico. Esa categoría exige título universitario (CCT 659/13) — ¿{emp.fullName.split(' ')[0]} lo tiene?
+                                </p>
+                                <button
+                                  onClick={() => handleConfirmPharmacistTitle(emp)}
+                                  className="mt-1.5 inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-600 text-white text-[9px] font-black uppercase tracking-wider hover:bg-amber-700 transition-colors cursor-pointer"
+                                >
+                                  Sí, confirmar título
+                                </button>
                               </div>
                             )}
                           </div>

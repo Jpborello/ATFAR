@@ -77,6 +77,7 @@ interface Employee {
   isAffiliate: boolean;
   customSalary?: number | null;
   customNoRem?: number | null;
+  hasPharmacistTitle: boolean;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -166,7 +167,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           active: e.active,
           isAffiliate: !!e.is_affiliate,
           customSalary: e.custom_salary ? Number(e.custom_salary) : null,
-          customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null
+          customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null,
+          hasPharmacistTitle: !!e.has_pharmacist_title
         })) : [];
 
         // Fetch real payments
@@ -732,7 +734,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                   </thead>
                   <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                     {employees.map((emp) => {
-                      const catInfo = getCurrentCategory(emp.category, emp.entryDate);
+                      const catInfo = getCurrentCategory(emp.category, emp.entryDate, emp.hasPharmacistTitle);
                       return (
                         <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3.5 px-4">
@@ -758,6 +760,11 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                   Promovido por Antigüedad (+{catInfo.steps} cat.)
                                 </span>
                               ) : null}
+                              {catInfo.pendingTitleConfirmation && (
+                                <span className="text-[9px] text-amber-700 font-black uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded w-max mt-1 border border-amber-500/20" title="Cumplió la antigüedad para Farmacéutico, pero la farmacia todavía no confirmó que tiene el título universitario.">
+                                  Pendiente confirmar título Farmacéutico
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="py-3.5 px-4 text-center">
