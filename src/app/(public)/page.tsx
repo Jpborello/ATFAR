@@ -284,6 +284,16 @@ export default function HomePage() {
               alt="Sorteo Día de la Madre - ATFAR"
               className="w-full h-auto block"
             />
+            <div className="bg-card p-4">
+              <Link
+                href="/sorteo"
+                onClick={() => setShowSorteoModal(false)}
+                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-pink-500 text-white text-xs font-bold uppercase tracking-wider hover:bg-pink-600 transition-all shadow-md"
+              >
+                <span>Quiero Participar</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
           </div>
         </div>
       )}
@@ -417,8 +427,8 @@ export default function HomePage() {
       {/* Sorteo Día de la Madre — Promo Card */}
       {isSorteoDiaMadreActive && (
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
-          <button
-            onClick={() => setShowSorteoModal(true)}
+          <Link
+            href="/sorteo"
             className="w-full group flex flex-col sm:flex-row items-stretch gap-0 bg-card border border-border rounded-3xl overflow-hidden shadow-premium hover:shadow-premium-lg transition-all text-left cursor-pointer"
           >
             <img
@@ -437,11 +447,11 @@ export default function HomePage() {
                 Enviá tu nombre completo y el último recibo de sueldo con tu afiliación al sindicato. El sorteo se realiza el último domingo de octubre.
               </p>
               <span className="inline-flex items-center text-sm font-extrabold text-primary group-hover:text-secondary pt-1">
-                <span>Ver bases y cómo participar</span>
+                <span>Quiero participar</span>
                 <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-0.5 transition-transform" />
               </span>
             </div>
-          </button>
+          </Link>
         </section>
       )}
 

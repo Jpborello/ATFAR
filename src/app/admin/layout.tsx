@@ -20,7 +20,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Bell,
-  Search
+  Search,
+  Gift
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import SupportContact from '@/components/shared/SupportContact';
@@ -88,6 +89,7 @@ export default function AdminLayout({
     { label: 'Declaraciones Pendientes', href: '/admin/declaraciones', icon: ClipboardCheck },
     { label: 'Útiles Escolares', href: '/admin/utiles', icon: GraduationCap },
     { label: 'Bolsa de Empleo', href: '/admin/empleo', icon: Briefcase },
+    { label: 'Sorteo Día de la Madre', href: '/admin/sorteo', icon: Gift },
     { label: 'Novedades y Escalas', href: '/admin/escalas', icon: FileText },
     { label: 'Reportes y Cuentas', href: '/admin/reportes', icon: FileText }, // custom reports page
   ];
