@@ -1,22 +1,28 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { 
-  Briefcase, 
-  FileText, 
-  Trash2, 
-  Search, 
-  Calendar, 
-  Phone, 
-  Mail, 
-  Download, 
+import {
+  Briefcase,
+  FileText,
+  Trash2,
+  Search,
+  Calendar,
+  Phone,
+  Mail,
+  Download,
   Loader2,
   ExternalLink,
-  UserCheck
+  UserCheck,
+  Plus,
+  Upload,
+  X,
+  Send,
+  AlertCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
+import { cctCategories } from '@/lib/dateUtils';
 
 interface JobApplication {
   id: string;
@@ -36,28 +42,123 @@ export default function AdminEmpleoPage() {
   const [filterPosition, setFilterPosition] = useState<string>('all');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  useEffect(() => {
-    async function fetchApplications() {
-      try {
-        const { data, error } = await supabase
-          .from('job_applications')
-          .select('*')
-          .order('created_at', { ascending: false });
+  // Manual CV upload (admin-side)
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadForm, setUploadForm] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    message: '',
+    position: 'Personal en Gestión de Farmacia',
+  });
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
 
-        if (error) throw error;
-        setApplications(data || []);
-      } catch (err) {
-        console.error('Error loading applications:', err);
-        toast.error('No pudimos cargar las postulaciones.', {
-          description: 'Revisá tu conexión y volvé a intentarlo.',
-        });
-      } finally {
-        setLoading(false);
-      }
+  async function fetchApplications() {
+    try {
+      const { data, error } = await supabase
+        .from('job_applications')
+        .select('*')
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      setApplications(data || []);
+    } catch (err) {
+      console.error('Error loading applications:', err);
+      toast.error('No pudimos cargar las postulaciones.', {
+        description: 'Revisá tu conexión y volvé a intentarlo.',
+      });
+    } finally {
+      setLoading(false);
     }
+  }
 
+  useEffect(() => {
     fetchApplications();
   }, []);
+
+  const handleUploadFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.type !== 'application/pdf') {
+        toast.warning('Subí solo archivos en formato PDF.');
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        toast.warning('El archivo supera el límite de 5MB.');
+        return;
+      }
+      setUploadFile(file);
+    }
+  };
+
+  const resetUploadForm = () => {
+    setUploadForm({ fullName: '', email: '', phone: '', message: '', position: 'Personal en Gestión de Farmacia' });
+    setUploadFile(null);
+    setUploadError('');
+  };
+
+  const handleManualUpload = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!uploadFile) {
+      toast.warning('Seleccioná el archivo CV en formato PDF.');
+      return;
+    }
+
+    setUploading(true);
+    setUploadError('');
+
+    try {
+      // 1. Upload CV file to Supabase Storage Bucket 'cvs'
+      const fileExt = uploadFile.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+      const filePath = `public/${fileName}`;
+
+      const { error: uploadErr } = await supabase.storage
+        .from('cvs')
+        .upload(filePath, uploadFile);
+
+      if (uploadErr) throw new Error(`Error al subir el archivo: ${uploadErr.message}`);
+
+      // 2. Get Public URL of the uploaded file
+      const { data: { publicUrl } } = supabase.storage
+        .from('cvs')
+        .getPublicUrl(filePath);
+
+      // 3. Insert application into database table 'job_applications'
+      const { data: inserted, error: insertError } = await supabase
+        .from('job_applications')
+        .insert({
+          full_name: uploadForm.fullName,
+          email: uploadForm.email,
+          phone: uploadForm.phone,
+          message: uploadForm.message,
+          cv_url: publicUrl,
+          position: uploadForm.position,
+        })
+        .select()
+        .single();
+
+      if (insertError) throw new Error(`Error al guardar los datos: ${insertError.message}`);
+
+      if (inserted) {
+        setApplications(prev => [...prev, inserted as JobApplication]);
+      } else {
+        fetchApplications();
+      }
+
+      toast.success('CV cargado correctamente en la bolsa de empleo.');
+      resetUploadForm();
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error('Error uploading CV manually:', err);
+      const message = err instanceof Error ? err.message : 'Ocurrió un error inesperado al cargar el CV.';
+      setUploadError(message);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDelete = async (id: string, cvUrl: string) => {
     const confirmed = await confirmDialog({
@@ -126,15 +227,26 @@ export default function AdminEmpleoPage() {
           </p>
         </div>
         
-        {/* Total Badge */}
-        <div className="bg-card border border-border rounded-2xl px-5 py-3 shadow-premium flex items-center gap-3.5 glass">
-          <div className="p-2 bg-primary/5 text-primary border border-primary/10 rounded-xl">
-            <UserCheck className="w-5 h-5 text-secondary" />
+        <div className="flex items-center gap-4">
+          {/* Total Badge */}
+          <div className="bg-card border border-border rounded-2xl px-5 py-3 shadow-premium flex items-center gap-3.5 glass">
+            <div className="p-2 bg-primary/5 text-primary border border-primary/10 rounded-xl">
+              <UserCheck className="w-5 h-5 text-secondary" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Total Postulantes</span>
+              <span className="text-xl font-black text-primary">{applications.length}</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Total Postulantes</span>
-            <span className="text-xl font-black text-primary">{applications.length}</span>
-          </div>
+
+          {/* Manual Upload Button */}
+          <button
+            onClick={() => { resetUploadForm(); setShowUploadModal(true); }}
+            className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Cargar CV</span>
+          </button>
         </div>
       </div>
 
@@ -277,6 +389,165 @@ export default function AdminEmpleoPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Manual CV Upload Modal */}
+      {showUploadModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onClick={() => !uploading && setShowUploadModal(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto glass"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/5 text-primary border border-primary/10 rounded-xl">
+                  <Upload className="w-5 h-5 text-secondary" />
+                </div>
+                <h2 className="text-sm font-extrabold text-foreground">Cargar CV manualmente</h2>
+              </div>
+              <button
+                onClick={() => !uploading && setShowUploadModal(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/40 transition-all"
+                disabled={uploading}
+              >
+                <X className="w-4.5 h-4.5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleManualUpload} className="p-6 space-y-5">
+              {uploadError && (
+                <div className="flex items-center gap-3 p-3.5 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl text-xs">
+                  <AlertCircle className="w-4.5 h-4.5 flex-shrink-0" />
+                  <span>{uploadError}</span>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Nombre Completo *</label>
+                  <input
+                    type="text"
+                    required
+                    value={uploadForm.fullName}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, fullName: e.target.value }))}
+                    placeholder="Ej. Juan Pérez"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-foreground">Teléfono *</label>
+                  <input
+                    type="tel"
+                    required
+                    value={uploadForm.phone}
+                    onChange={(e) => setUploadForm(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Ej. 3416554433"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">Correo Electrónico *</label>
+                <input
+                  type="email"
+                  required
+                  value={uploadForm.email}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, email: e.target.value }))}
+                  placeholder="ejemplo@correo.com"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">Puesto / Categoría *</label>
+                <select
+                  required
+                  value={uploadForm.position}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, position: e.target.value }))}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs font-bold transition-all text-foreground"
+                >
+                  {cctCategories.map((cat) => (
+                    <option key={cat} value={cat}>{cat}</option>
+                  ))}
+                  <option value="Otros / Administrativo">Otros / Administrativo</option>
+                </select>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground">Presentación / Experiencia (Opcional)</label>
+                <textarea
+                  rows={3}
+                  value={uploadForm.message}
+                  onChange={(e) => setUploadForm(prev => ({ ...prev, message: e.target.value }))}
+                  placeholder="Breve resumen de experiencia, disponibilidad, etc..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/50 text-xs transition-all resize-none"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold text-foreground block">Archivo CV (PDF) *</label>
+                <div className="border-2 border-dashed border-border rounded-xl p-5 text-center hover:border-secondary/60 hover:bg-muted/10 transition-all cursor-pointer relative group">
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleUploadFileChange}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                  />
+                  <div className="flex flex-col items-center justify-center space-y-1.5">
+                    <div className="p-2.5 bg-secondary/10 text-secondary rounded-full group-hover:scale-105 transition-transform">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    {uploadFile ? (
+                      <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
+                        <FileText className="w-4 h-4 text-secondary" />
+                        <span>{uploadFile.name} ({(uploadFile.size / 1024 / 1024).toFixed(2)} MB)</span>
+                      </div>
+                    ) : (
+                      <>
+                        <p className="text-xs font-semibold text-foreground">
+                          Hacé clic para buscar o arrastrá el PDF acá
+                        </p>
+                        <p className="text-[10px] text-muted-foreground">PDF de hasta 5 MB</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowUploadModal(false)}
+                  disabled={uploading}
+                  className="flex-1 inline-flex items-center justify-center px-4 py-3 rounded-xl border border-border text-foreground text-xs font-bold uppercase tracking-wider hover:bg-muted/40 transition-all disabled:opacity-50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={uploading}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider hover:bg-secondary/95 transition-all shadow-md disabled:opacity-50"
+                >
+                  {uploading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Cargando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Cargar CV</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

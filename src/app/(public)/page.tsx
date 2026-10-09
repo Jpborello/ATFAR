@@ -16,7 +16,8 @@ import {
   ChevronRight,
   TrendingUp,
   ChevronLeft,
-  Ribbon
+  Ribbon,
+  X
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
@@ -24,11 +25,35 @@ import { supabase } from '@/lib/supabase';
 // Se apaga sola después de la fecha límite, no hace falta acordarse de sacarla a mano.
 const MOURNING_MODE_UNTIL = new Date('2026-08-24T00:00:00-03:00');
 
+// Sorteo Día de la Madre: se apaga sola el día del sorteo (último domingo de octubre), no hace falta sacarla a mano.
+const SORTEO_DIA_MADRE_UNTIL = new Date('2026-10-25T23:59:59-03:00');
+const SORTEO_DIA_MADRE_SEEN_KEY = 'atfar_sorteo_dia_madre_seen';
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const isMourningMode = new Date() < MOURNING_MODE_UNTIL;
+  const isSorteoDiaMadreActive = new Date() < SORTEO_DIA_MADRE_UNTIL;
+  const [showSorteoModal, setShowSorteoModal] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeScaleSlide, setActiveScaleSlide] = useState<any | null>(null);
+
+  useEffect(() => {
+    if (!isSorteoDiaMadreActive) return;
+    // sessionStorage solo existe en el cliente: necesitamos el efecto (no un
+    // inicializador de useState) para no romper el render del servidor.
+    try {
+      const alreadySeen = sessionStorage.getItem(SORTEO_DIA_MADRE_SEEN_KEY);
+      if (!alreadySeen) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setShowSorteoModal(true);
+        sessionStorage.setItem(SORTEO_DIA_MADRE_SEEN_KEY, '1');
+      }
+    } catch {
+      // sessionStorage no disponible (modo privado, etc.) — mostramos igual una vez
+      setShowSorteoModal(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     async function fetchActiveScale() {
@@ -237,6 +262,32 @@ export default function HomePage() {
 
   return (
     <div className="bg-background text-foreground min-h-screen space-y-20 pb-16 relative">
+      {/* Sorteo Día de la Madre — Modal (aparece una vez por sesión) */}
+      {isSorteoDiaMadreActive && showSorteoModal && (
+        <div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShowSorteoModal(false)}
+        >
+          <div
+            className="relative w-full max-w-sm sm:max-w-md rounded-3xl overflow-hidden shadow-2xl animate-fadeIn"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              onClick={() => setShowSorteoModal(false)}
+              className="absolute top-3 right-3 z-10 p-2 rounded-full bg-black/40 hover:bg-black/60 text-white backdrop-blur-sm transition-all"
+              title="Cerrar"
+            >
+              <X className="w-4.5 h-4.5" />
+            </button>
+            <img
+              src="/images/sorteo_dia_madre.jpeg"
+              alt="Sorteo Día de la Madre - ATFAR"
+              className="w-full h-auto block"
+            />
+          </div>
+        </div>
+      )}
+
       {isMourningMode ? (
         /* Banda de luto — reemplaza temporalmente el carrusel del hero */
         <section className="relative w-full pt-16">
@@ -361,6 +412,37 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
+
+      {/* Sorteo Día de la Madre — Promo Card */}
+      {isSorteoDiaMadreActive && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
+          <button
+            onClick={() => setShowSorteoModal(true)}
+            className="w-full group flex flex-col sm:flex-row items-stretch gap-0 bg-card border border-border rounded-3xl overflow-hidden shadow-premium hover:shadow-premium-lg transition-all text-left cursor-pointer"
+          >
+            <img
+              src="/images/sorteo_dia_madre.jpeg"
+              alt="Sorteo Día de la Madre - ATFAR"
+              className="w-full sm:w-56 h-56 sm:h-auto object-cover object-top flex-shrink-0 group-hover:scale-[1.02] transition-transform duration-500"
+            />
+            <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center space-y-3">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/10 text-pink-600 text-[10px] font-black uppercase tracking-widest w-fit border border-pink-500/15">
+                Sorteo Día de la Madre
+              </span>
+              <h2 className="text-2xl font-extrabold tracking-tight text-[#0f172a]">
+                ¡Participá y ganá un regalo especial!
+              </h2>
+              <p className="text-sm text-[#64748b] leading-relaxed font-medium max-w-lg">
+                Enviá tu nombre completo y el último recibo de sueldo con tu afiliación al sindicato. El sorteo se realiza el último domingo de octubre.
+              </p>
+              <span className="inline-flex items-center text-sm font-extrabold text-primary group-hover:text-secondary pt-1">
+                <span>Ver bases y cómo participar</span>
+                <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-0.5 transition-transform" />
+              </span>
+            </div>
+          </button>
+        </section>
       )}
 
       {/* Services Section */}
