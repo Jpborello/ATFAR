@@ -23,8 +23,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory } from '@/lib/dateUtils';
-import { Payment } from '@/types';
+import { calculateSeniority, getCurrentCategory, formatDateAR } from '@/lib/dateUtils';
+import { Payment, DdjjDetail } from '@/types';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
 interface PharmacyDetail {
@@ -62,7 +62,15 @@ interface PharmacyDetail {
   registeredDate: string;
   employees: number;
   paymentStatus: 'al_dia' | 'con_deuda' | 'pendiente';
-  declarations: { month: string; date: string; employees: number; status: 'validada' | 'pendiente' }[];
+  declarations: {
+    month: string;
+    date: string;
+    amount: number;
+    ddjjUrl: string | null;
+    detail: DdjjDetail | null;
+    observations: string | null;
+    status: 'validada' | 'en_revision' | 'pendiente';
+  }[];
   payments: { id: string; invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
   documents: { name: string; type: string; size: string; url?: string | null }[];
 }
@@ -78,6 +86,7 @@ interface Employee {
   customSalary?: number | null;
   customNoRem?: number | null;
   hasPharmacistTitle: boolean;
+  jobReserveSince?: string | null;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -87,6 +96,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [activeTab, setActiveTab] = useState<'info' | 'contactos' | 'empleados' | 'pagos' | 'documentos'>('info');
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
+  const [openDeclarationIdx, setOpenDeclarationIdx] = useState<number | null>(null);
 
   useEffect(() => {
     async function loadData() {
@@ -168,7 +178,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           isAffiliate: !!e.is_affiliate,
           customSalary: e.custom_salary ? Number(e.custom_salary) : null,
           customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null,
-          hasPharmacistTitle: !!e.has_pharmacist_title
+          hasPharmacistTitle: !!e.has_pharmacist_title,
+          jobReserveSince: (e.job_reserve_since as string | null) ?? null
         })) : [];
 
         // Fetch real payments
@@ -190,18 +201,20 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             }))
           : [];
 
-        // Las Declaraciones Juradas se derivan de los pagos que tienen un DDJJ
-        // adjunto (ddjj_url). No hay una tabla dedicada de declaraciones: cada
-        // período de aporte lleva su propia DDJJ, así que la usamos como la
-        // fuente real en vez de dejar esta sección siempre vacía.
-        const mappedDeclarations = (payList || [])
-          .filter((p: Payment) => !!p.ddjj_url)
-          .map((p: Payment) => ({
-            month: p.period || 'Periodo',
-            date: p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR') : 'Sin fecha',
-            employees: pharmData?.declared_employee_count || mappedEmployees.length,
-            status: (p.status === 'pagado' ? 'validada' : 'pendiente') as 'validada' | 'pendiente'
-          }));
+        // Cada boleta nace de una DDJJ presentada online por la farmacia
+        // (farmacia/[id]/declaraciones): la única forma de generar una boleta es
+        // presentando la declaración. Por eso toda boleta cuenta como DDJJ
+        // presentada; el PDF (ddjj_url) es un adjunto opcional que la farmacia
+        // puede sumar al informar el pago, no la declaración en sí.
+        const mappedDeclarations = (payList || []).map((p: Payment) => ({
+          month: p.period || 'Periodo',
+          date: p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR') : 'Sin fecha',
+          amount: Number(p.amount) || 0,
+          ddjjUrl: p.ddjj_url || null,
+          detail: p.ddjj_detail || null,
+          observations: p.ddjj_observations || null,
+          status: (p.status === 'pagado' ? 'validada' : p.status === 'en_revision' ? 'en_revision' : 'pendiente') as 'validada' | 'en_revision' | 'pendiente'
+        }));
 
         // Estado de pago: mismo criterio que el listado de farmacias, para que
         // una farmacia no muestre "Con deuda" en la lista y "Al día" acá adentro.
@@ -744,6 +757,11 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                           <td className="py-3.5 px-4 text-slate-500">
                             <div className="flex flex-col">
                               <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
+                              {emp.jobReserveSince && (
+                                <span className="text-[9px] text-sky-700 font-black uppercase tracking-wider bg-sky-500/10 px-2 py-0.5 rounded w-max mt-1 border border-sky-500/25" title="Reserva de puesto / licencia sin goce: aporte $0">
+                                  Reserva de puesto desde {formatDateAR(emp.jobReserveSince)}
+                                </span>
+                              )}
                               {emp.customSalary && emp.customSalary > 0 ? (
                                 <div className="flex flex-col gap-0.5 mt-1">
                                   <span className="text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 px-2 py-0.5 rounded w-max border border-amber-500/30">
@@ -810,26 +828,105 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
               ) : (
                 <div className="divide-y divide-border/60">
                   {pharmacy.declarations.map((dec, idx) => (
-                    <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
+                    <div key={idx} className="py-3.5 first:pt-0 last:pb-0 text-xs">
+                    <div className="flex items-center justify-between gap-4">
                       <div className="space-y-0.5">
                         <span className="font-bold text-foreground block text-sm">{dec.month}</span>
                         <span className="text-[10px] text-muted-foreground block font-medium">Presentada: {dec.date}</span>
+                        {dec.detail || dec.observations ? (
+                          <button
+                            type="button"
+                            onClick={() => setOpenDeclarationIdx(openDeclarationIdx === idx ? null : idx)}
+                            className="text-[10px] text-primary font-bold underline hover:opacity-80 cursor-pointer"
+                          >
+                            {openDeclarationIdx === idx ? 'Ocultar detalle' : 'Ver detalle por empleado'}
+                          </button>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground/70 block italic">Sin detalle (presentada antes del 14/10/2026)</span>
+                        )}
                       </div>
 
                       <div className="flex items-center gap-4">
-                        <span className="text-muted-foreground font-semibold">{dec.employees} emp.</span>
+                        <div className="text-right">
+                          <span className="text-foreground font-bold font-mono block">
+                            ${dec.amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                          {dec.ddjjUrl && (
+                            <a href={dec.ddjjUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary underline hover:opacity-80 font-bold">
+                              PDF adjunto
+                            </a>
+                          )}
+                        </div>
                         {dec.status === 'validada' ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
                             <CheckCircle2 className="w-3 h-3" />
-                            <span>Validada</span>
+                            <span>Pagada</span>
+                          </span>
+                        ) : dec.status === 'en_revision' ? (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-sky-500/10 text-sky-600 font-bold text-[9px] uppercase border border-sky-500/20">
+                            <Clock className="w-3 h-3" />
+                            <span>Pago en revisión</span>
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
                             <Clock className="w-3 h-3 animate-pulse" />
-                            <span>Pendiente</span>
+                            <span>Boleta impaga</span>
                           </span>
                         )}
                       </div>
+                    </div>
+
+                    {openDeclarationIdx === idx && (
+                      <div className="mt-3 space-y-2 animate-fadeIn">
+                        {dec.detail && !dec.detail.scaleIsOfficial && (
+                          <p className="text-[10px] text-amber-700 font-semibold bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
+                            Se presentó sin escala oficial cargada para el período: los montos automáticos usaron la última referencia.
+                          </p>
+                        )}
+                        {dec.detail && (
+                          <div className="border border-border rounded-xl overflow-x-auto bg-background">
+                            <table className="w-full text-left text-[10px] border-collapse">
+                              <thead>
+                                <tr className="bg-slate-50 text-muted-foreground uppercase font-bold border-b border-border">
+                                  <th className="py-2 px-2.5">Empleado</th>
+                                  <th className="py-2 px-2.5 text-center">Antig.</th>
+                                  <th className="py-2 px-2.5 text-right">Remun.</th>
+                                  <th className="py-2 px-2.5 text-right">No Rem.</th>
+                                  <th className="py-2 px-2.5 text-right">Aporte</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y divide-border/60">
+                                {dec.detail.employees.map((e) => (
+                                  <tr key={e.cuil}>
+                                    <td className="py-1.5 px-2.5">
+                                      <span className="font-bold text-foreground block">{e.fullName}</span>
+                                      <span className="text-muted-foreground block">{e.category}</span>
+                                      {e.onJobReserve ? (
+                                        <span className="text-sky-700 font-black uppercase text-[8px]">Reserva de puesto{e.jobReserveSince ? ` desde ${formatDateAR(e.jobReserveSince)}` : ''}</span>
+                                      ) : e.isCustomSalary ? (
+                                        <span className="text-amber-700 font-black uppercase text-[8px]">Sueldo manual</span>
+                                      ) : null}
+                                    </td>
+                                    <td className="py-1.5 px-2.5 text-center text-muted-foreground">
+                                      {e.seniorityYears}a · {Math.round(e.seniorityPct * 100)}%
+                                    </td>
+                                    <td className="py-1.5 px-2.5 text-right font-mono">${e.remunerative.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                    <td className="py-1.5 px-2.5 text-right font-mono">${e.nonRemunerative.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                    <td className="py-1.5 px-2.5 text-right font-mono font-bold">${e.aporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                        {dec.observations && (
+                          <div className="text-[11px] bg-slate-50 border border-border rounded-xl p-2.5">
+                            <span className="font-black uppercase text-[9px] text-muted-foreground block mb-0.5">Observaciones de la farmacia</span>
+                            <p className="text-foreground whitespace-pre-wrap">{dec.observations}</p>
+                          </div>
+                        )}
+                      </div>
+                    )}
                     </div>
                   ))}
                 </div>

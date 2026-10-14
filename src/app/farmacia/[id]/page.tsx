@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus } from '@/lib/dateUtils';
+import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus, formatDateAR } from '@/lib/dateUtils';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 import SupportContact from '@/components/shared/SupportContact';
 
@@ -45,6 +45,7 @@ interface Employee {
   customSalary?: number | null;
   customNoRem?: number | null;
   hasPharmacistTitle: boolean;
+  jobReserveSince?: string | null;
 }
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
@@ -118,6 +119,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [editEmpSalaryType, setEditEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [editEmpCustomSalary, setEditEmpCustomSalary] = useState('');
   const [editEmpCustomNoRem, setEditEmpCustomNoRem] = useState('0');
+  const [editEmpOnJobReserve, setEditEmpOnJobReserve] = useState(false);
+  const [editEmpJobReserveSince, setEditEmpJobReserveSince] = useState('');
   const [savingEditEmployee, setSavingEditEmployee] = useState(false);
 
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -258,7 +261,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               receiptDate: emp.receipt_date,
               customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
               customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
-              hasPharmacistTitle: !!emp.has_pharmacist_title
+              hasPharmacistTitle: !!emp.has_pharmacist_title,
+              jobReserveSince: emp.job_reserve_since ?? null
             })));
           } else {
             setEmployees([]);
@@ -479,6 +483,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setEditEmpCustomSalary('');
       setEditEmpCustomNoRem('0');
     }
+    setEditEmpOnJobReserve(Boolean(emp.jobReserveSince));
+    setEditEmpJobReserveSince(emp.jobReserveSince || '');
     setIsEditEmployeeModalOpen(true);
   };
 
@@ -492,6 +498,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       toast.warning('Ingresá un sueldo bruto válido para el cálculo manual.');
       return;
     }
+    if (editEmpOnJobReserve && !editEmpJobReserveSince) {
+      toast.warning('Indicá desde qué fecha está en reserva de puesto.');
+      return;
+    }
+    const parsedJobReserveSince = editEmpOnJobReserve ? editEmpJobReserveSince : null;
 
     setSavingEditEmployee(true);
     const isConfigured =
@@ -510,7 +521,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             weekly_hours: editEmpWeeklyHours,
             is_affiliate: editEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
-            custom_no_rem: parsedCustomNoRem
+            custom_no_rem: parsedCustomNoRem,
+            job_reserve_since: parsedJobReserveSince
           })
           .eq('id', editingEmployee.id);
 
@@ -529,7 +541,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         weeklyHours: editEmpWeeklyHours,
         isAffiliate: editEmpIsAffiliate,
         customSalary: parsedCustomSalary,
-        customNoRem: parsedCustomNoRem
+        customNoRem: parsedCustomNoRem,
+        jobReserveSince: parsedJobReserveSince
       } : emp));
 
       toast.success('Empleado y régimen de sueldo actualizados exitosamente.');
@@ -889,7 +902,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   Por defecto, los sueldos se calculan automáticamente con la escala CCT 659/13 vigente y la antigüedad acumulada.
                 </p>
                 <p className="text-[11px] text-amber-900/80 font-medium">
-                  Si un empleado tiene una situación extraordinaria (jornada reducida, licencias, adicionales especiales), hacé clic en el botón <strong className="text-amber-950">Editar (✏️)</strong> para fijar su sueldo bruto manual pactado. El sistema usará ese valor sin modificarlo.
+                  Si un empleado tiene una situación extraordinaria (jornada reducida, adicionales especiales), hacé clic en el botón <strong className="text-amber-950">Editar (✏️)</strong> para fijar su sueldo bruto manual pactado. El sistema usará ese valor sin modificarlo. Si está con <strong className="text-amber-950">reserva de puesto</strong> o licencia sin goce de sueldo, marcalo desde el mismo botón: queda en nómina con aporte $0.
                 </p>
               </div>
             </div>
@@ -911,7 +924,9 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                   {employees.map((emp) => {
                     const catInfo = getCurrentCategory(emp.category, emp.entryDate, emp.hasPharmacistTitle);
-                    const receiptStatus = getReceiptStatus(emp.receiptDate);
+                    const receiptStatus = emp.jobReserveSince
+                      ? { valid: true, label: 'No requerido', color: 'emerald' }
+                      : getReceiptStatus(emp.receiptDate);
                     return (
                       <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
                         <td className="py-3.5 px-4 font-bold text-[#0f172a]">{emp.fullName}</td>
@@ -919,6 +934,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                         <td className="py-3.5 px-4 text-slate-500">
                           <div className="flex flex-col">
                             <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
+                            {emp.jobReserveSince && (
+                              <span className="inline-flex items-center gap-1 mt-1 text-[9px] text-sky-700 font-extrabold uppercase tracking-wider bg-sky-500/10 border border-sky-500/25 px-2 py-0.5 rounded w-max" title="No cobra sueldo: no genera aporte en la DDJJ ni requiere recibo">
+                                Reserva de puesto desde {formatDateAR(emp.jobReserveSince)}
+                              </span>
+                            )}
                             {emp.customSalary && emp.customSalary > 0 ? (
                               <div className="flex flex-col gap-0.5 mt-1">
                                 <span className="inline-flex items-center gap-1 text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded w-max" title="Base Remunerativa pactada">
@@ -1471,7 +1491,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                       ✓ Automático por Convenio
                     </span>
                     <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Calcula según escala CCT 659/13 vigente + 1% anual por antigüedad.
+                      Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
                     </span>
                   </button>
 
@@ -1674,15 +1694,47 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 />
               </div>
 
+              {/* Reserva de puesto (art. 211 LCT) / licencia sin goce */}
+              <div className="border border-sky-500/25 rounded-2xl p-4 bg-sky-500/5 space-y-3">
+                <div className="flex items-start gap-3">
+                  <input
+                    type="checkbox"
+                    id="edit-emp-job-reserve"
+                    checked={editEmpOnJobReserve}
+                    onChange={(e) => setEditEmpOnJobReserve(e.target.checked)}
+                    className="w-4.5 h-4.5 accent-sky-600 cursor-pointer rounded mt-0.5"
+                  />
+                  <label htmlFor="edit-emp-job-reserve" className="cursor-pointer select-none space-y-0.5">
+                    <span className="text-xs font-bold text-slate-800 block">Reserva de puesto / licencia sin goce de sueldo</span>
+                    <span className="text-[10px] text-slate-500 font-medium block leading-snug">
+                      Ej.: licencia por enfermedad que superó los meses pagos (art. 211 LCT). Sigue en nómina, pero no cobra sueldo: el aporte del período es $0 y no se le pide recibo.
+                    </span>
+                  </label>
+                </div>
+                {editEmpOnJobReserve && (
+                  <div className="pl-7 animate-fadeIn">
+                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">En reserva desde</label>
+                    <input
+                      type="date"
+                      value={editEmpJobReserveSince}
+                      onChange={(e) => setEditEmpJobReserveSince(e.target.value)}
+                      className="w-full sm:w-56 rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500/20 text-[#0f172a]"
+                      required={editEmpOnJobReserve}
+                    />
+                    <span className="text-[10px] text-slate-500 font-medium block mt-1">Cuando vuelva a trabajar, destildá esta opción.</span>
+                  </div>
+                )}
+              </div>
+
               {/* Régimen de Sueldo (Automático vs Manual) */}
-              <div className="border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3">
+              <div className={`border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3 ${editEmpOnJobReserve ? 'opacity-50' : ''}`}>
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
                     <DollarSign className="w-4 h-4 text-primary" />
                     <span>Régimen de Sueldo para Aportes</span>
                   </label>
                   <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    editEmpSalaryType === 'manual' 
+                    editEmpSalaryType === 'manual'
                       ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
                       : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
                   }`}>
@@ -1707,7 +1759,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                       ✓ Automático por Convenio
                     </span>
                     <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Calcula según escala CCT 659/13 vigente + 1% anual por antigüedad.
+                      Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
                     </span>
                   </button>
 

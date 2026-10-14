@@ -88,20 +88,20 @@ export default function Footer() {
             <div className="flex items-start gap-2.5">
               <Phone className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>
-                <a href="tel:03414247814" className="hover:text-emerald-700 block text-slate-800">0341 424-7814</a>
+                <a href="tel:03412384950" className="hover:text-emerald-700 block text-slate-800">0341 238-4950</a>
                 <span className="text-[10px] text-slate-500 block">Lunes a Viernes</span>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
               <Mail className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
-              <a href="mailto:contacto@atfar.org.ar" className="hover:text-emerald-700 truncate block text-slate-800">
-                contacto@atfar.org.ar
+              <a href="mailto:atfar2003@yahoo.com.ar" className="hover:text-emerald-700 truncate block text-slate-800">
+                atfar2003@yahoo.com.ar
               </a>
             </div>
             <div className="flex items-start gap-2.5">
               <MapPin className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" />
               <div>
-                <span className="block text-slate-800">Corrientes 1572</span>
+                <span className="block text-slate-800">Rodríguez 1114</span>
                 <span className="text-[10px] block text-slate-500">S2000 Rosario, Santa Fe</span>
               </div>
             </div>
@@ -116,7 +116,7 @@ export default function Footer() {
             <h4 className="text-xs font-extrabold uppercase tracking-widest text-emerald-950 mb-4">Sede Central</h4>
             <div className="w-full h-36 rounded-2xl overflow-hidden border border-emerald-200/80 bg-emerald-100/50 relative group shadow-sm">
               <iframe
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3348.0494396009804!2d-60.6559384235286!3d-32.94970497184285!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x95b7ab3dcd481079%3A0xcf9530460c38865c!2sCorrientes%201572%2C%20S2000AHD%20Rosario%2C%20Santa%20Fe!5e0!3m2!1ses!2sar!4v1700000000000!5m2!1ses!2sar"
+                src="https://www.google.com/maps?q=Rodr%C3%ADguez%201114%2C%20S2000%20Rosario%2C%20Santa%20Fe&z=16&output=embed"
                 width="100%"
                 height="100%"
                 style={{ border: 0 }}

@@ -61,6 +61,8 @@ export interface Employee {
   customNoRem?: number | null;
   has_pharmacist_title?: boolean;
   hasPharmacistTitle?: boolean;
+  job_reserve_since?: string | null;
+  jobReserveSince?: string | null;
   created_at?: string;
 }
 
@@ -79,7 +81,29 @@ export interface Payment {
   external_reference?: string | null;
   checkout_url?: string | null;
   ddjj_url?: string | null;
+  ddjj_detail?: DdjjDetail | null;
+  ddjj_observations?: string | null;
   created_at?: string;
+}
+
+/** Foto de la liquidación de una DDJJ al momento de presentarla. */
+export interface DdjjDetail {
+  scaleIsOfficial: boolean;
+  totals: { remunerative: number; nonRemunerative: number; aporte: number };
+  employees: {
+    fullName: string;
+    cuil: string;
+    category: string;
+    promoted: boolean;
+    seniorityYears: number;
+    seniorityPct: number;
+    isCustomSalary: boolean;
+    onJobReserve: boolean;
+    jobReserveSince: string | null;
+    remunerative: number;
+    nonRemunerative: number;
+    aporte: number;
+  }[];
 }
 
 export interface BenefitRequestChild {

@@ -453,6 +453,15 @@ ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAU
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_salary NUMERIC DEFAULT NULL;
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_no_rem NUMERIC DEFAULT NULL;
 
+-- 11. Migration: Reserva de puesto (art. 211 LCT) / licencia sin goce. El empleado sigue en nómina
+-- pero no cobra sueldo, así que no genera aporte sindical ni se le exige recibo. NULL = trabajando.
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS job_reserve_since DATE DEFAULT NULL;
+
+-- 12. Migration: Detalle de la DDJJ presentada online (liquidación por empleado + observaciones),
+-- para que el sindicato pueda auditar cada declaración desde el admin.
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS ddjj_detail JSONB DEFAULT NULL;
+ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS ddjj_observations TEXT DEFAULT NULL;
+
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,
 -- ej. estudios contables que llevan varias farmacias con un solo login)

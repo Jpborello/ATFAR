@@ -232,7 +232,7 @@ export default function UtilesPage() {
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-foreground">¡Solicitud Registrada!</h2>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                Tu pedido de útiles escolares para el ciclo lectivo 2026 fue recibido correctamente. El equipo del sindicato revisará tu recibo de sueldo y te notificará por email cuando el kit esté listo para retirar en la sede central (Corrientes 1572).
+                Tu pedido de útiles escolares para el ciclo lectivo 2026 fue recibido correctamente. El equipo del sindicato revisará tu recibo de sueldo y te notificará por email cuando el kit esté listo para retirar en la sede central (Rodríguez 1114).
               </p>
             </div>
             <button

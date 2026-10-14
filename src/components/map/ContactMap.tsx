@@ -11,8 +11,8 @@ export default function ContactMap() {
   useEffect(() => {
     if (!mapRef.current) return;
 
-    // Sede ATFAR Rosario: Corrientes 1572
-    const officeCoord: [number, number] = [-32.949705, -60.655938];
+    // Sede ATFAR Rosario: Rodríguez 1114
+    const officeCoord: [number, number] = [-32.946749, -60.659812];
 
     // Initialize map
     leafletMap.current = L.map(mapRef.current, {
@@ -39,7 +39,7 @@ export default function ContactMap() {
     marker.bindPopup(`
       <div style="font-family: sans-serif; font-size: 12px; line-height: 1.4;">
         <strong style="font-size: 13px; color: #0d5c3e; display: block;">ATFAR Sede Central</strong>
-        <span style="display: block; color: #64748b;">Calle Corrientes 1572, Rosario</span>
+        <span style="display: block; color: #64748b;">Rodríguez 1114, Rosario</span>
         <span style="display: block; color: #64748b; font-weight: 500; margin-top: 4px;">Atención: Lun a Vie 08 - 16 hs</span>
       </div>
     `).openPopup();

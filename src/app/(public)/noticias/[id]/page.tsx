@@ -52,7 +52,7 @@ export default function NoticiaDetailPage({ params }: { params: Promise<{ id: st
             paragraphs: [
               'La Secretaría de Acción Social y Deportes informa a todos los afiliados que se encuentra abierta la inscripción de reservas para la Temporada de Invierno 2026 en nuestros predios turísticos y campings asociados.',
               'Contamos con tarifas sindicales preferenciales y paquetes especiales para grupos familiares en hoteles de Mar del Plata, Córdoba y Bariloche, coordinados a través de la Federación Nacional FATFA.',
-              'Las reservas se realizan a través de la oficina de turismo en la sede de Corrientes 1572 de lunes a viernes en el horario de 08:00 a 15:00 hs, o bien los afiliados pueden enviar sus consultas y reservar su lugar directamente desde la bandeja de autogestión de su portal privado.',
+              'Las reservas se realizan a través de la oficina de turismo en la sede de Rodríguez 1114 de lunes a viernes en el horario de 08:00 a 15:00 hs, o bien los afiliados pueden enviar sus consultas y reservar su lugar directamente desde la bandeja de autogestión de su portal privado.',
             ]
           },
           'capacitacion-farmacia': {

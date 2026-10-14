@@ -74,7 +74,7 @@ export default function ContactoPage() {
                   <Phone className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="block text-foreground font-semibold">Teléfono Fijo</span>
-                    <a href="tel:03414247814" className="hover:text-secondary block">0341 424-7814</a>
+                    <a href="tel:03412384950" className="hover:text-secondary block">0341 238-4950</a>
                   </div>
                 </div>
 
@@ -82,7 +82,7 @@ export default function ContactoPage() {
                   <Mail className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="block text-foreground font-semibold">Correo de Consultas</span>
-                    <a href="mailto:contacto@atfar.org.ar" className="hover:text-secondary block">contacto@atfar.org.ar</a>
+                    <a href="mailto:atfar2003@yahoo.com.ar" className="hover:text-secondary block">atfar2003@yahoo.com.ar</a>
                   </div>
                 </div>
 
@@ -90,7 +90,7 @@ export default function ContactoPage() {
                   <MapPin className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
                   <div>
                     <span className="block text-foreground font-semibold">Sede Rosario</span>
-                    <span>Corrientes 1572, S2000 Rosario, Santa Fe</span>
+                    <span>Rodríguez 1114, S2000 Rosario, Santa Fe</span>
                   </div>
                 </div>
 

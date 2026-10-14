@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniorityYears, isReceiptValid, getCurrentCategory } from '@/lib/dateUtils';
+import { calculateSeniorityYears, getSeniorityPercentage, isReceiptValid, getCurrentCategory, formatDateAR } from '@/lib/dateUtils';
 import SupportContact from '@/components/shared/SupportContact';
 
 import { Employee, Pharmacy, SalaryScale } from '@/types';
@@ -134,7 +134,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               receipt_date: emp.receipt_date,
               receiptDate: emp.receipt_date,
               has_pharmacist_title: !!emp.has_pharmacist_title,
-              hasPharmacistTitle: !!emp.has_pharmacist_title
+              hasPharmacistTitle: !!emp.has_pharmacist_title,
+              job_reserve_since: emp.job_reserve_since ?? null,
+              jobReserveSince: emp.job_reserve_since ?? null
             })));
           }
 
@@ -201,7 +203,30 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
     }
 
     const years = calculateSeniorityYears(emp.entryDate);
-    const seniorityAmount = basic * years * 0.01;
+    const seniorityPct = getSeniorityPercentage(years);
+    const seniorityAmount = basic * seniorityPct;
+
+    // Reserva de puesto (art. 211 LCT) o licencia sin goce: sigue en nómina pero
+    // no cobra sueldo ni genera cargas, así que su aporte del período es $0.
+    const onJobReserve = Boolean(emp.jobReserveSince);
+    if (onJobReserve) {
+      return {
+        basic,
+        years,
+        seniorityPct,
+        seniorityAmount: 0,
+        grossSalary: 0,
+        noRem: 0,
+        unionAporte: 0,
+        mutualAporte: 0,
+        totalAporte: 0,
+        categoryName,
+        promoted,
+        isCustomSalary: false,
+        isCustomNoRem: false,
+        onJobReserve
+      };
+    }
 
     // Si el empleado tiene un sueldo personalizado/manual para casos extraordinarios (jornada reducida, licencias, acuerdos especiales),
     // se respeta ese valor exacto como sueldo bruto y NO se pisa con la escala ni con la antigüedad.
@@ -223,6 +248,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
     return {
       basic,
       years,
+      seniorityPct,
       seniorityAmount,
       grossSalary,
       noRem,
@@ -232,7 +258,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       categoryName,
       promoted,
       isCustomSalary,
-      isCustomNoRem
+      isCustomNoRem,
+      onJobReserve
     };
   };
 
@@ -253,7 +280,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
   const totalNoRem = calculations.reduce((sum, item) => sum + item.calc.noRem, 0);
   const totalAmount = calculations.reduce((sum, item) => sum + item.calc.totalAporte, 0);
 
-  const invalidReceiptEmployees = employees.filter(emp => !isReceiptValid(emp.receiptDate || emp.receipt_date));
+  // Quien está en reserva de puesto no cobra, así que no tiene recibo de sueldo que renovar.
+  const invalidReceiptEmployees = employees.filter(emp => !emp.jobReserveSince && !isReceiptValid(emp.receiptDate || emp.receipt_date));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -299,6 +327,28 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         }
         const dueDate = `${dueDateObj.getFullYear()}-${String(dueDateObj.getMonth() + 1).padStart(2, '0')}-${String(dueDateObj.getDate()).padStart(2, '0')}`;
 
+        // Foto de la liquidación tal como la vio la farmacia al presentar, para que
+        // el sindicato pueda auditar cada DDJJ aunque después cambien los empleados o la escala.
+        const ddjjDetail = {
+          scaleIsOfficial: hasOfficialScaleForPeriod,
+          totals: { remunerative: totalSalaries, nonRemunerative: totalNoRem, aporte: totalAmount },
+          employees: calculations.map(({ employee, calc }) => ({
+            fullName: employee.fullName || employee.full_name,
+            cuil: employee.cuil,
+            category: calc.categoryName,
+            promoted: calc.promoted,
+            seniorityYears: calc.years,
+            seniorityPct: calc.seniorityPct,
+            isCustomSalary: calc.isCustomSalary,
+            onJobReserve: calc.onJobReserve,
+            jobReserveSince: employee.jobReserveSince || null,
+            remunerative: calc.grossSalary,
+            nonRemunerative: calc.noRem,
+            aporte: calc.totalAporte
+          }))
+        };
+        const ddjjObservations = observations.trim() || null;
+
         // Chequear si ya existe una boleta para este período
         const { data: existingPayment } = await supabase
           .from('payments')
@@ -320,7 +370,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
             .update({
               amount: totalAmount,
               due_date: dueDate,
-              invoice_number: generatedInvoiceNum
+              invoice_number: generatedInvoiceNum,
+              ddjj_detail: ddjjDetail,
+              ddjj_observations: ddjjObservations
             })
             .eq('id', existingPayment.id);
 
@@ -334,7 +386,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               period: period,
               amount: totalAmount,
               status: 'impago',
-              due_date: dueDate
+              due_date: dueDate,
+              ddjj_detail: ddjjDetail,
+              ddjj_observations: ddjjObservations
             });
 
           if (error) throw error;
@@ -526,7 +580,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 {employee.fullName}
                                 <span className="block text-[9px] text-muted-foreground font-mono">
                                   {employee.cuil} • <span className="font-sans font-medium text-slate-500">{calc.categoryName}</span>
-                                  {calc.isCustomSalary ? (
+                                  {calc.onJobReserve ? (
+                                    <span className="ml-1 inline-flex items-center px-1.5 py-0.5 bg-sky-500/10 text-sky-700 rounded text-[8px] font-black uppercase border border-sky-500/25 align-middle" title="Reserva de puesto / licencia sin goce: no cobra sueldo, aporte $0">
+                                      Reserva de puesto desde {formatDateAR(employee.jobReserveSince)}
+                                    </span>
+                                  ) : calc.isCustomSalary ? (
                                     <span className="ml-1 inline-flex items-center gap-0.5 px-1.5 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[8px] font-black uppercase border border-amber-500/30 align-middle" title="Sueldo pactado manualmente para casos extraordinarios">
                                       ✏️ Sueldo Fijo
                                     </span>

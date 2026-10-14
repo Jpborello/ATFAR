@@ -25,6 +25,19 @@ export function calculateSeniorityYears(entryDateStr: string | null | undefined)
   return Math.max(0, years);
 }
 
+/**
+ * Escalafón por antigüedad, CCT 659/13 Art. 15: porcentaje sobre el sueldo
+ * básico de la categoría. 7% al cumplir el primer año, +2% por cada año
+ * siguiente hasta 45% a los 20 años; de 21 a 24 años se mantiene en 45%,
+ * y desde los 25 años es 50%.
+ */
+export function getSeniorityPercentage(years: number): number {
+  if (years < 1) return 0;
+  if (years >= 25) return 0.5;
+  const capped = Math.min(years, 20);
+  return (7 + (capped - 1) * 2) / 100;
+}
+
 export function calculateSeniority(entryDateStr: string | null | undefined): string {
   if (!entryDateStr) return 'Sin fecha';
   const entryDate = new Date(entryDateStr);
