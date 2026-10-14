@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory, formatDateAR } from '@/lib/dateUtils';
+import { calculateSeniority, getCurrentCategory, formatDateAR, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
 import { Payment, DdjjDetail } from '@/types';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 
@@ -85,7 +85,7 @@ interface Employee {
   isAffiliate: boolean;
   customSalary?: number | null;
   customNoRem?: number | null;
-  hasPharmacistTitle: boolean;
+  pharmacistLicense?: string | null;
   jobReserveSince?: string | null;
 }
 
@@ -178,7 +178,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           isAffiliate: !!e.is_affiliate,
           customSalary: e.custom_salary ? Number(e.custom_salary) : null,
           customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null,
-          hasPharmacistTitle: !!e.has_pharmacist_title,
+          pharmacistLicense: (e.pharmacist_license as string | null) ?? null,
           jobReserveSince: (e.job_reserve_since as string | null) ?? null
         })) : [];
 
@@ -747,7 +747,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                   </thead>
                   <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                     {employees.map((emp) => {
-                      const catInfo = getCurrentCategory(emp.category, emp.entryDate, emp.hasPharmacistTitle);
+                      const catInfo = getCurrentCategory(emp.category, emp.entryDate);
                       return (
                         <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
                           <td className="py-3.5 px-4">
@@ -778,10 +778,16 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                   Promovido por Antigüedad (+{catInfo.steps} cat.)
                                 </span>
                               ) : null}
-                              {catInfo.pendingTitleConfirmation && (
-                                <span className="text-[9px] text-amber-700 font-black uppercase tracking-wider bg-amber-500/10 px-2 py-0.5 rounded w-max mt-1 border border-amber-500/20" title="Cumplió la antigüedad para Farmacéutico, pero la farmacia todavía no confirmó que tiene el título universitario.">
-                                  Pendiente confirmar título Farmacéutico
-                                </span>
+                              {catInfo.category === PHARMACIST_CATEGORY && (
+                                emp.pharmacistLicense ? (
+                                  <span className="text-[9px] text-indigo-700 font-black uppercase tracking-wider bg-indigo-500/10 px-2 py-0.5 rounded w-max mt-1 border border-indigo-500/20">
+                                    Matrícula N° {emp.pharmacistLicense}
+                                  </span>
+                                ) : (
+                                  <span className="text-[9px] text-red-700 font-black uppercase tracking-wider bg-red-500/10 px-2 py-0.5 rounded w-max mt-1 border border-red-500/20" title="Está registrado como Farmacéutico pero la farmacia no cargó el número de matrícula profesional.">
+                                    Falta N° de matrícula
+                                  </span>
+                                )
                               )}
                             </div>
                           </td>
@@ -900,7 +906,9 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                   <tr key={e.cuil}>
                                     <td className="py-1.5 px-2.5">
                                       <span className="font-bold text-foreground block">{e.fullName}</span>
-                                      <span className="text-muted-foreground block">{e.category}</span>
+                                      <span className="text-muted-foreground block">
+                                        {e.category}{e.pharmacistLicense ? ` · Mat. ${e.pharmacistLicense}` : ''}
+                                      </span>
                                       {e.onJobReserve ? (
                                         <span className="text-sky-700 font-black uppercase text-[8px]">Reserva de puesto{e.jobReserveSince ? ` desde ${formatDateAR(e.jobReserveSince)}` : ''}</span>
                                       ) : e.isCustomSalary ? (

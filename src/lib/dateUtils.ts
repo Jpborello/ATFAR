@@ -72,45 +72,32 @@ export function calculateSeniority(entryDateStr: string | null | undefined): str
   return parts.join(' y ');
 }
 
+export const PHARMACIST_CATEGORY = 'Farmacéutico';
+
 export function getCurrentCategory(
   registeredCategory: string,
-  entryDateStr: string | null | undefined,
-  hasPharmacistTitle: boolean = false
-): { category: string; promoted: boolean; steps: number; pendingTitleConfirmation: boolean } {
+  entryDateStr: string | null | undefined
+): { category: string; promoted: boolean; steps: number } {
   const years = calculateSeniorityYears(entryDateStr);
   const steps = Math.floor(years / 5);
 
   const baseIndex = cctCategories.indexOf(registeredCategory);
-  if (baseIndex === -1) {
-    return { category: registeredCategory, promoted: false, steps: 0, pendingTitleConfirmation: false };
+  if (baseIndex === -1 || steps === 0) {
+    return { category: registeredCategory, promoted: false, steps: 0 };
   }
 
-  if (steps === 0) {
-    return { category: registeredCategory, promoted: false, steps: 0, pendingTitleConfirmation: false };
-  }
-
-  const farmaceuticoIndex = cctCategories.length - 1;
-
-  // La categoría "Farmacéutico" exige título universitario (CCT 659/13): la
-  // escalera automática por antigüedad nunca puede llegar sola hasta ahí.
-  // Se frena un escalón antes ("Personal en Gestión de Farmacia") hasta que
-  // la farmacia confirme a mano que la persona tiene el título.
-  const autoCeilingIndex = hasPharmacistTitle ? farmaceuticoIndex : farmaceuticoIndex - 1;
-  const uncappedTargetIndex = Math.min(farmaceuticoIndex, baseIndex + steps);
-  // Si ya estaba contratada directamente como Farmacéutico (categoría
-  // registrada a mano), eso no se toca: el tope automático nunca baja una
-  // categoría ya asignada.
-  const targetIndex = Math.max(baseIndex, Math.min(autoCeilingIndex, uncappedTargetIndex));
-
-  const promoted = targetIndex > baseIndex;
-  const pendingTitleConfirmation =
-    !hasPharmacistTitle && baseIndex < farmaceuticoIndex && uncappedTargetIndex === farmaceuticoIndex;
+  // "Farmacéutico" depende del título universitario y la matrícula profesional
+  // (lo controlan las auditorías de farmacia, no el sindicato): la antigüedad
+  // nunca promueve hasta ahí. Solo es Farmacéutico quien la farmacia registra
+  // en esa categoría con su número de matrícula; la escalera automática se
+  // frena en "Personal en Gestión de Farmacia".
+  const autoCeilingIndex = cctCategories.indexOf(PHARMACIST_CATEGORY) - 1;
+  const targetIndex = Math.max(baseIndex, Math.min(autoCeilingIndex, baseIndex + steps));
 
   return {
     category: cctCategories[targetIndex],
-    promoted,
-    steps: targetIndex - baseIndex,
-    pendingTitleConfirmation
+    promoted: targetIndex > baseIndex,
+    steps: targetIndex - baseIndex
   };
 }
 

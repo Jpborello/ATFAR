@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus, formatDateAR } from '@/lib/dateUtils';
+import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus, formatDateAR, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 import SupportContact from '@/components/shared/SupportContact';
 
@@ -44,8 +44,27 @@ interface Employee {
   receiptDate?: string;
   customSalary?: number | null;
   customNoRem?: number | null;
-  hasPharmacistTitle: boolean;
+  pharmacistLicense?: string | null;
   jobReserveSince?: string | null;
+}
+
+function PharmacistLicenseField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="p-3.5 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-1.5">
+      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">N° de Matrícula Profesional *</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder="Ej: 4521"
+        className="w-full rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[#0f172a]"
+        required
+      />
+      <span className="text-[10px] text-slate-500 font-medium block leading-snug">
+        La categoría Farmacéutico exige título universitario y matrícula habilitante (la controlan las auditorías de farmacia). No se asigna por antigüedad.
+      </span>
+    </div>
+  );
 }
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
@@ -106,6 +125,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [newEmpSalaryType, setNewEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [newEmpCustomSalary, setNewEmpCustomSalary] = useState('');
   const [newEmpCustomNoRem, setNewEmpCustomNoRem] = useState('0');
+  const [newEmpPharmacistLicense, setNewEmpPharmacistLicense] = useState('');
 
   // Employee Edit form state
   const [isEditEmployeeModalOpen, setIsEditEmployeeModalOpen] = useState(false);
@@ -119,6 +139,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [editEmpSalaryType, setEditEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [editEmpCustomSalary, setEditEmpCustomSalary] = useState('');
   const [editEmpCustomNoRem, setEditEmpCustomNoRem] = useState('0');
+  const [editEmpPharmacistLicense, setEditEmpPharmacistLicense] = useState('');
   const [editEmpOnJobReserve, setEditEmpOnJobReserve] = useState(false);
   const [editEmpJobReserveSince, setEditEmpJobReserveSince] = useState('');
   const [savingEditEmployee, setSavingEditEmployee] = useState(false);
@@ -261,7 +282,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               receiptDate: emp.receipt_date,
               customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
               customNoRem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
-              hasPharmacistTitle: !!emp.has_pharmacist_title,
+              pharmacistLicense: emp.pharmacist_license ?? null,
               jobReserveSince: emp.job_reserve_since ?? null
             })));
           } else {
@@ -363,6 +384,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       toast.warning('Completá todos los campos requeridos.');
       return;
     }
+    const newPharmacistLicense = newEmpCategory === PHARMACIST_CATEGORY ? newEmpPharmacistLicense.trim() : '';
+    if (newEmpCategory === PHARMACIST_CATEGORY && !newPharmacistLicense) {
+      toast.warning('Para la categoría Farmacéutico ingresá el número de matrícula profesional.');
+      return;
+    }
 
     setUploadingReceipt(true);
     let uploadedReceiptUrl = '';
@@ -412,6 +438,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             is_affiliate: newEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
             custom_no_rem: parsedCustomNoRem,
+            pharmacist_license: newPharmacistLicense || null,
             receipt_url: uploadedReceiptUrl || null,
             receipt_date: uploadedReceiptUrl ? nowIso : null
           })
@@ -442,7 +469,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           receiptDate: uploadedReceiptUrl ? nowIso : undefined,
           customSalary: parsedCustomSalary,
           customNoRem: parsedCustomNoRem,
-          hasPharmacistTitle: false
+          pharmacistLicense: newPharmacistLicense || null
         }
       ]);
 
@@ -456,6 +483,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setNewEmpSalaryType('automatico');
       setNewEmpCustomSalary('');
       setNewEmpCustomNoRem('0');
+      setNewEmpPharmacistLicense('');
       setNewEmpReceiptFile(null);
       setIsEmployeeModalOpen(false);
     } catch (err: unknown) {
@@ -483,6 +511,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setEditEmpCustomSalary('');
       setEditEmpCustomNoRem('0');
     }
+    setEditEmpPharmacistLicense(emp.pharmacistLicense || '');
     setEditEmpOnJobReserve(Boolean(emp.jobReserveSince));
     setEditEmpJobReserveSince(emp.jobReserveSince || '');
     setIsEditEmployeeModalOpen(true);
@@ -503,6 +532,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       return;
     }
     const parsedJobReserveSince = editEmpOnJobReserve ? editEmpJobReserveSince : null;
+    const parsedPharmacistLicense = editEmpCategory === PHARMACIST_CATEGORY ? editEmpPharmacistLicense.trim() : '';
+    if (editEmpCategory === PHARMACIST_CATEGORY && !parsedPharmacistLicense) {
+      toast.warning('Para la categoría Farmacéutico ingresá el número de matrícula profesional.');
+      return;
+    }
 
     setSavingEditEmployee(true);
     const isConfigured =
@@ -522,7 +556,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             is_affiliate: editEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
             custom_no_rem: parsedCustomNoRem,
-            job_reserve_since: parsedJobReserveSince
+            job_reserve_since: parsedJobReserveSince,
+            pharmacist_license: parsedPharmacistLicense || null
           })
           .eq('id', editingEmployee.id);
 
@@ -542,7 +577,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
         isAffiliate: editEmpIsAffiliate,
         customSalary: parsedCustomSalary,
         customNoRem: parsedCustomNoRem,
-        jobReserveSince: parsedJobReserveSince
+        jobReserveSince: parsedJobReserveSince,
+        pharmacistLicense: parsedPharmacistLicense || null
       } : emp));
 
       toast.success('Empleado y régimen de sueldo actualizados exitosamente.');
@@ -645,34 +681,6 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setEmployees(prev => prev.filter(e => e.id !== id));
       toast.success('Empleado eliminado.');
     }
-  };
-
-  const handleConfirmPharmacistTitle = async (emp: Employee) => {
-    const confirmed = await confirmDialog({
-      title: 'Confirmar título de Farmacéutico',
-      message: `Confirmá que "${emp.fullName}" posee título universitario de Farmacéutico (nacional o revalidado por una universidad nacional, según el CCT 659/13). Esto va a actualizar su categoría y su sueldo de liquidación automática a partir de ahora.`,
-      confirmLabel: 'Sí, tiene título',
-    });
-    if (!confirmed) return;
-
-    const isConfigured =
-      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
-      !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-    if (isConfigured) {
-      const { error } = await supabase
-        .from('employees')
-        .update({ has_pharmacist_title: true })
-        .eq('id', emp.id);
-
-      if (error) {
-        toast.error('Error al confirmar el título', { description: error.message });
-        return;
-      }
-    }
-
-    setEmployees(prev => prev.map(e => (e.id === emp.id ? { ...e, hasPharmacistTitle: true } : e)));
-    toast.success('Título confirmado: la categoría Farmacéutico ya se aplica en la liquidación.');
   };
 
   if (loading) {
@@ -923,7 +931,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 </thead>
                 <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
                   {employees.map((emp) => {
-                    const catInfo = getCurrentCategory(emp.category, emp.entryDate, emp.hasPharmacistTitle);
+                    const catInfo = getCurrentCategory(emp.category, emp.entryDate);
                     const receiptStatus = emp.jobReserveSince
                       ? { valid: true, label: 'No requerido', color: 'emerald' }
                       : getReceiptStatus(emp.receiptDate);
@@ -961,18 +969,22 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                                 )}
                               </div>
                             )}
-                            {catInfo.pendingTitleConfirmation && (
-                              <div className="mt-1.5 p-2 bg-amber-50 border border-amber-200 rounded-lg max-w-xs">
-                                <p className="text-[9px] text-amber-800 font-bold leading-snug">
-                                  Cumplió la antigüedad para Farmacéutico. Esa categoría exige título universitario (CCT 659/13) — ¿{emp.fullName.split(' ')[0]} lo tiene?
-                                </p>
+                            {catInfo.category === PHARMACIST_CATEGORY && (
+                              emp.pharmacistLicense ? (
+                                <span className="text-[9px] text-indigo-700 font-black uppercase tracking-wider bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 w-max mt-1">
+                                  Matrícula N° {emp.pharmacistLicense}
+                                </span>
+                              ) : (
                                 <button
-                                  onClick={() => handleConfirmPharmacistTitle(emp)}
-                                  className="mt-1.5 inline-flex items-center gap-1 px-2 py-1 rounded-md bg-amber-600 text-white text-[9px] font-black uppercase tracking-wider hover:bg-amber-700 transition-colors cursor-pointer"
+                                  onClick={() => handleOpenEditEmployee(emp)}
+                                  className="mt-1.5 p-2 bg-red-50 border border-red-200 rounded-lg max-w-xs text-left cursor-pointer hover:bg-red-100 transition-colors"
                                 >
-                                  Sí, confirmar título
+                                  <span className="text-[9px] text-red-700 font-black uppercase tracking-wider block">Falta N° de matrícula</span>
+                                  <span className="text-[9px] text-red-700/80 font-semibold leading-snug block">
+                                    La categoría Farmacéutico requiere la matrícula profesional. Hacé clic para cargarla.
+                                  </span>
                                 </button>
-                              </div>
+                              )
                             )}
                           </div>
                         </td>
@@ -1417,11 +1429,16 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 </select>
               </div>
 
+              {newEmpCategory === PHARMACIST_CATEGORY && (
+                <PharmacistLicenseField value={newEmpPharmacistLicense} onChange={setNewEmpPharmacistLicense} />
+              )}
+
               <div className="flex items-start gap-2.5 p-3.5 bg-secondary/5 border border-secondary/20 rounded-2xl">
                 <Sparkles className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
                 <p className="text-[11px] text-slate-700 leading-relaxed font-semibold">
                   <span className="font-black text-secondary">Promoción automática por antigüedad:</span> por convenio, cada 5 años el
-                  sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá.
+                  sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá. Nunca asciende a
+                  Farmacéutico: esa categoría depende del título y la matrícula profesional, y se carga a mano con el número de matrícula.
                   <span className="block mt-1 text-slate-500 font-medium">
                     Ej: ingresó en 2021 como <strong className="text-slate-700">Cadetes</strong> → hoy el sistema ya lo liquida como{' '}
                     <strong className="text-slate-700">Aprendiz Ayudante</strong> en las declaraciones, sin que tengas que cambiarle la categoría vos.
@@ -1665,6 +1682,10 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   ))}
                 </select>
               </div>
+
+              {editEmpCategory === PHARMACIST_CATEGORY && (
+                <PharmacistLicenseField value={editEmpPharmacistLicense} onChange={setEditEmpPharmacistLicense} />
+              )}
 
               <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
                 <input

@@ -462,6 +462,11 @@ ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS job_reserve_since DATE DEF
 ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS ddjj_detail JSONB DEFAULT NULL;
 ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS ddjj_observations TEXT DEFAULT NULL;
 
+-- 13. Migration: Matrícula profesional del farmacéutico. La categoría Farmacéutico depende del
+-- título y la matrícula (auditorías de farmacia), nunca de la antigüedad. Reemplaza al flag
+-- has_pharmacist_title, que queda sin uso.
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS pharmacist_license TEXT DEFAULT NULL;
+
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,
 -- ej. estudios contables que llevan varias farmacias con un solo login)

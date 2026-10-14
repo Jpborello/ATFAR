@@ -133,8 +133,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               receiptUrl: emp.receipt_url,
               receipt_date: emp.receipt_date,
               receiptDate: emp.receipt_date,
-              has_pharmacist_title: !!emp.has_pharmacist_title,
-              hasPharmacistTitle: !!emp.has_pharmacist_title,
+              pharmacist_license: emp.pharmacist_license ?? null,
+              pharmacistLicense: emp.pharmacist_license ?? null,
               job_reserve_since: emp.job_reserve_since ?? null,
               jobReserveSince: emp.job_reserve_since ?? null
             })));
@@ -181,9 +181,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
     const registeredCategory = emp.category || 'Cadetes';
     // La categoría que se liquida es la promovida por antigüedad (cada 5 años),
     // aunque el empleador nunca haya actualizado el campo "categoría" a mano.
-    // La promoción automática nunca llega sola a "Farmacéutico" (exige título
-    // universitario, CCT 659/13): solo si la farmacia confirmó el título.
-    const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate, !!emp.hasPharmacistTitle);
+    // La promoción automática nunca llega a "Farmacéutico": esa categoría solo
+    // la tiene quien la farmacia registró como tal, con su matrícula.
+    const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate);
     let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
     let noRem = 0;
 
@@ -336,6 +336,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
             fullName: employee.fullName || employee.full_name,
             cuil: employee.cuil,
             category: calc.categoryName,
+            pharmacistLicense: calc.categoryName === 'Farmacéutico' ? employee.pharmacistLicense || null : null,
             promoted: calc.promoted,
             seniorityYears: calc.years,
             seniorityPct: calc.seniorityPct,

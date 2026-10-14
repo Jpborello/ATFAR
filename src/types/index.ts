@@ -59,8 +59,8 @@ export interface Employee {
   customSalary?: number | null;
   custom_no_rem?: number | null;
   customNoRem?: number | null;
-  has_pharmacist_title?: boolean;
-  hasPharmacistTitle?: boolean;
+  pharmacist_license?: string | null;
+  pharmacistLicense?: string | null;
   job_reserve_since?: string | null;
   jobReserveSince?: string | null;
   created_at?: string;
@@ -94,6 +94,7 @@ export interface DdjjDetail {
     fullName: string;
     cuil: string;
     category: string;
+    pharmacistLicense?: string | null;
     promoted: boolean;
     seniorityYears: number;
     seniorityPct: number;
