@@ -22,45 +22,38 @@ export default function Navbar() {
     window.addEventListener('scroll', handleScroll);
 
     // Fetch user and profile role
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role, full_name')
-          .eq('id', session.user.id)
-          .single();
-
-        setProfile({
-          id: session.user.id,
-          email: session.user.email || '',
-          role: profileData?.role || null,
-          full_name: profileData?.full_name || null,
-        });
-      } else {
+    const loadProfile = async (user: { id: string; email?: string } | null | undefined) => {
+      if (!user) {
         setProfile(null);
+        return;
       }
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', user.id)
+        .single();
+
+      setProfile({
+        id: user.id,
+        email: user.email || '',
+        role: profileData?.role || null,
+        full_name: profileData?.full_name || null,
+      });
     };
 
-    getSession();
+    supabase.auth.getSession().then(({ data: { session } }) => loadProfile(session?.user));
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (session?.user) {
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('role, full_name')
-          .eq('id', session.user.id)
-          .single();
-
-        setProfile({
-          id: session.user.id,
-          email: session.user.email || '',
-          role: profileData?.role || null,
-          full_name: profileData?.full_name || null,
-        });
-      } else {
-        setProfile(null);
-      }
+    // Supabase ejecuta este callback mientras tiene tomado su lock interno de
+    // sesión. Si acá adentro se espera otra llamada a Supabase (la consulta de
+    // profiles), esa llamada también pide el lock y queda un deadlock: todo el
+    // cliente se cuelga, incluido el login ("La respuesta está tardando más de
+    // lo normal"). Pasaba la primera vez del día, cuando la sesión vencida se
+    // renueva sola al cargar la página. Por eso la consulta se difiere con
+    // setTimeout para que corra recién cuando el lock ya se liberó.
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => {
+        loadProfile(session?.user);
+      }, 0);
     });
 
     return () => {
