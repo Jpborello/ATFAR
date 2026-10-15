@@ -10,10 +10,10 @@ import {
   Trash2,
   FileSpreadsheet,
   Loader2,
-  CheckCircle2,
   Users,
   Building2,
   Info,
+  CalendarDays,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -261,24 +261,6 @@ export default function FarmaciasPanelPage() {
     }
   };
 
-  const handleMarkPaidTransition = async (id: string, razonSocial: string) => {
-    const confirmed = await confirmDialog({
-      title: 'Marcar como Al Día',
-      message: `¿"${razonSocial}" ya pagó por fuera del sistema este mes? Va a figurar "Al Día" hasta fin de mes, y después el cálculo normal vuelve a aplicar solo.`,
-      confirmLabel: 'Marcar Al Día',
-    });
-    if (!confirmed) return;
-    try {
-      const { error } = await supabase.rpc('set_pharmacy_debt_override', { p_pharmacy_id: id, p_clear: false });
-      if (error) throw error;
-      setPharmacies((prev) => prev.map((p) => (p.id === id ? { ...p, paymentStatus: 'al_dia' } : p)));
-      toast.success('Farmacia marcada como Al Día hasta fin de mes.');
-    } catch (err) {
-      console.error('Error marking pharmacy as paid:', err);
-      toast.error('Ocurrió un error al actualizar el estado de la farmacia.');
-    }
-  };
-
   const csvEscape = (value: string | number) => `"${String(value).replace(/"/g, '""')}"`;
 
   const handleExportCsv = (rows: RegisteredPharmacy[]) => {
@@ -481,15 +463,14 @@ export default function FarmaciasPanelPage() {
                       <Eye className="w-4 h-4" />
                       <span>Ver perfil</span>
                     </Link>
-                    {pharmacy.paymentStatus === 'con_deuda' && (
-                      <button
-                        onClick={() => handleMarkPaidTransition(pharmacy.id, pharmacy.razonSocial)}
-                        className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-bold hover:bg-emerald-100 transition-all"
-                      >
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>Marcar al día</span>
-                      </button>
-                    )}
+                    <Link
+                      href={`/admin/farmacias/${pharmacy.id}?tab=pagos`}
+                      className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-emerald-200 bg-emerald-50 text-emerald-700 text-sm font-bold hover:bg-emerald-100 transition-all"
+                      title="Almanaque mes por mes: qué está pagado y qué no"
+                    >
+                      <CalendarDays className="w-4 h-4" />
+                      <span>Ver pagos</span>
+                    </Link>
                   </div>
                 </div>
               ))}

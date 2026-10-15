@@ -467,6 +467,32 @@ ALTER TABLE public.payments ADD COLUMN IF NOT EXISTS ddjj_observations TEXT DEFA
 -- has_pharmacist_title, que queda sin uso.
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS pharmacist_license TEXT DEFAULT NULL;
 
+-- 14. Almanaque de pagos por farmacia: marca manual del admin para cada mes
+-- (pago por fuera del sistema, o corrección de una boleta), con nota y quién lo marcó.
+-- Si el mes tiene boleta, la boleta manda; la marca guarda el registro para auditoría.
+CREATE TABLE IF NOT EXISTS public.pharmacy_month_marks (
+    id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+    pharmacy_id UUID NOT NULL REFERENCES public.pharmacies(id) ON DELETE CASCADE,
+    period DATE NOT NULL, -- primer día del mes (ej. 2026-09-01)
+    paid BOOLEAN NOT NULL,
+    note TEXT,
+    marked_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    marked_by_name TEXT,
+    marked_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+    CONSTRAINT pharmacy_month_marks_unique UNIQUE (pharmacy_id, period)
+);
+CREATE INDEX IF NOT EXISTS idx_pharmacy_month_marks_pharmacy ON public.pharmacy_month_marks(pharmacy_id);
+ALTER TABLE public.pharmacy_month_marks ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Admins manage month marks" ON public.pharmacy_month_marks;
+CREATE POLICY "Admins manage month marks" ON public.pharmacy_month_marks
+    FOR ALL USING ((SELECT public.is_admin())) WITH CHECK ((SELECT public.is_admin()));
+DROP POLICY IF EXISTS "Members view their month marks" ON public.pharmacy_month_marks;
+CREATE POLICY "Members view their month marks" ON public.pharmacy_month_marks
+    FOR SELECT USING (EXISTS (
+        SELECT 1 FROM public.pharmacy_members pm
+        WHERE pm.pharmacy_id = pharmacy_month_marks.pharmacy_id AND pm.user_id = (SELECT auth.uid())
+    ));
+
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,
 -- ej. estudios contables que llevan varias farmacias con un solo login)

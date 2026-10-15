@@ -19,13 +19,15 @@ import {
   Loader2,
   ShieldCheck,
   MessageSquare,
-  Trash2
+  Trash2,
+  CalendarDays
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniority, getCurrentCategory, formatDateAR, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
 import { Payment, DdjjDetail } from '@/types';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
+import PaymentCalendar from '@/components/admin/PaymentCalendar';
 
 interface PharmacyDetail {
   id: string;
@@ -66,6 +68,8 @@ interface PharmacyDetail {
     month: string;
     date: string;
     amount: number;
+    invoice: string;
+    dueDate: string | null;
     ddjjUrl: string | null;
     detail: DdjjDetail | null;
     observations: string | null;
@@ -94,7 +98,13 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
   const [loading, setLoading] = useState(true);
   const [pharmacy, setPharmacy] = useState<PharmacyDetail | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [activeTab, setActiveTab] = useState<'info' | 'contactos' | 'empleados' | 'pagos' | 'documentos'>('info');
+  // Desde el listado, "Ver pagos" abre directo esta pestaña (?tab=pagos). La
+  // página muestra un loader hasta tener datos, así que leer la URL acá no
+  // genera diferencias de hidratación.
+  const [activeTab, setActiveTab] = useState<'info' | 'contactos' | 'empleados' | 'pagos' | 'documentos'>(() =>
+    typeof window !== 'undefined' && new URLSearchParams(window.location.search).get('tab') === 'pagos' ? 'pagos' : 'info'
+  );
+  const [reloadKey, setReloadKey] = useState(0);
   const [deletingPaymentId, setDeletingPaymentId] = useState<string | null>(null);
   const [openDeclarationIdx, setOpenDeclarationIdx] = useState<number | null>(null);
 
@@ -210,6 +220,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           month: p.period || 'Periodo',
           date: p.created_at ? new Date(p.created_at).toLocaleDateString('es-AR') : 'Sin fecha',
           amount: Number(p.amount) || 0,
+          invoice: p.invoice_number || '—',
+          dueDate: p.due_date || null,
           ddjjUrl: p.ddjj_url || null,
           detail: p.ddjj_detail || null,
           observations: p.ddjj_observations || null,
@@ -274,26 +286,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
     }
 
     loadData();
-  }, [id]);
-
-  const handleMarkPaidTransition = async () => {
-    if (!pharmacy) return;
-    const confirmed = await confirmDialog({
-      title: 'Marcar como Al Día',
-      message: `¿"${pharmacy.razonSocial}" ya pagó por fuera del sistema este mes? Va a figurar "Al Día" hasta fin de mes, y después el cálculo normal vuelve a aplicar solo.`,
-      confirmLabel: 'Marcar Al Día',
-    });
-    if (!confirmed) return;
-    try {
-      const { error } = await supabase.rpc('set_pharmacy_debt_override', { p_pharmacy_id: id, p_clear: false });
-      if (error) throw error;
-      setPharmacy(prev => prev ? { ...prev, paymentStatus: 'al_dia' } : prev);
-      toast.success('Farmacia marcada como Al Día hasta fin de mes.');
-    } catch (err) {
-      console.error('Error marking pharmacy as paid:', err);
-      toast.error('Ocurrió un error al actualizar el estado de la farmacia.');
-    }
-  };
+  }, [id, reloadKey]);
 
   const handleDeletePayment = async (payId: string, invoiceNum: string, period: string) => {
     const ok = await confirmDialog({
@@ -369,16 +362,14 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
             }`} />
             {pharmacy.paymentStatus === 'al_dia' ? 'Estado: Al Día' : pharmacy.paymentStatus === 'pendiente' ? 'Estado: En Revisión' : 'Estado: Con Deuda'}
           </span>
-          {pharmacy.paymentStatus !== 'al_dia' && (
-            <button
-              onClick={handleMarkPaidTransition}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border border-emerald-500/20 bg-emerald-500/5 text-emerald-600 hover:bg-emerald-500/10 transition-all cursor-pointer"
-              title="Ya pagó por fuera del sistema este mes"
-            >
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Marcar Al Día</span>
-            </button>
-          )}
+          <button
+            onClick={() => setActiveTab('pagos')}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider border border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 transition-all cursor-pointer"
+            title="Ver y marcar mes por mes qué está pagado"
+          >
+            <CalendarDays className="w-3.5 h-3.5" />
+            <span>Almanaque de pagos</span>
+          </button>
         </div>
       </div>
 
@@ -818,6 +809,10 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
         {/* 4. DECLARACIONES JURADAS Y PAGOS */}
         {activeTab === 'pagos' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start animate-fadeIn">
+            <div className="lg:col-span-12">
+              <PaymentCalendar pharmacyId={pharmacy.id} onChanged={() => setReloadKey((k) => k + 1)} />
+            </div>
+
             {/* DDJJ list */}
             <div className="lg:col-span-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
               <div className="border-b border-border pb-4">
@@ -835,21 +830,19 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                 <div className="divide-y divide-border/60">
                   {pharmacy.declarations.map((dec, idx) => (
                     <div key={idx} className="py-3.5 first:pt-0 last:pb-0 text-xs">
-                    <div className="flex items-center justify-between gap-4">
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => setOpenDeclarationIdx(openDeclarationIdx === idx ? null : idx)}
+                      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setOpenDeclarationIdx(openDeclarationIdx === idx ? null : idx); } }}
+                      className="flex items-center justify-between gap-4 cursor-pointer rounded-xl -mx-2 px-2 py-1 hover:bg-slate-50 transition-colors"
+                    >
                       <div className="space-y-0.5">
                         <span className="font-bold text-foreground block text-sm">{dec.month}</span>
                         <span className="text-[10px] text-muted-foreground block font-medium">Presentada: {dec.date}</span>
-                        {dec.detail || dec.observations ? (
-                          <button
-                            type="button"
-                            onClick={() => setOpenDeclarationIdx(openDeclarationIdx === idx ? null : idx)}
-                            className="text-[10px] text-primary font-bold underline hover:opacity-80 cursor-pointer"
-                          >
-                            {openDeclarationIdx === idx ? 'Ocultar detalle' : 'Ver detalle por empleado'}
-                          </button>
-                        ) : (
-                          <span className="text-[10px] text-muted-foreground/70 block italic">Sin detalle (presentada antes del 14/10/2026)</span>
-                        )}
+                        <span className="text-[11px] text-primary font-bold underline">
+                          {openDeclarationIdx === idx ? 'Ocultar' : 'Ver declaración'}
+                        </span>
                       </div>
 
                       <div className="flex items-center gap-4">
@@ -858,7 +851,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                             ${dec.amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                           </span>
                           {dec.ddjjUrl && (
-                            <a href={dec.ddjjUrl} target="_blank" rel="noopener noreferrer" className="text-[10px] text-primary underline hover:opacity-80 font-bold">
+                            <a href={dec.ddjjUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()} className="text-[10px] text-primary underline hover:opacity-80 font-bold">
                               PDF adjunto
                             </a>
                           )}
@@ -884,6 +877,19 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
 
                     {openDeclarationIdx === idx && (
                       <div className="mt-3 space-y-2 animate-fadeIn">
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-[11px] bg-slate-50 border border-border rounded-xl p-3">
+                          <span className="text-muted-foreground font-semibold">Boleta</span>
+                          <span className="font-bold text-right">{dec.invoice}</span>
+                          <span className="text-muted-foreground font-semibold">Importe declarado</span>
+                          <span className="font-bold text-right font-mono">${dec.amount.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                          <span className="text-muted-foreground font-semibold">Vencimiento</span>
+                          <span className="font-bold text-right">{formatDateAR(dec.dueDate)}</span>
+                        </div>
+                        {!dec.detail && (
+                          <p className="text-[11px] text-slate-600 bg-amber-50 border border-amber-200 rounded-xl p-2.5 leading-relaxed">
+                            Esta declaración se presentó antes del 14/10/2026, cuando el sistema todavía no guardaba el detalle por empleado. Se conserva el importe total de la boleta.
+                          </p>
+                        )}
                         {dec.detail && !dec.detail.scaleIsOfficial && (
                           <p className="text-[10px] text-amber-700 font-semibold bg-amber-500/10 border border-amber-500/20 rounded-lg p-2">
                             Se presentó sin escala oficial cargada para el período: los montos automáticos usaron la última referencia.
