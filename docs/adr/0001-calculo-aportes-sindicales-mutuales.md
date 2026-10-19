@@ -1,8 +1,8 @@
 # ADR-0001: Cálculo de aportes sindicales y mutuales (afiliado / no afiliado)
 
-**Status:** Accepted (fórmula de no afiliado sujeta a confirmación con ATFAR — ver "Acción pendiente crítica")
-**Date:** 2026-09-02
-**Deciders:** Juampi (dev) + ATFAR (para confirmar el % del aporte solidario)
+**Status:** Superseded / Resuelto definitivamente (2026-10-19: confirmado que no afiliados no tributan cuota sindical 2% conforme Art. 50 inc. a CCT 659/13 y Ley 23.551)
+**Date:** 2026-09-02 (Actualizado: 2026-10-19)
+**Deciders:** Juampi (dev) + Auditoría normativa ATFAR (CCT 659/13)
 
 ## Context
 
@@ -60,6 +60,6 @@ El costo real de la Opción A no es el esfuerzo de hoy, es el riesgo compuesto: 
 1. [x] Corregir fórmula de no afiliado en `getEmployeeCalculation` (`farmacia/[id]/declaraciones/page.tsx`).
 2. [x] Categoría por antigüedad (`getCurrentCategory()`) ya integrada a la liquidación — hecho de forma independiente a este ADR.
 3. [x] Ordenar `salary_scales` por `created_at desc` al traerlas, para que un futuro duplicado de (agreement, period) no elija una fila arbitraria.
-4. [ ] **Crítico — confirmar con ATFAR el % real del aporte solidario para no afiliados** antes de que este cambio impacte facturación real. Hoy se asumió 2% sobre (remunerativo + no remunerativo), sin mutual, por ser la interpretación más simétrica con la cuota de afiliado, pero es una asunción del desarrollador, no un dato confirmado.
+4. [x] **Confirmado con CCT 659/13 y Ley 23.551 (2026-10-19)**: El 2% corresponde a la **Cuota Sindical** (Art. 50 inc. a CCT 659/13 y Art. 38 Ley 23.551). La farmacia es agente de retención exclusivamente respecto de los trabajadores **afiliados**. Los trabajadores **no afiliados tienen aporte $0** en la boleta sindical de ATFAR (no sufren retención en su recibo de sueldo).
 5. [ ] Extraer `getEmployeeCalculation` a `src/lib/aportes.ts` como función pura + agregar tests unitarios (Opción B), en un cambio separado de este fix urgente.
 6. [ ] Evaluar si `FALLBACK_SALARIES` debería eliminarse a favor de bloquear la generación de boleta cuando no hay escala oficial cargada, en vez de liquidar silenciosamente con datos viejos.

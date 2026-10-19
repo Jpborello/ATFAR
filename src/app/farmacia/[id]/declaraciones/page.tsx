@@ -208,6 +208,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
 
     // Reserva de puesto (art. 211 LCT) o licencia sin goce: sigue en nómina pero
     // no cobra sueldo ni genera cargas, así que su aporte del período es $0.
+    const isAffiliated = Boolean(emp.isAffiliate ?? emp.is_affiliate);
     const onJobReserve = Boolean(emp.jobReserveSince);
     if (onJobReserve) {
       return {
@@ -224,7 +225,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         promoted,
         isCustomSalary: false,
         isCustomNoRem: false,
-        onJobReserve
+        onJobReserve,
+        isAffiliated
       };
     }
 
@@ -239,9 +241,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       noRem = Number(emp.customNoRem);
     }
 
-    // En ATFAR lo único que se calcula es el 2% sobre lo remunerativo y el 2% sobre lo no remunerativo (sea afiliado o no).
-    // No se cobra mutual en esta liquidación.
-    const unionAporte = (grossSalary + noRem) * 0.02;
+    // Cuota sindical (Art. 50 inc. a CCT 659/13 y Ley 23.551 Art. 38):
+    // La retención del 2% (sobre conceptos remunerativos y no remunerativos) aplica exclusivamente
+    // a los trabajadores AFILIADOS a ATFAR. Los empleados NO afiliados tienen aporte $0
+    // (la farmacia no les retiene cuota sindical en el recibo de haberes).
+    const unionAporte = isAffiliated ? (grossSalary + noRem) * 0.02 : 0;
     const mutualAporte = 0;
     const totalAporte = unionAporte;
 
@@ -259,7 +263,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       promoted,
       isCustomSalary,
       isCustomNoRem,
-      onJobReserve
+      onJobReserve,
+      isAffiliated
     };
   };
 
@@ -338,6 +343,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
             category: calc.categoryName,
             pharmacistLicense: calc.categoryName === 'Farmacéutico' ? employee.pharmacistLicense || null : null,
             promoted: calc.promoted,
+            isAffiliate: calc.isAffiliated,
             seniorityYears: calc.years,
             seniorityPct: calc.seniorityPct,
             isCustomSalary: calc.isCustomSalary,
@@ -624,10 +630,20 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
-                                <span className="text-[9px] text-slate-400 block font-sans">2% (Rem + No Rem)</span>
+                                {calc.onJobReserve ? (
+                                  <span className="text-[9px] text-sky-600 block font-sans">Sin goce (0%)</span>
+                                ) : calc.isAffiliated ? (
+                                  <span className="text-[9px] text-slate-500 block font-sans">2% (Rem + No Rem)</span>
+                                ) : (
+                                  <span className="text-[9px] text-slate-400 block font-sans italic">No afiliado (0%)</span>
+                                )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-extrabold text-primary">
-                                ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                {calc.totalAporte > 0 ? (
+                                  `$${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                                ) : (
+                                  <span className="text-slate-400 font-normal">$0,00</span>
+                                )}
                               </td>
                             </tr>
                           ))}

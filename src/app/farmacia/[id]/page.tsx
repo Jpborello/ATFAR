@@ -50,17 +50,17 @@ interface Employee {
 
 function PharmacistLicenseField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="p-3.5 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-1.5">
-      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">N° de Matrícula Profesional *</label>
+    <div className="p-4 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-2">
+      <label className="text-sm font-bold text-slate-800 block">N° de Matrícula Profesional *</label>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Ej: 4521"
-        className="w-full rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[#0f172a]"
+        className="w-full rounded-xl border border-border px-4 py-2.5 bg-white text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[#0f172a]"
         required
       />
-      <span className="text-[10px] text-slate-500 font-medium block leading-snug">
+      <span className="text-xs text-slate-600 font-medium block leading-snug">
         La categoría Farmacéutico exige título universitario y matrícula habilitante (la controlan las auditorías de farmacia). No se asigna por antigüedad.
       </span>
     </div>
@@ -1365,248 +1365,261 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
       {/* Add Employee Modal */}
       {isEmployeeModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-premium-lg relative animate-scaleIn">
-            <button
-              onClick={() => setIsEmployeeModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl max-w-xl w-full shadow-premium-lg relative animate-scaleIn flex flex-col max-h-[92vh] my-auto">
+            {/* Sticky Header */}
+            <div className="p-5 sm:p-6 pb-4 border-b border-border/80 flex items-center justify-between flex-shrink-0">
+              <h3 className="text-xl font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2.5">
+                <Briefcase className="w-6 h-6 text-primary flex-shrink-0" />
+                <span>Registrar Empleado en Nómina</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsEmployeeModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Cerrar ventana"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-            <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight mb-6 flex items-center gap-2">
-              <Briefcase className="w-5.5 h-5.5 text-primary" />
-              <span>Registrar Empleado en Nómina</span>
-            </h3>
-
-            <form onSubmit={handleAddEmployee} className="space-y-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre y Apellido</label>
-                <input 
-                  type="text" 
-                  value={newEmpName} 
-                  onChange={(e) => setNewEmpName(e.target.value)} 
-                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                  placeholder="Ej: Juan Pérez"
-                  required
-                />
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleAddEmployee} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">CUIL del Empleado</label>
+                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Nombre y Apellido *</label>
                   <input 
                     type="text" 
-                    value={newEmpCuil} 
-                    onChange={(e) => setNewEmpCuil(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                    placeholder="20-XXXXXXXX-X"
+                    value={newEmpName} 
+                    onChange={(e) => setNewEmpName(e.target.value)} 
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                    placeholder="Ej: Juan Pérez"
                     required
                   />
                 </div>
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Fecha de Ingreso</label>
-                  <input 
-                    type="date" 
-                    value={newEmpEntryDate} 
-                    onChange={(e) => setNewEmpEntryDate(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                    required
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Categoría Profesional CCT</label>
-                <select
-                  value={newEmpCategory}
-                  onChange={(e) => setNewEmpCategory(e.target.value)}
-                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                >
-                  {cctCategories.map((cat, idx) => (
-                    <option key={idx} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
-
-              {newEmpCategory === PHARMACIST_CATEGORY && (
-                <PharmacistLicenseField value={newEmpPharmacistLicense} onChange={setNewEmpPharmacistLicense} />
-              )}
-
-              <div className="flex items-start gap-2.5 p-3.5 bg-secondary/5 border border-secondary/20 rounded-2xl">
-                <Sparkles className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />
-                <p className="text-[11px] text-slate-700 leading-relaxed font-semibold">
-                  <span className="font-black text-secondary">Promoción automática por antigüedad:</span> por convenio, cada 5 años el
-                  sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá. Nunca asciende a
-                  Farmacéutico: esa categoría depende del título y la matrícula profesional, y se carga a mano con el número de matrícula.
-                  <span className="block mt-1 text-slate-500 font-medium">
-                    Ej: ingresó en 2021 como <strong className="text-slate-700">Cadetes</strong> → hoy el sistema ya lo liquida como{' '}
-                    <strong className="text-slate-700">Aprendiz Ayudante</strong> en las declaraciones, sin que tengas que cambiarle la categoría vos.
-                  </span>
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
-                <input
-                  type="checkbox"
-                  id="new-emp-affiliate"
-                  checked={newEmpIsAffiliate}
-                  onChange={(e) => setNewEmpIsAffiliate(e.target.checked)}
-                  className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
-                />
-                <label htmlFor="new-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                  Afiliado Sindical (Afiliado a ATFAR)
-                </label>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Horas Semanales Declaradas</label>
-                  <span className="text-xs font-extrabold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">{newEmpWeeklyHours} hs</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="44" 
-                  value={newEmpWeeklyHours} 
-                  onChange={(e) => setNewEmpWeeklyHours(parseInt(e.target.value))} 
-                  className="w-full accent-primary h-2 bg-slate-200 rounded-lg cursor-pointer"
-                />
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">Rango: 1 hs (mínimo) a 44 hs (jornada completa)</span>
-              </div>
-
-              {/* Régimen de Sueldo (Automático vs Manual para casos extraordinarios) */}
-              <div className="border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-primary" />
-                    <span>Régimen de Sueldo para Aportes</span>
-                  </label>
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    newEmpSalaryType === 'manual' 
-                      ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
-                      : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
-                  }`}>
-                    {newEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setNewEmpSalaryType('automatico');
-                      setNewEmpCustomSalary('');
-                    }}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                      newEmpSalaryType === 'automatico'
-                        ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
-                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="font-extrabold flex items-center gap-1">
-                      ✓ Automático por Convenio
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setNewEmpSalaryType('manual')}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                      newEmpSalaryType === 'manual'
-                        ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
-                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="font-extrabold flex items-center gap-1">
-                      ✏️ Sueldo Personalizado
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Para casos extraordinarios (jornada reducida, licencias, acuerdos).
-                    </span>
-                  </button>
-                </div>
-
-                {newEmpSalaryType === 'manual' && (
-                  <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
-                          Conceptos Remunerativos ($ ARS) *
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                          <input
-                            type="number"
-                            min="1"
-                            step="0.01"
-                            value={newEmpCustomSalary}
-                            onChange={(e) => setNewEmpCustomSalary(e.target.value)}
-                            placeholder="Ej: 1450000.00"
-                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                            required={newEmpSalaryType === 'manual'}
-                          />
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
-                          Conceptos No Remunerativos ($ ARS)
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={newEmpCustomNoRem}
-                            onChange={(e) => setNewEmpCustomNoRem(e.target.value)}
-                            placeholder="Ej: 0.00"
-                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          />
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
-                      </div>
-                    </div>
-
-                    <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
-                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
-                    </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-slate-800 block mb-1.5">CUIL del Empleado *</label>
+                    <input 
+                      type="text" 
+                      value={newEmpCuil} 
+                      onChange={(e) => setNewEmpCuil(e.target.value)} 
+                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                      placeholder="27-XXXXXXXX-X o sin guiones"
+                      required
+                    />
                   </div>
+                  <div>
+                    <label className="text-sm font-bold text-slate-800 block mb-1.5">Fecha de Ingreso *</label>
+                    <input 
+                      type="date" 
+                      value={newEmpEntryDate} 
+                      onChange={(e) => setNewEmpEntryDate(e.target.value)} 
+                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Categoría Profesional CCT *</label>
+                  <select
+                    value={newEmpCategory}
+                    onChange={(e) => setNewEmpCategory(e.target.value)}
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                  >
+                    {cctCategories.map((cat, idx) => (
+                      <option key={idx} value={cat}>{cat}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {newEmpCategory === PHARMACIST_CATEGORY && (
+                  <PharmacistLicenseField value={newEmpPharmacistLicense} onChange={setNewEmpPharmacistLicense} />
                 )}
+
+                <div className="flex items-start gap-3 p-4 bg-secondary/5 border border-secondary/20 rounded-2xl">
+                  <Sparkles className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
+                  <p className="text-xs text-slate-700 leading-relaxed font-semibold">
+                    <span className="font-black text-secondary">Promoción automática por antigüedad:</span> por convenio, cada 5 años el
+                    sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá. Nunca asciende a
+                    Farmacéutico: esa categoría depende del título y la matrícula profesional, y se carga a mano con el número de matrícula.
+                    <span className="block mt-1 text-slate-500 font-medium">
+                      Ej: ingresó en 2021 como <strong className="text-slate-700">Cadetes</strong> → hoy el sistema ya lo liquida como{' '}
+                      <strong className="text-slate-700">Aprendiz Ayudante</strong> en las declaraciones.
+                    </span>
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-border/80">
+                  <input
+                    type="checkbox"
+                    id="new-emp-affiliate"
+                    checked={newEmpIsAffiliate}
+                    onChange={(e) => setNewEmpIsAffiliate(e.target.checked)}
+                    className="w-5 h-5 accent-primary cursor-pointer rounded"
+                  />
+                  <label htmlFor="new-emp-affiliate" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
+                    Afiliado Sindical (Afiliado a ATFAR)
+                  </label>
+                </div>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-sm font-bold text-slate-800">Horas Semanales Declaradas</label>
+                    <span className="text-sm font-extrabold text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/10">{newEmpWeeklyHours} hs</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="44" 
+                    value={newEmpWeeklyHours} 
+                    onChange={(e) => setNewEmpWeeklyHours(parseInt(e.target.value))} 
+                    className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
+                  />
+                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs (mínimo) a 44 hs (jornada completa)</span>
+                </div>
+
+                {/* Régimen de Sueldo */}
+                <div className="border border-border/90 rounded-2xl p-4 sm:p-5 bg-slate-50/80 space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <DollarSign className="w-4 h-4 text-primary" />
+                      <span>Régimen de Sueldo para Aportes</span>
+                    </label>
+                    <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${
+                      newEmpSalaryType === 'manual' 
+                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
+                        : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                    }`}>
+                      {newEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setNewEmpSalaryType('automatico');
+                        setNewEmpCustomSalary('');
+                      }}
+                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                        newEmpSalaryType === 'automatico'
+                          ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
+                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="font-extrabold text-sm flex items-center gap-1">
+                        ✓ Automático por Convenio
+                      </span>
+                      <span className="text-xs text-slate-500 font-normal leading-tight">
+                        Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setNewEmpSalaryType('manual')}
+                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                        newEmpSalaryType === 'manual'
+                          ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
+                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="font-extrabold text-sm flex items-center gap-1">
+                        ✏️ Sueldo Personalizado
+                      </span>
+                      <span className="text-xs text-slate-500 font-normal leading-tight">
+                        Para casos extraordinarios (jornada reducida, licencias, acuerdos).
+                      </span>
+                    </button>
+                  </div>
+
+                  {newEmpSalaryType === 'manual' && (
+                    <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Conceptos Remunerativos ($ ARS) *
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                            <input
+                              type="number"
+                              min="1"
+                              step="0.01"
+                              value={newEmpCustomSalary}
+                              onChange={(e) => setNewEmpCustomSalary(e.target.value)}
+                              placeholder="Ej: 1450000.00"
+                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                              required={newEmpSalaryType === 'manual'}
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Conceptos No Remunerativos ($ ARS)
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={newEmpCustomNoRem}
+                              onChange={(e) => setNewEmpCustomNoRem(e.target.value)}
+                              placeholder="Ej: 0.00"
+                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-amber-800 font-semibold bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed">
+                        <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="p-4 bg-slate-50 border border-border/80 rounded-2xl space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-bold text-slate-800">
+                      Recibo de Sueldo (PDF o Imagen)
+                    </label>
+                    <span className="text-[11px] font-bold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-md">
+                      Opcional en el alta inicial
+                    </span>
+                  </div>
+                  <input 
+                    type="file"
+                    accept=".pdf,image/*"
+                    onChange={(e) => setNewEmpReceiptFile(e.target.files?.[0] || null)}
+                    className="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary/15 file:text-secondary hover:file:bg-secondary/20 cursor-pointer"
+                  />
+                  <span className="text-xs text-slate-500 font-medium block">
+                    Podés registrar al empleado ahora y adjuntar el recibo más adelante cuando se emita el primer recibo de sueldo.
+                  </span>
+                </div>
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
-                  Recibo de Sueldo (PDF / Imagen) *
-                </label>
-                <input 
-                  type="file"
-                  accept=".pdf,image/*"
-                  onChange={(e) => setNewEmpReceiptFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary/15 file:text-secondary hover:file:bg-secondary/20 cursor-pointer"
-                />
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1 block">
-                  Requerido al dar de alta y con renovación obligatoria cada 6 meses.
-                </span>
-              </div>
-
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+              {/* Sticky Footer */}
+              <div className="p-4 sm:p-5 border-t border-border bg-slate-50/80 rounded-b-3xl flex items-center justify-end gap-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEmployeeModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
+                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-sm font-bold hover:bg-slate-100 transition-all cursor-pointer bg-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={uploadingReceipt}
-                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50"
+                  className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {uploadingReceipt ? 'Guardando...' : 'Registrar Empleado'}
                 </button>
@@ -1618,252 +1631,262 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
       {/* Edit Employee Modal */}
       {isEditEmployeeModalOpen && editingEmployee && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-lg w-full shadow-premium-lg relative animate-scaleIn">
-            <button
-              onClick={() => setIsEditEmployeeModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight mb-1 flex items-center gap-2">
-              <Pencil className="w-5.5 h-5.5 text-primary" />
-              <span>Editar Empleado y Régimen de Sueldo</span>
-            </h3>
-            <p className="text-xs text-muted-foreground mb-6">
-              Ajustá los datos laborales o fijá un sueldo bruto personalizado para casos extraordinarios.
-            </p>
-
-            <form onSubmit={handleSaveEditEmployee} className="space-y-4">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl max-w-xl w-full shadow-premium-lg relative animate-scaleIn flex flex-col max-h-[92vh] my-auto">
+            {/* Sticky Header */}
+            <div className="p-5 sm:p-6 pb-4 border-b border-border/80 flex items-center justify-between flex-shrink-0">
               <div>
-                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre y Apellido</label>
-                <input 
-                  type="text" 
-                  value={editEmpName} 
-                  onChange={(e) => setEditEmpName(e.target.value)} 
-                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                  required
-                />
+                <h3 className="text-xl font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2.5">
+                  <Pencil className="w-5.5 h-5.5 text-primary flex-shrink-0" />
+                  <span>Editar Empleado y Régimen de Sueldo</span>
+                </h3>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Ajustá los datos laborales o fijá un sueldo bruto personalizado para casos extraordinarios.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={() => setIsEditEmployeeModalOpen(false)}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Cerrar ventana"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <form onSubmit={handleSaveEditEmployee} className="flex flex-col flex-1 overflow-hidden">
+              {/* Scrollable Form Body */}
+              <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">CUIL</label>
+                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Nombre y Apellido *</label>
                   <input 
                     type="text" 
-                    value={editEmpCuil} 
-                    onChange={(e) => setEditEmpCuil(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                    value={editEmpName} 
+                    onChange={(e) => setEditEmpName(e.target.value)} 
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
                     required
                   />
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-bold text-slate-800 block mb-1.5">CUIL *</label>
+                    <input 
+                      type="text" 
+                      value={editEmpCuil} 
+                      onChange={(e) => setEditEmpCuil(e.target.value)} 
+                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-bold text-slate-800 block mb-1.5">Fecha de Ingreso *</label>
+                    <input 
+                      type="date" 
+                      value={editEmpEntryDate} 
+                      onChange={(e) => setEditEmpEntryDate(e.target.value)} 
+                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                      required
+                    />
+                  </div>
+                </div>
+
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Fecha de Ingreso</label>
-                  <input 
-                    type="date" 
-                    value={editEmpEntryDate} 
-                    onChange={(e) => setEditEmpEntryDate(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                    required
-                  />
+                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Categoría Profesional CCT *</label>
+                  <select
+                    value={editEmpCategory}
+                    onChange={(e) => setEditEmpCategory(e.target.value)}
+                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                  >
+                    {cctCategories.map((cat, idx) => (
+                      <option key={idx} value={cat}>{cat}</option>
+                    ))}
+                  </select>
                 </div>
-              </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Categoría Profesional CCT</label>
-                <select
-                  value={editEmpCategory}
-                  onChange={(e) => setEditEmpCategory(e.target.value)}
-                  className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                >
-                  {cctCategories.map((cat, idx) => (
-                    <option key={idx} value={cat}>{cat}</option>
-                  ))}
-                </select>
-              </div>
+                {editEmpCategory === PHARMACIST_CATEGORY && (
+                  <PharmacistLicenseField value={editEmpPharmacistLicense} onChange={setEditEmpPharmacistLicense} />
+                )}
 
-              {editEmpCategory === PHARMACIST_CATEGORY && (
-                <PharmacistLicenseField value={editEmpPharmacistLicense} onChange={setEditEmpPharmacistLicense} />
-              )}
-
-              <div className="flex items-center gap-3 p-3.5 bg-slate-50 rounded-2xl border border-border/80">
-                <input
-                  type="checkbox"
-                  id="edit-emp-affiliate"
-                  checked={editEmpIsAffiliate}
-                  onChange={(e) => setEditEmpIsAffiliate(e.target.checked)}
-                  className="w-4.5 h-4.5 accent-primary cursor-pointer rounded"
-                />
-                <label htmlFor="edit-emp-affiliate" className="text-xs font-bold text-slate-700 cursor-pointer select-none">
-                  Afiliado Sindical (Afiliado a ATFAR)
-                </label>
-              </div>
-
-              <div>
-                <div className="flex justify-between items-center mb-1">
-                  <label className="text-xs font-bold text-slate-700 uppercase tracking-wider">Horas Semanales</label>
-                  <span className="text-xs font-extrabold text-primary bg-primary/5 px-2 py-0.5 rounded border border-primary/10">{editEmpWeeklyHours} hs</span>
-                </div>
-                <input 
-                  type="range" 
-                  min="1" 
-                  max="44" 
-                  value={editEmpWeeklyHours} 
-                  onChange={(e) => setEditEmpWeeklyHours(parseInt(e.target.value))} 
-                  className="w-full accent-primary h-2 bg-slate-200 rounded-lg cursor-pointer"
-                />
-              </div>
-
-              {/* Reserva de puesto (art. 211 LCT) / licencia sin goce */}
-              <div className="border border-sky-500/25 rounded-2xl p-4 bg-sky-500/5 space-y-3">
-                <div className="flex items-start gap-3">
+                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-border/80">
                   <input
                     type="checkbox"
-                    id="edit-emp-job-reserve"
-                    checked={editEmpOnJobReserve}
-                    onChange={(e) => setEditEmpOnJobReserve(e.target.checked)}
-                    className="w-4.5 h-4.5 accent-sky-600 cursor-pointer rounded mt-0.5"
+                    id="edit-emp-affiliate"
+                    checked={editEmpIsAffiliate}
+                    onChange={(e) => setEditEmpIsAffiliate(e.target.checked)}
+                    className="w-5 h-5 accent-primary cursor-pointer rounded"
                   />
-                  <label htmlFor="edit-emp-job-reserve" className="cursor-pointer select-none space-y-0.5">
-                    <span className="text-xs font-bold text-slate-800 block">Reserva de puesto / licencia sin goce de sueldo</span>
-                    <span className="text-[10px] text-slate-500 font-medium block leading-snug">
-                      Ej.: licencia por enfermedad que superó los meses pagos (art. 211 LCT). Sigue en nómina, pero no cobra sueldo: el aporte del período es $0 y no se le pide recibo.
-                    </span>
+                  <label htmlFor="edit-emp-affiliate" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
+                    Afiliado Sindical (Afiliado a ATFAR)
                   </label>
                 </div>
-                {editEmpOnJobReserve && (
-                  <div className="pl-7 animate-fadeIn">
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">En reserva desde</label>
+
+                <div>
+                  <div className="flex justify-between items-center mb-1.5">
+                    <label className="text-sm font-bold text-slate-800">Horas Semanales</label>
+                    <span className="text-sm font-extrabold text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/10">{editEmpWeeklyHours} hs</span>
+                  </div>
+                  <input 
+                    type="range" 
+                    min="1" 
+                    max="44" 
+                    value={editEmpWeeklyHours} 
+                    onChange={(e) => setEditEmpWeeklyHours(parseInt(e.target.value))} 
+                    className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
+                  />
+                </div>
+
+                {/* Reserva de puesto (art. 211 LCT) / licencia sin goce */}
+                <div className="border border-sky-500/25 rounded-2xl p-4 sm:p-5 bg-sky-500/5 space-y-3">
+                  <div className="flex items-start gap-3">
                     <input
-                      type="date"
-                      value={editEmpJobReserveSince}
-                      onChange={(e) => setEditEmpJobReserveSince(e.target.value)}
-                      className="w-full sm:w-56 rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500/20 text-[#0f172a]"
-                      required={editEmpOnJobReserve}
+                      type="checkbox"
+                      id="edit-emp-job-reserve"
+                      checked={editEmpOnJobReserve}
+                      onChange={(e) => setEditEmpOnJobReserve(e.target.checked)}
+                      className="w-5 h-5 accent-sky-600 cursor-pointer rounded mt-0.5"
                     />
-                    <span className="text-[10px] text-slate-500 font-medium block mt-1">Cuando vuelva a trabajar, destildá esta opción.</span>
+                    <label htmlFor="edit-emp-job-reserve" className="cursor-pointer select-none space-y-0.5">
+                      <span className="text-sm font-bold text-slate-800 block">Reserva de puesto / licencia sin goce de sueldo</span>
+                      <span className="text-xs text-slate-600 font-medium block leading-snug">
+                        Ej.: licencia por enfermedad que superó los meses pagos (art. 211 LCT). Sigue en nómina, pero no cobra sueldo: el aporte del período es $0 y no se le pide recibo.
+                      </span>
+                    </label>
                   </div>
-                )}
-              </div>
-
-              {/* Régimen de Sueldo (Automático vs Manual) */}
-              <div className={`border border-border/90 rounded-2xl p-4 bg-slate-50/80 space-y-3 ${editEmpOnJobReserve ? 'opacity-50' : ''}`}>
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-primary" />
-                    <span>Régimen de Sueldo para Aportes</span>
-                  </label>
-                  <span className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-full ${
-                    editEmpSalaryType === 'manual'
-                      ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
-                      : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
-                  }`}>
-                    {editEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setEditEmpSalaryType('automatico');
-                      setEditEmpCustomSalary('');
-                    }}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                      editEmpSalaryType === 'automatico'
-                        ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
-                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="font-extrabold flex items-center gap-1">
-                      ✓ Automático por Convenio
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
-                    </span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setEditEmpSalaryType('manual')}
-                    className={`p-3 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                      editEmpSalaryType === 'manual'
-                        ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
-                        : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                    }`}
-                  >
-                    <span className="font-extrabold flex items-center gap-1">
-                      ✏️ Sueldo Personalizado
-                    </span>
-                    <span className="text-[10px] text-slate-500 font-normal leading-tight">
-                      Para casos extraordinarios (jornada reducida, licencias, acuerdos).
-                    </span>
-                  </button>
-                </div>
-
-                {editEmpSalaryType === 'manual' && (
-                  <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
-                          Conceptos Remunerativos ($ ARS) *
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                          <input
-                            type="number"
-                            min="1"
-                            step="0.01"
-                            value={editEmpCustomSalary}
-                            onChange={(e) => setEditEmpCustomSalary(e.target.value)}
-                            placeholder="Ej: 1450000.00"
-                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                            required={editEmpSalaryType === 'manual'}
-                          />
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
-                      </div>
-
-                      <div>
-                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">
-                          Conceptos No Remunerativos ($ ARS)
-                        </label>
-                        <div className="relative">
-                          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            value={editEmpCustomNoRem}
-                            onChange={(e) => setEditEmpCustomNoRem(e.target.value)}
-                            placeholder="Ej: 0.00"
-                            className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          />
-                        </div>
-                        <span className="text-[10px] text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
-                      </div>
+                  {editEmpOnJobReserve && (
+                    <div className="pl-8 animate-fadeIn pt-1">
+                      <label className="text-xs font-bold text-slate-700 block mb-1">En reserva desde</label>
+                      <input
+                        type="date"
+                        value={editEmpJobReserveSince}
+                        onChange={(e) => setEditEmpJobReserveSince(e.target.value)}
+                        className="w-full sm:w-56 rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500/20 text-[#0f172a]"
+                        required={editEmpOnJobReserve}
+                      />
+                      <span className="text-xs text-slate-500 font-medium block mt-1">Cuando vuelva a trabajar, destildá esta opción.</span>
                     </div>
+                  )}
+                </div>
 
-                    <p className="text-[10px] text-amber-800 font-semibold bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/20 leading-relaxed">
-                      <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
-                    </p>
+                {/* Régimen de Sueldo (Automático vs Manual) */}
+                <div className={`border border-border/90 rounded-2xl p-4 sm:p-5 bg-slate-50/80 space-y-3.5 ${editEmpOnJobReserve ? 'opacity-50' : ''}`}>
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
+                      <DollarSign className="w-4 h-4 text-primary" />
+                      <span>Régimen de Sueldo para Aportes</span>
+                    </label>
+                    <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${
+                      editEmpSalaryType === 'manual'
+                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
+                        : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
+                    }`}>
+                      {editEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
+                    </span>
                   </div>
-                )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditEmpSalaryType('automatico');
+                        setEditEmpCustomSalary('');
+                      }}
+                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                        editEmpSalaryType === 'automatico'
+                          ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
+                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="font-extrabold text-sm flex items-center gap-1">
+                        ✓ Automático por Convenio
+                      </span>
+                      <span className="text-xs text-slate-500 font-normal leading-tight">
+                        Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setEditEmpSalaryType('manual')}
+                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
+                        editEmpSalaryType === 'manual'
+                          ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
+                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
+                      }`}
+                    >
+                      <span className="font-extrabold text-sm flex items-center gap-1">
+                        ✏️ Sueldo Personalizado
+                      </span>
+                      <span className="text-xs text-slate-500 font-normal leading-tight">
+                        Para casos extraordinarios (jornada reducida, licencias, acuerdos).
+                      </span>
+                    </button>
+                  </div>
+
+                  {editEmpSalaryType === 'manual' && (
+                    <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Conceptos Remunerativos ($ ARS) *
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                            <input
+                              type="number"
+                              min="1"
+                              step="0.01"
+                              value={editEmpCustomSalary}
+                              onChange={(e) => setEditEmpCustomSalary(e.target.value)}
+                              placeholder="Ej: 1450000.00"
+                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                              required={editEmpSalaryType === 'manual'}
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
+                        </div>
+
+                        <div>
+                          <label className="text-xs font-bold text-slate-700 block mb-1">
+                            Conceptos No Remunerativos ($ ARS)
+                          </label>
+                          <div className="relative">
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="0.01"
+                              value={editEmpCustomNoRem}
+                              onChange={(e) => setEditEmpCustomNoRem(e.target.value)}
+                              placeholder="Ej: 0.00"
+                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
+                            />
+                          </div>
+                          <span className="text-xs text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-amber-800 font-semibold bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed">
+                        <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
 
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
+              {/* Sticky Footer */}
+              <div className="p-4 sm:p-5 border-t border-border bg-slate-50/80 rounded-b-3xl flex items-center justify-end gap-3 flex-shrink-0">
                 <button
                   type="button"
                   onClick={() => setIsEditEmployeeModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
+                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-sm font-bold hover:bg-slate-100 transition-all cursor-pointer bg-white"
                 >
                   Cancelar
                 </button>
                 <button
                   type="submit"
                   disabled={savingEditEmployee}
-                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+                  className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-2"
                 >
                   {savingEditEmployee ? (
                     <>
@@ -1882,8 +1905,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
       {/* Update Employee Salary Receipt Modal */}
       {isUpdateReceiptModalOpen && selectedEmpForReceipt && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-premium-lg relative animate-scaleIn space-y-6">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
+          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-premium-lg relative animate-scaleIn space-y-6 my-auto">
             <button
               onClick={() => {
                 setIsUpdateReceiptModalOpen(false);

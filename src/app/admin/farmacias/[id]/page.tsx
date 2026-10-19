@@ -919,6 +919,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                         <span className="text-sky-700 font-black uppercase text-[8px]">Reserva de puesto{e.jobReserveSince ? ` desde ${formatDateAR(e.jobReserveSince)}` : ''}</span>
                                       ) : e.isCustomSalary ? (
                                         <span className="text-amber-700 font-black uppercase text-[8px]">Sueldo manual</span>
+                                      ) : e.isAffiliate === false ? (
+                                        <span className="text-slate-500 font-semibold uppercase text-[8px] bg-slate-100 px-1 py-0.5 rounded border border-slate-200">No Afiliado (0%)</span>
                                       ) : null}
                                     </td>
                                     <td className="py-1.5 px-2.5 text-center text-muted-foreground">

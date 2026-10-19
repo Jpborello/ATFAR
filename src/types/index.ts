@@ -96,6 +96,7 @@ export interface DdjjDetail {
     category: string;
     pharmacistLicense?: string | null;
     promoted: boolean;
+    isAffiliate?: boolean;
     seniorityYears: number;
     seniorityPct: number;
     isCustomSalary: boolean;
