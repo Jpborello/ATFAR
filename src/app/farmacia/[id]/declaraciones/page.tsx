@@ -356,6 +356,15 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         };
         const ddjjObservations = observations.trim() || null;
 
+        // DDJJ sin nada que pagar (todos no afiliados o en reserva de puesto): se
+        // registra igual como presentada, pero la boleta nace saldada. Si quedara
+        // "impago", el cálculo de deuda marcaría a la farmacia "Con deuda" por $0.
+        const nothingToPay = totalAmount <= 0;
+        const todayStr = new Date().toISOString().split('T')[0];
+        const paymentStatusFields = nothingToPay
+          ? { status: 'pagado', pay_date: todayStr }
+          : { status: 'impago' };
+
         // Chequear si ya existe una boleta para este período
         const { data: existingPayment } = await supabase
           .from('payments')
@@ -379,7 +388,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               due_date: dueDate,
               invoice_number: generatedInvoiceNum,
               ddjj_detail: ddjjDetail,
-              ddjj_observations: ddjjObservations
+              ddjj_observations: ddjjObservations,
+              ...paymentStatusFields
             })
             .eq('id', existingPayment.id);
 
@@ -392,10 +402,10 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               invoice_number: generatedInvoiceNum,
               period: period,
               amount: totalAmount,
-              status: 'impago',
               due_date: dueDate,
               ddjj_detail: ddjjDetail,
-              ddjj_observations: ddjjObservations
+              ddjj_observations: ddjjObservations,
+              ...paymentStatusFields
             });
 
           if (error) throw error;
@@ -489,18 +499,28 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
             </div>
             <div className="space-y-2">
               <h2 className="text-2xl font-bold text-foreground">¡Declaración Presentada e Importes Liquidados!</h2>
-              <p className="text-sm text-muted-foreground leading-relaxed font-medium">
-                La declaración jurada para el período **{period}** fue generada con éxito por un total de **${totalAmount.toLocaleString('es-AR')}** en concepto de aportes obligatorios. 
-                Se ha generado la boleta de pago correspondiente y ya podés verla y abonarla.
-              </p>
+              {totalAmount > 0 ? (
+                <p className="text-sm text-muted-foreground leading-relaxed font-medium">
+                  La declaración jurada para el período **{period}** fue generada con éxito por un total de **${totalAmount.toLocaleString('es-AR')}** en concepto de aportes obligatorios.
+                  Se ha generado la boleta de pago correspondiente y ya podés verla y abonarla.
+                </p>
+              ) : (
+                <p className="text-sm text-muted-foreground leading-relaxed font-medium">
+                  La declaración jurada para el período <strong>{period}</strong> quedó presentada. Como ningún empleado
+                  liquida cuota sindical este mes (no afiliados o en reserva de puesto), <strong>no hay nada que pagar</strong>:
+                  el período ya figura como saldado.
+                </p>
+              )}
             </div>
             <div className="flex flex-col sm:flex-row gap-3 justify-center items-center">
-              <Link
-                href={`/farmacia/${pharmacyId}/pagos`}
-                className="px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all text-xs uppercase tracking-wider shadow-premium"
-              >
-                Ir a Pagar Boleta
-              </Link>
+              {totalAmount > 0 && (
+                <Link
+                  href={`/farmacia/${pharmacyId}/pagos`}
+                  className="px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all text-xs uppercase tracking-wider shadow-premium"
+                >
+                  Ir a Pagar Boleta
+                </Link>
+              )}
               <button
                 onClick={() => setSuccess(false)}
                 className="px-6 py-2.5 rounded-xl border border-border bg-card font-bold hover:bg-muted/10 transition-all text-xs uppercase tracking-wider"
