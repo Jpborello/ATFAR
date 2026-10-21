@@ -48,6 +48,28 @@ interface Employee {
   jobReserveSince?: string | null;
 }
 
+function NotAffiliateField({ id, isAffiliate, onChange }: { id: string; isAffiliate: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <div className={`flex items-start gap-3 p-4 rounded-2xl border ${isAffiliate ? 'bg-slate-50 border-border/80' : 'bg-amber-50 border-amber-300'}`}>
+      <input
+        type="checkbox"
+        id={id}
+        checked={!isAffiliate}
+        onChange={(e) => onChange(!e.target.checked)}
+        className="w-5 h-5 accent-amber-600 cursor-pointer rounded mt-0.5"
+      />
+      <label htmlFor={id} className="cursor-pointer select-none space-y-0.5">
+        <span className="text-sm font-bold text-slate-800 block">NO es afiliado a ATFAR (exento del 2%)</span>
+        <span className="text-xs text-slate-500 font-medium block leading-snug">
+          {isAffiliate
+            ? 'Sin marcar: se lo considera afiliado y se liquida la cuota sindical del 2%.'
+            : 'Marcado: no se le retiene cuota sindical. Su aporte en la DDJJ es $0.'}
+        </span>
+      </label>
+    </div>
+  );
+}
+
 function PharmacistLicenseField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
     <div className="p-4 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-2">
@@ -121,7 +143,9 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [newEmpCategory, setNewEmpCategory] = useState('Personal en Gestión de Farmacia');
   const [newEmpEntryDate, setNewEmpEntryDate] = useState('');
   const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
-  const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(false);
+  // Por defecto todo empleado es afiliado (paga el 2%); la farmacia tiene que
+  // marcar a propósito "NO es afiliado" para que quede exento.
+  const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(true);
   const [newEmpSalaryType, setNewEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [newEmpCustomSalary, setNewEmpCustomSalary] = useState('');
   const [newEmpCustomNoRem, setNewEmpCustomNoRem] = useState('0');
@@ -479,7 +503,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setNewEmpCategory('Personal en Gestión de Farmacia');
       setNewEmpEntryDate('');
       setNewEmpWeeklyHours(44);
-      setNewEmpIsAffiliate(false);
+      setNewEmpIsAffiliate(true);
       setNewEmpSalaryType('automatico');
       setNewEmpCustomSalary('');
       setNewEmpCustomNoRem('0');
@@ -1452,18 +1476,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-border/80">
-                  <input
-                    type="checkbox"
-                    id="new-emp-affiliate"
-                    checked={newEmpIsAffiliate}
-                    onChange={(e) => setNewEmpIsAffiliate(e.target.checked)}
-                    className="w-5 h-5 accent-primary cursor-pointer rounded"
-                  />
-                  <label htmlFor="new-emp-affiliate" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
-                    Afiliado Sindical (Afiliado a ATFAR)
-                  </label>
-                </div>
+                <NotAffiliateField id="new-emp-not-affiliate" isAffiliate={newEmpIsAffiliate} onChange={setNewEmpIsAffiliate} />
 
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
@@ -1708,18 +1721,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   <PharmacistLicenseField value={editEmpPharmacistLicense} onChange={setEditEmpPharmacistLicense} />
                 )}
 
-                <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-border/80">
-                  <input
-                    type="checkbox"
-                    id="edit-emp-affiliate"
-                    checked={editEmpIsAffiliate}
-                    onChange={(e) => setEditEmpIsAffiliate(e.target.checked)}
-                    className="w-5 h-5 accent-primary cursor-pointer rounded"
-                  />
-                  <label htmlFor="edit-emp-affiliate" className="text-sm font-bold text-slate-800 cursor-pointer select-none">
-                    Afiliado Sindical (Afiliado a ATFAR)
-                  </label>
-                </div>
+                <NotAffiliateField id="edit-emp-not-affiliate" isAffiliate={editEmpIsAffiliate} onChange={setEditEmpIsAffiliate} />
 
                 <div>
                   <div className="flex justify-between items-center mb-1.5">

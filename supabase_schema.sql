@@ -447,7 +447,9 @@ CREATE POLICY "Admins can do everything on scales docs" ON public.salary_scales_
     );
 
 -- 9. Migration: Calculation based on affiliation
-ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAULT false NOT NULL;
+ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS is_affiliate BOOLEAN DEFAULT true NOT NULL;
+-- (2026-10-21) Por defecto afiliado: la farmacia marca "NO es afiliado" para quedar exenta del 2%.
+ALTER TABLE public.employees ALTER COLUMN is_affiliate SET DEFAULT true;
 
 -- 10. Migration: Sueldo personalizado / override para casos extraordinarios (jornada reducida, licencias, etc.)
 ALTER TABLE public.employees ADD COLUMN IF NOT EXISTS custom_salary NUMERIC DEFAULT NULL;
