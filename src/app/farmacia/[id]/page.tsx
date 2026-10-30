@@ -48,6 +48,23 @@ interface Employee {
   jobReserveSince?: string | null;
 }
 
+const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+/** De una lista de períodos "Mes AAAA" devuelve el más reciente (o null si no hay ninguno). */
+function getLatestPeriod(periods: (string | null | undefined)[]): string | null {
+  let best: { label: string; order: number } | null = null;
+  for (const label of periods) {
+    if (!label) continue;
+    const [name, yearStr] = label.trim().split(' ');
+    const month = MONTHS_ES.indexOf(name);
+    const year = parseInt(yearStr, 10);
+    if (month === -1 || isNaN(year)) continue;
+    const order = year * 12 + month;
+    if (!best || order > best.order) best = { label, order };
+  }
+  return best ? best.label : null;
+}
+
 function NotAffiliateField({ id, isAffiliate, onChange }: { id: string; isAffiliate: boolean; onChange: (v: boolean) => void }) {
   return (
     <div className={`flex items-start gap-3 p-4 rounded-2xl border ${isAffiliate ? 'bg-slate-50 border-border/80' : 'bg-amber-50 border-amber-300'}`}>
@@ -97,6 +114,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [pharmacyCuit, setPharmacyCuit] = useState('...');
   const [pharmacyAddress, setPharmacyAddress] = useState('...');
   const [debtStatus, setDebtStatus] = useState<{ status: PharmacyDebtStatus; label: string }>({ status: 'al_dia', label: 'Al Día' });
+  const [lastDeclaredPeriod, setLastDeclaredPeriod] = useState<string | null>(null);
   
   // Tutorial states
   const [showTutorial, setShowTutorial] = useState(false);
@@ -252,10 +270,11 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           try {
             const { data: payments } = await supabase
               .from('payments')
-              .select('status, due_date')
+              .select('status, due_date, period')
               .eq('pharmacy_id', pharmacy.id);
 
             setDebtStatus(getPharmacyDebtStatus(pharmacy, payments || []));
+            setLastDeclaredPeriod(getLatestPeriod((payments || []).map((p) => p.period)));
           } catch (syncErr) {
             console.error("Error calculando estado de deuda:", syncErr);
             setDebtStatus(getPharmacyDebtStatus(pharmacy, []));
@@ -872,7 +891,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             <div className="space-y-3 text-xs font-bold text-slate-500">
               <div className="flex justify-between">
                 <span>Último Período Declarado:</span>
-                <span className="text-[#0f172a]">Junio 2026</span>
+                <span className="text-[#0f172a]">{lastDeclaredPeriod || 'Ninguno todavía'}</span>
               </div>
               <div className="flex justify-between">
                 <span>Personal en Nómina:</span>
@@ -919,9 +938,6 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                   <Plus className="w-4 h-4 mr-1" />
                   <span>Agregar Empleado</span>
                 </button>
-                <span className="text-[10px] bg-secondary/15 text-secondary font-black px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
-                  Junio 2026
-                </span>
               </div>
             </div>
 
@@ -1615,7 +1631,9 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                     className="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary/15 file:text-secondary hover:file:bg-secondary/20 cursor-pointer"
                   />
                   <span className="text-xs text-slate-500 font-medium block">
-                    Podés registrar al empleado ahora y adjuntar el recibo más adelante cuando se emita el primer recibo de sueldo.
+                    Subí el <strong>último recibo de sueldo</strong> que tengas del empleado (el más reciente, no importa de qué mes).
+                    Vale por 6 meses desde que lo cargás: cuando se venza, el sistema te avisa para subir uno nuevo.
+                    Podés registrar al empleado ahora y adjuntar el recibo más adelante.
                   </span>
                 </div>
               </div>
