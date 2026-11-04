@@ -135,7 +135,16 @@ export default function Footer() {
           <p>© {currentYear} ATFAR Rosario. Todos los derechos reservados.</p>
           <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-3 normal-case font-semibold text-slate-500 text-right">
             <span>
-              Soporte técnico del portal — <span className="font-extrabold text-emerald-950">neo core sys</span>
+              Desarrollo de software y soporte técnico por{' '}
+              <a
+                href="https://www.neo-core-sys.com.ar/"
+                target="_blank"
+                rel="noopener"
+                title="Desarrollo de Software a Medida en Rosario"
+                className="font-extrabold text-emerald-950 hover:text-emerald-700 transition-colors underline decoration-emerald-300 hover:decoration-emerald-600"
+              >
+                Neo Core Sys · Software a Medida
+              </a>
             </span>
             <span className="hidden sm:inline text-emerald-300">|</span>
             <a href="mailto:neocoresystem@gmail.com" className="hover:text-emerald-700 transition-colors font-bold">
