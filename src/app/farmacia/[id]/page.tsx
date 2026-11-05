@@ -23,7 +23,8 @@ import {
   Sparkles,
   Pencil,
   DollarSign,
-  Info
+  Info,
+  ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -941,17 +942,36 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            {/* Aviso explicativo para contadores / farmacias */}
-            <div className="flex items-start gap-3 p-3.5 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-950 text-xs">
-              <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-              <div className="space-y-0.5 leading-relaxed">
-                <p className="font-bold">
-                  <span className="text-amber-800 uppercase tracking-wider text-[10px] font-black mr-1">Régimen Salarial:</span>
-                  Por defecto, los sueldos se calculan automáticamente con la escala CCT 659/13 vigente y la antigüedad acumulada.
-                </p>
-                <p className="text-[11px] text-amber-900/80 font-medium">
-                  Si un empleado tiene una situación extraordinaria (jornada reducida, adicionales especiales), hacé clic en el botón <strong className="text-amber-950">Editar (✏️)</strong> para fijar su sueldo bruto manual pactado. El sistema usará ese valor sin modificarlo. Si está con <strong className="text-amber-950">reserva de puesto</strong> o licencia sin goce de sueldo, marcalo desde el mismo botón: queda en nómina con aporte $0.
-                </p>
+            {/* Avisos explicativos para contadores / farmacias */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+              <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/25 rounded-2xl text-amber-950 text-xs shadow-2xs">
+                <Info className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1 leading-relaxed">
+                  <p className="font-bold">
+                    <span className="text-amber-800 uppercase tracking-wider text-[10px] font-black mr-1">Régimen Salarial:</span>
+                    Cálculo automático con escala CCT 659/13 y antigüedad acumulada.
+                  </p>
+                  <p className="text-[11px] text-amber-900/80 font-medium">
+                    Para situaciones extraordinarias (jornada reducida, adicionales pactados), hacé clic en el botón <strong className="text-amber-950">Editar (✏️)</strong> para fijar su sueldo bruto manual pactado. Si el empleado está con <strong className="text-amber-950">reserva de puesto</strong> o licencia sin goce de haberes, marcalo desde allí: queda en nómina con aporte $0.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/25 rounded-2xl text-blue-950 text-xs shadow-2xs">
+                <ShieldCheck className="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5" />
+                <div className="space-y-1.5 leading-relaxed">
+                  <p className="font-bold">
+                    <span className="text-blue-800 uppercase tracking-wider text-[10px] font-black mr-1">Criterio de Cuota Sindical (2%):</span>
+                  </p>
+                  <div className="space-y-1 text-[11px] text-blue-900/90 font-medium">
+                    <p>
+                      <strong className="text-emerald-800 font-bold">✓ Afiliado (Sí):</strong> Retención del <strong>2%</strong> sobre todo haber percibido (Remunerativo + No Remunerativo, Art. 50 inc. a CCT 659/13).
+                    </p>
+                    <p>
+                      <strong className="text-amber-800 font-bold">✗ No Afiliado (No):</strong> Retención <strong>$0</strong> en remunerativo. Devenga el <strong>2% exclusivamente sobre sumas No Remunerativas</strong> (Cláusula 5ª Acta Acuerdo Paritario).
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -962,7 +982,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                     <th className="py-3 px-4">Nombre y Apellido</th>
                     <th className="py-3 px-4">CUIL</th>
                     <th className="py-3 px-4">Categoría Profesional / Régimen</th>
-                    <th className="py-3 px-4 text-center">Afiliado</th>
+                    <th className="py-3 px-4 text-center">Afiliado (2%)</th>
                     <th className="py-3 px-4 text-center">Recibo Sueldo (6m)</th>
                     <th className="py-3 px-4 text-center">Ingreso</th>
                     <th className="py-3 px-4 text-center">Antigüedad</th>
@@ -1030,12 +1050,12 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                         </td>
                         <td className="py-3.5 px-4 text-center">
                           {emp.isAffiliate ? (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[9px] font-black uppercase border border-emerald-500/20">
-                              Sí
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-700 rounded text-[10px] font-black uppercase border border-emerald-500/25" title="Afiliado: cuota sindical del 2% sobre Remunerativo + No Remunerativo">
+                              Sí (2% Total)
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-slate-500/10 text-slate-500 rounded text-[9px] font-black uppercase border border-slate-500/10">
-                              No
+                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[10px] font-black uppercase border border-amber-500/30" title="No Afiliado: $0 en remunerativo; cuota del 2% sobre conceptos No Remunerativos">
+                              No (2% No Rem)
                             </span>
                           )}
                         </td>

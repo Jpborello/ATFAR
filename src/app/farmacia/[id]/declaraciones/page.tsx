@@ -3,7 +3,7 @@
 
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2 } from 'lucide-react';
+import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2, Info, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniorityYears, getSeniorityPercentage, isReceiptValid, getCurrentCategory, formatDateAR } from '@/lib/dateUtils';
@@ -598,6 +598,34 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                 </div>
               )}
 
+              {/* Cartel explicativo Cuota Sindical 2% (Afiliados vs No Afiliados) */}
+              <div className="p-4 bg-gradient-to-r from-blue-50/90 to-indigo-50/60 border border-blue-200/90 rounded-2xl text-xs space-y-2.5 shadow-2xs">
+                <div className="flex items-center gap-2 text-blue-950 font-bold">
+                  <ShieldCheck className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                  <span className="text-[11px] uppercase tracking-wider font-black">Criterio Legal de Aporte Sindical (2% CCT 659/13)</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+                  <div className="p-3 bg-white/95 rounded-xl border border-blue-100 shadow-2xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-emerald-700 text-xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                      <span>Empleado Afiliado (Sí):</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      Se liquida el <strong className="text-slate-900">2% sobre el haber total</strong> (<span className="font-medium text-slate-700">Base Remunerativa + Sumas No Remunerativas</span>), conforme al Art. 50 inc. a) del CCT 659/13.
+                    </p>
+                  </div>
+                  <div className="p-3 bg-white/95 rounded-xl border border-blue-100 shadow-2xs space-y-1">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-700 text-xs">
+                      <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                      <span>Empleado No Afiliado (No):</span>
+                    </div>
+                    <p className="text-[11px] text-slate-600 leading-snug">
+                      Retención de cuota sindical <strong className="text-slate-900">$0 sobre el haber remunerativo</strong>. Solo devenga el <strong className="text-slate-900">2% sobre las sumas No Remunerativas</strong> (Cláusula 5ª Acta Acuerdo Paritario).
+                    </p>
+                  </div>
+                </div>
+              </div>
+
               {/* Employees calculation breakdown */}
               <div className="space-y-2">
                 <h3 className="text-xs font-black text-slate-800 uppercase tracking-wider block">Liquidación Analítica de Aportes</h3>
@@ -612,7 +640,7 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                         <thead>
                           <tr className="border-b border-border bg-slate-50/75 text-[9px] font-bold text-muted-foreground uppercase">
                             <th className="py-2.5 px-3">Empleado / Categoría</th>
-                            <th className="py-2.5 px-3 text-center">Afiliado</th>
+                            <th className="py-2.5 px-3 text-center">Afiliado (2%)</th>
                             <th className="py-2.5 px-3 text-right">Base Remun.</th>
                             <th className="py-2.5 px-3 text-right">No Remun.</th>
                             <th className="py-2.5 px-3 text-right">Aporte Sindical (2%)</th>
@@ -648,12 +676,12 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                               </td>
                               <td className="py-2 px-3 text-center">
                                 {employee.isAffiliate ? (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-emerald-500/10 text-emerald-600 rounded text-[9px] font-black uppercase border border-emerald-500/20">
-                                    Sí
+                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 rounded text-[9px] font-black uppercase border border-emerald-500/25" title="Afiliado: cuota sindical del 2% sobre Remunerativo + No Remunerativo">
+                                    Sí (2% Total)
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-slate-500/10 text-slate-500 rounded text-[9px] font-black uppercase border border-slate-500/10">
-                                    No
+                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[9px] font-black uppercase border border-amber-500/30" title="No Afiliado: $0 en remunerativo; cuota del 2% sobre conceptos No Remunerativos">
+                                    No (2% No Rem)
                                   </span>
                                 )}
                               </td>
@@ -677,11 +705,21 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 {calc.onJobReserve ? (
                                   <span className="text-[9px] text-sky-600 block font-sans">Sin goce (0%)</span>
                                 ) : calc.isAffiliated ? (
-                                  <span className="text-[9px] text-slate-500 block font-sans">2% (Rem + No Rem)</span>
+                                  <div>
+                                    <span className="text-[10px] text-slate-700 font-bold block font-mono">
+                                      ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                    <span className="text-[8px] text-slate-400 block font-sans">2% (Rem + No Rem)</span>
+                                  </div>
                                 ) : (
-                                  <span className="text-[9px] text-amber-700 font-bold block font-sans" title="Aporte del 2% sobre sumas no remunerativas (Cláusula 5ª Acta Acuerdo)">
-                                    2% (Solo No Rem)
-                                  </span>
+                                  <div>
+                                    <span className="text-[10px] text-amber-800 font-bold block font-mono">
+                                      ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                    <span className="text-[8px] text-amber-700 font-bold block font-sans" title="Aporte del 2% sobre sumas no remunerativas (Cláusula 5ª Acta Acuerdo)">
+                                      2% (Solo No Rem)
+                                    </span>
+                                  </div>
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-extrabold text-primary">
