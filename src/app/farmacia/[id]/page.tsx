@@ -76,11 +76,11 @@ function NotAffiliateField({ id, isAffiliate, onChange }: { id: string; isAffili
         className="w-5 h-5 accent-amber-600 cursor-pointer rounded mt-0.5"
       />
       <label htmlFor={id} className="cursor-pointer select-none space-y-0.5">
-        <span className="text-sm font-bold text-slate-800 block">NO es afiliado a ATFAR (exento del 2%)</span>
+        <span className="text-sm font-bold text-slate-800 block">NO es afiliado a ATFAR</span>
         <span className="text-xs text-slate-500 font-medium block leading-snug">
           {isAffiliate
-            ? 'Sin marcar: se lo considera afiliado y se liquida la cuota sindical del 2%.'
-            : 'Marcado: no se le retiene cuota sindical. Su aporte en la DDJJ es $0.'}
+            ? 'Sin marcar: se lo considera afiliado y se liquida la cuota sindical del 2% (remunerativo + no remunerativo).'
+            : 'Marcado: no se le retiene cuota sindical sobre el sueldo remunerativo. Tributa el 2% sobre las sumas no remunerativas (Cláusula 5ª Acta Acuerdo).'}
         </span>
       </label>
     </div>
@@ -160,7 +160,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [newEmpCuil, setNewEmpCuil] = useState('');
   const [newEmpCategory, setNewEmpCategory] = useState('Personal en Gestión de Farmacia');
   const [newEmpEntryDate, setNewEmpEntryDate] = useState('');
-  const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(44);
+  const [newEmpWeeklyHours, setNewEmpWeeklyHours] = useState(45);
   // Por defecto todo empleado es afiliado (paga el 2%); la farmacia tiene que
   // marcar a propósito "NO es afiliado" para que quede exento.
   const [newEmpIsAffiliate, setNewEmpIsAffiliate] = useState(true);
@@ -176,7 +176,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [editEmpCuil, setEditEmpCuil] = useState('');
   const [editEmpCategory, setEditEmpCategory] = useState('Personal en Gestión de Farmacia');
   const [editEmpEntryDate, setEditEmpEntryDate] = useState('');
-  const [editEmpWeeklyHours, setEditEmpWeeklyHours] = useState(44);
+  const [editEmpWeeklyHours, setEditEmpWeeklyHours] = useState(45);
   const [editEmpIsAffiliate, setEditEmpIsAffiliate] = useState(false);
   const [editEmpSalaryType, setEditEmpSalaryType] = useState<'automatico' | 'manual'>('automatico');
   const [editEmpCustomSalary, setEditEmpCustomSalary] = useState('');
@@ -521,7 +521,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       setNewEmpCuil('');
       setNewEmpCategory('Personal en Gestión de Farmacia');
       setNewEmpEntryDate('');
-      setNewEmpWeeklyHours(44);
+      setNewEmpWeeklyHours(45);
       setNewEmpIsAffiliate(true);
       setNewEmpSalaryType('automatico');
       setNewEmpCustomSalary('');
@@ -543,7 +543,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     setEditEmpCuil(emp.cuil);
     setEditEmpCategory(emp.category);
     setEditEmpEntryDate(emp.entryDate);
-    setEditEmpWeeklyHours(emp.weeklyHours || 44);
+    setEditEmpWeeklyHours(emp.weeklyHours || 45);
     setEditEmpIsAffiliate(emp.isAffiliate);
     if (emp.customSalary && emp.customSalary > 0) {
       setEditEmpSalaryType('manual');
@@ -700,9 +700,9 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
   const handleDeleteEmployee = async (id: string) => {
     const confirmed = await confirmDialog({
-      title: 'Eliminar empleado',
-      message: '¿Seguro que deseas eliminar este empleado del registro de tu nómina?',
-      confirmLabel: 'Eliminar',
+      title: 'Dar de baja empleado',
+      message: '¿Seguro que deseas dar de baja a este empleado de la nómina activa? (Las declaraciones juradas presentadas en períodos anteriores se conservan intactas en tu historial).',
+      confirmLabel: 'Confirmar Baja',
       danger: true,
     });
     if (confirmed) {
@@ -1497,17 +1497,32 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-sm font-bold text-slate-800">Horas Semanales Declaradas</label>
-                    <span className="text-sm font-extrabold text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/10">{newEmpWeeklyHours} hs</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="number"
+                        min="1"
+                        max="45"
+                        step="0.5"
+                        value={newEmpWeeklyHours}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setNewEmpWeeklyHours(isNaN(val) ? 0 : Math.min(45, Math.max(0, val)));
+                        }}
+                        className="w-16 px-2 py-0.5 text-center font-extrabold text-primary bg-primary/5 rounded border border-primary/20 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <span className="text-xs font-bold text-slate-500">hs</span>
+                    </div>
                   </div>
                   <input 
                     type="range" 
                     min="1" 
-                    max="44" 
+                    max="45" 
+                    step="0.5"
                     value={newEmpWeeklyHours} 
-                    onChange={(e) => setNewEmpWeeklyHours(parseInt(e.target.value))} 
+                    onChange={(e) => setNewEmpWeeklyHours(parseFloat(e.target.value))} 
                     className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
                   />
-                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs (mínimo) a 44 hs (jornada completa)</span>
+                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs a 45 hs (jornada completa CCT 659/13). Media jornada: 22.5 hs.</span>
                 </div>
 
                 {/* Régimen de Sueldo */}
@@ -1744,16 +1759,32 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                 <div>
                   <div className="flex justify-between items-center mb-1.5">
                     <label className="text-sm font-bold text-slate-800">Horas Semanales</label>
-                    <span className="text-sm font-extrabold text-primary bg-primary/5 px-2.5 py-0.5 rounded border border-primary/10">{editEmpWeeklyHours} hs</span>
+                    <div className="flex items-center gap-1.5">
+                      <input 
+                        type="number"
+                        min="1"
+                        max="45"
+                        step="0.5"
+                        value={editEmpWeeklyHours}
+                        onChange={(e) => {
+                          const val = parseFloat(e.target.value);
+                          setEditEmpWeeklyHours(isNaN(val) ? 0 : Math.min(45, Math.max(0, val)));
+                        }}
+                        className="w-16 px-2 py-0.5 text-center font-extrabold text-primary bg-primary/5 rounded border border-primary/20 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                      />
+                      <span className="text-xs font-bold text-slate-500">hs</span>
+                    </div>
                   </div>
                   <input 
                     type="range" 
                     min="1" 
-                    max="44" 
+                    max="45" 
+                    step="0.5"
                     value={editEmpWeeklyHours} 
-                    onChange={(e) => setEditEmpWeeklyHours(parseInt(e.target.value))} 
+                    onChange={(e) => setEditEmpWeeklyHours(parseFloat(e.target.value))} 
                     className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
                   />
+                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs a 45 hs (jornada completa CCT 659/13). Media jornada: 22.5 hs.</span>
                 </div>
 
                 {/* Reserva de puesto (art. 211 LCT) / licencia sin goce */}

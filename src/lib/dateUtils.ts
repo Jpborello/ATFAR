@@ -76,28 +76,17 @@ export const PHARMACIST_CATEGORY = 'Farmacéutico';
 
 export function getCurrentCategory(
   registeredCategory: string,
-  entryDateStr: string | null | undefined
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _entryDateStr?: string | null | undefined
 ): { category: string; promoted: boolean; steps: number } {
-  const years = calculateSeniorityYears(entryDateStr);
-  const steps = Math.floor(years / 5);
-
-  const baseIndex = cctCategories.indexOf(registeredCategory);
-  if (baseIndex === -1 || steps === 0) {
-    return { category: registeredCategory, promoted: false, steps: 0 };
-  }
-
-  // "Farmacéutico" depende del título universitario y la matrícula profesional
-  // (lo controlan las auditorías de farmacia, no el sindicato): la antigüedad
-  // nunca promueve hasta ahí. Solo es Farmacéutico quien la farmacia registra
-  // en esa categoría con su número de matrícula; la escalera automática se
-  // frena en "Personal en Gestión de Farmacia".
-  const autoCeilingIndex = cctCategories.indexOf(PHARMACIST_CATEGORY) - 1;
-  const targetIndex = Math.max(baseIndex, Math.min(autoCeilingIndex, baseIndex + steps));
-
+  // CCT 659/13: La antigüedad se remunera exclusivamente mediante el adicional
+  // por antigüedad (Art. 15: 7% al primer año, +2% anual hasta 45%/50%).
+  // No existe promoción automática de categoría por el transcurso del tiempo;
+  // la categoría depende de las tareas asignadas y pactadas contractualmente.
   return {
-    category: cctCategories[targetIndex],
-    promoted: targetIndex > baseIndex,
-    steps: targetIndex - baseIndex
+    category: registeredCategory,
+    promoted: false,
+    steps: 0
   };
 }
 

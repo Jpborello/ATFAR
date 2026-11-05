@@ -4,7 +4,24 @@ export const SUPPORT_EMAIL = 'neocoresystem@gmail.com';
 export const SUPPORT_PHONE_DISPLAY = '341 798-1212';
 export const SUPPORT_PHONE_TEL = '+543417981212';
 
-export default function SupportContact() {
+interface SupportContactProps {
+  compact?: boolean;
+}
+
+export default function SupportContact({ compact = false }: SupportContactProps) {
+  if (compact) {
+    return (
+      <a
+        href={`mailto:${SUPPORT_EMAIL}`}
+        title={`Soporte técnico Neo Core Sys: ${SUPPORT_EMAIL} · Tel: ${SUPPORT_PHONE_DISPLAY}`}
+        className="inline-flex items-center gap-1.5 text-[10px] xl:text-[11px] font-bold text-slate-700 hover:text-primary border border-border hover:border-primary/40 rounded-full px-2.5 py-1.5 bg-slate-50/90 hover:bg-white transition-all whitespace-nowrap"
+      >
+        <LifeBuoy className="w-3.5 h-3.5 text-secondary flex-shrink-0" />
+        <span className="uppercase tracking-wider">Soporte</span>
+      </a>
+    );
+  }
+
   return (
     <div
       title={`Soporte técnico: ${SUPPORT_EMAIL} · ${SUPPORT_PHONE_DISPLAY}`}

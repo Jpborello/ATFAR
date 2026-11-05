@@ -97,29 +97,32 @@ export default function Navbar() {
         <Link href="/escalas" className="underline hover:opacity-90 ml-1">Ver Escalas →</Link>
       </div>
 
-      <div className="max-w-full mx-auto px-4 sm:px-8 lg:px-12 w-full py-2 sm:py-3">
+      <div className="max-w-full mx-auto px-3 sm:px-6 lg:px-4 xl:px-6 2xl:px-12 w-full py-2 sm:py-3">
         <div className="flex items-center justify-between h-16">
           {/* Logo Brand */}
           <div className="flex-shrink-0 flex items-center">
-            <Link href="/" className="flex items-center gap-3.5 group">
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3.5 group">
               <img 
                 src="/images/logo.jpg" 
                 alt="Logo ATFAR" 
-                className="h-14 w-auto object-contain bg-white p-1 rounded-xl shadow-sm border border-border"
+                className="h-12 sm:h-14 w-auto object-contain bg-white p-1 rounded-xl shadow-sm border border-border"
               />
               <div className="hidden sm:block">
-                <span className="text-lg font-black tracking-wider text-primary uppercase block leading-none">
+                <span className="text-base sm:text-lg font-black tracking-wider text-primary uppercase block leading-none">
                   ATFAR
                 </span>
-                <span className="text-xs text-slate-700 block font-bold mt-1">
+                <span className="text-xs text-slate-700 hidden 2xl:block font-bold mt-1 whitespace-nowrap">
                   Asociación de Trabajadores de Farmacia de Rosario
+                </span>
+                <span className="text-[11px] text-slate-600 hidden sm:block 2xl:hidden font-bold mt-0.5 whitespace-nowrap">
+                  Gremio Rosario
                 </span>
               </div>
             </Link>
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden lg:flex items-center gap-3 lg:gap-4 ml-auto mr-4 lg:mr-8">
+          <div className="hidden lg:flex items-center gap-1.5 xl:gap-2.5 2xl:gap-4 ml-auto mr-2 xl:mr-4 2xl:mr-8">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               const isExternal = link.href.startsWith('http');
@@ -129,7 +132,7 @@ export default function Navbar() {
                   href={link.href}
                   target={isExternal ? '_blank' : undefined}
                   rel={isExternal ? 'noopener noreferrer' : undefined}
-                  className={`text-[11px] lg:text-[13px] font-bold uppercase tracking-wider transition-colors hover:text-secondary whitespace-nowrap ${
+                  className={`text-[11px] xl:text-xs 2xl:text-[13px] font-bold uppercase tracking-tight xl:tracking-wider transition-colors hover:text-secondary whitespace-nowrap px-1 xl:px-1.5 py-1 ${
                     isActive ? 'text-primary font-black' : 'text-slate-800 hover:text-primary'
                   }`}
                 >
@@ -137,36 +140,37 @@ export default function Navbar() {
                 </Link>
               );
             })}
-            <SupportContact />
+            <SupportContact compact />
           </div>
 
           {/* Auth Buttons */}
-          <div className="hidden lg:flex items-center border-l border-border pl-6 lg:pl-8">
+          <div className="hidden lg:flex items-center border-l border-border pl-3 xl:pl-4 2xl:pl-8 flex-shrink-0">
             {profile ? (
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2.5 xl:gap-4">
                 <Link
                   href={getDashboardHref()}
-                  className="flex items-center gap-2 text-sm font-bold px-6 py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium"
+                  className="flex items-center gap-2 text-xs xl:text-sm font-bold px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 2xl:py-3 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 transition-all shadow-premium whitespace-nowrap"
                 >
-                  {profile.role === 'admin' && <Shield className="w-4 h-4 text-secondary" />}
-                  {profile.role === 'pharmacy_owner' && <MapPin className="w-4 h-4 text-secondary" />}
-                  {profile.role === 'employee' && <ClipboardList className="w-4 h-4 text-secondary" />}
+                  {profile.role === 'admin' && <Shield className="w-4 h-4 text-secondary flex-shrink-0" />}
+                  {profile.role === 'pharmacy_owner' && <MapPin className="w-4 h-4 text-secondary flex-shrink-0" />}
+                  {profile.role === 'employee' && <ClipboardList className="w-4 h-4 text-secondary flex-shrink-0" />}
                   <span>Panel ({profile.role === 'admin' ? 'Sindicato' : profile.role === 'pharmacy_owner' ? 'Farmacia' : 'Empleado'})</span>
                 </Link>
                 <button
                   onClick={handleLogout}
                   title="Cerrar sesión"
-                  className="p-3 rounded-xl border border-border text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer"
+                  className="p-2.5 xl:p-3 rounded-xl border border-border text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer"
                 >
-                  <LogOut className="w-4.5 h-4.5" />
+                  <LogOut className="w-4 h-4 xl:w-4.5 xl:h-4.5" />
                 </button>
               </div>
             ) : (
               <Link
                 href="/login"
-                className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5"
+                className="inline-flex items-center justify-center px-3.5 xl:px-5 2xl:px-6 py-2 xl:py-2.5 2xl:py-3 rounded-xl text-xs xl:text-xs 2xl:text-sm font-extrabold uppercase tracking-wider bg-primary text-primary-foreground hover:bg-primary/90 hover:shadow-premium transition-all transform hover:-translate-y-0.5 whitespace-nowrap"
               >
-                Ingresar al Sistema
+                <span className="hidden xl:inline">Ingresar al Sistema</span>
+                <span className="xl:hidden">Ingresar</span>
               </Link>
             )}
           </div>

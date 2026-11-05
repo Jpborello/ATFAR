@@ -1,10 +1,18 @@
 # ADR-0001: Cálculo de aportes sindicales y mutuales (afiliado / no afiliado)
 
-**Status:** Superseded / Resuelto definitivamente (2026-10-19: confirmado que no afiliados no tributan cuota sindical 2% conforme Art. 50 inc. a CCT 659/13 y Ley 23.551)
-**Date:** 2026-09-02 (Actualizado: 2026-10-19)
-**Deciders:** Juampi (dev) + Auditoría normativa ATFAR (CCT 659/13)
+**Status:** Aceptado / Actualizado (2026-11-04: ajustado conforme CCT 659/13, Cláusula 5ª Acta Acuerdo Paritario y pauta de desafiliación ATFAR)
+**Date:** 2026-09-02 (Actualizado: 2026-10-19, 2026-11-04)
+**Deciders:** Juampi (dev) + Auditoría normativa ATFAR (CCT 659/13) y Estudios Contables Liquidadores
 
 ## Context
+
+1. **No afiliados (2% sobre no remunerativo):** Conforme al Art. 50 inc. a del CCT 659/13 y Ley 23.551 (Art. 38), la cuota sindical sobre el sueldo remunerativo no se retiene a los trabajadores no afiliados. Sin embargo, las actas paritarias (ej. Cláusula Quinta Acta Acuerdo Mayo 2026) y la nota oficial de desafiliación que entrega ATFAR disponen expresamente que sobre las sumas no remunerativas los empleadores deben devengar el 2% a la entidad gremial. Por lo tanto:
+   - Afiliados: 2% sobre (Remunerativo + No Remunerativo).
+   - No afiliados: 2% exclusivamente sobre el No Remunerativo ($0 sobre remunerativo).
+
+2. **Categorías (sin ascenso automático):** El CCT 659/13 remunera el transcurso del tiempo mediante el adicional por antigüedad del Art. 15 (7% al primer año, +2% anual hasta 45%/50%). No contempla ascensos de categoría automáticos cada 5 años; la categoría contractual responde a las tareas y funciones efectivamente asignadas por la farmacia y registradas en el recibo de sueldo y ARCA. Por ende, se respeta la categoría declarada sin forzar promociones de básico.
+
+3. **Jornada y liquidación parcial (45 hs CCT 659/13):** La jornada legal convencional del CCT 659/13 es de 45 horas semanales (media jornada = 22,5 hs). Para jornadas parciales, el básico y el no remunerativo de escala se prorratean automáticamente de forma proporcional (`hs / 45`), facilitando la liquidación sin requerir fijar sueldos manuales mensuales.
 
 La farmacia BALSAMO (Jimena Isoardi) reportó que el "nuevo portal" calculaba mal el importe de la boleta de aportes: al marcar un empleado como afiliado, el sistema "cobraba un 1,5% más", y al marcarlo como no afiliado, calculaba "un importe irrisorio".
 

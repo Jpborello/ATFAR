@@ -78,9 +78,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
 
         if (!isConfigured) {
           setEmployees([
-            { id: '1', full_name: 'Estela Maris Gómez', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entry_date: '2024-03-15', entryDate: '2024-03-15', active: true, is_affiliate: true, isAffiliate: true },
-            { id: '2', full_name: 'Carlos Alberto Rossi', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entry_date: '2025-01-10', entryDate: '2025-01-10', active: true, is_affiliate: false, isAffiliate: false },
-            { id: '3', full_name: 'Matias Nicolás Fernández', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entry_date: '2025-11-01', entryDate: '2025-11-01', active: true, is_affiliate: true, isAffiliate: true },
+            { id: '1', full_name: 'Estela Maris Gómez', fullName: 'Estela Maris Gómez', cuil: '27-30444555-8', category: 'Personal en Gestión de Farmacia', entry_date: '2024-03-15', entryDate: '2024-03-15', active: true, is_affiliate: true, isAffiliate: true, weekly_hours: 45, weeklyHours: 45 },
+            { id: '2', full_name: 'Carlos Alberto Rossi', fullName: 'Carlos Alberto Rossi', cuil: '20-25666777-2', category: 'Personal con Asignación Específica', entry_date: '2025-01-10', entryDate: '2025-01-10', active: true, is_affiliate: false, isAffiliate: false, weekly_hours: 22.5, weeklyHours: 22.5 },
+            { id: '3', full_name: 'Matias Nicolás Fernández', fullName: 'Matias Nicolás Fernández', cuil: '20-41222333-5', category: 'Personal con Asignación Específica', entry_date: '2025-11-01', entryDate: '2025-11-01', active: true, is_affiliate: true, isAffiliate: true, weekly_hours: 45, weeklyHours: 45 },
           ]);
           setLoading(false);
           return;
@@ -125,6 +125,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
               active: emp.active,
               is_affiliate: !!emp.is_affiliate,
               isAffiliate: !!emp.is_affiliate,
+              weekly_hours: emp.weekly_hours ? Number(emp.weekly_hours) : 45,
+              weeklyHours: emp.weekly_hours ? Number(emp.weekly_hours) : 45,
               custom_salary: emp.custom_salary ? Number(emp.custom_salary) : null,
               customSalary: emp.custom_salary ? Number(emp.custom_salary) : null,
               custom_no_rem: emp.custom_no_rem !== null && emp.custom_no_rem !== undefined ? Number(emp.custom_no_rem) : null,
@@ -179,13 +181,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
 
   const getEmployeeCalculation = (emp: Employee) => {
     const registeredCategory = emp.category || 'Cadetes';
-    // La categoría que se liquida es la promovida por antigüedad (cada 5 años),
-    // aunque el empleador nunca haya actualizado el campo "categoría" a mano.
-    // La promoción automática nunca llega a "Farmacéutico": esa categoría solo
-    // la tiene quien la farmacia registró como tal, con su matrícula.
     const { category: categoryName, promoted } = getCurrentCategory(registeredCategory, emp.entryDate);
-    let basic = FALLBACK_SALARIES[categoryName] || 1381087.99;
-    let noRem = 0;
+    let fullBasic = FALLBACK_SALARIES[categoryName] || 1381087.99;
+    let fullNoRem = 0;
 
     const parsedPeriod = parsePeriodLabel(period);
     const dbPeriodStr = parsedPeriod ? SALARY_PERIOD_KEYS[parsedPeriod.monthIndex] : null;
@@ -198,9 +196,20 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         )
       : undefined;
     if (dbScale) {
-      basic = Number(dbScale.basic ?? dbScale.base_salary ?? 0);
-      noRem = Number(dbScale.no_rem ?? dbScale.non_remunerative ?? 0);
+      fullBasic = Number(dbScale.basic ?? dbScale.base_salary ?? 0);
+      fullNoRem = Number(dbScale.no_rem ?? dbScale.non_remunerative ?? 0);
     }
+
+    // Prorrateo por jornada parcial (CCT 659/13 jornada completa = 45 hs semanales):
+    // Si el empleado tiene declaradas menos de 45 hs (ej. 22.5 hs para media jornada),
+    // el básico y no remunerativo de escala se prorratean proporcionalmente (hs / 45).
+    const hours = (emp.weeklyHours !== undefined && emp.weeklyHours !== null)
+      ? Number(emp.weeklyHours)
+      : (emp.weekly_hours !== undefined && emp.weekly_hours !== null ? Number(emp.weekly_hours) : 45);
+    const hoursFactor = (hours > 0 && hours < 45) ? (hours / 45) : 1;
+
+    const basic = fullBasic * hoursFactor;
+    let noRem = fullNoRem * hoursFactor;
 
     const years = calculateSeniorityYears(emp.entryDate);
     const seniorityPct = getSeniorityPercentage(years);
@@ -226,26 +235,31 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
         isCustomSalary: false,
         isCustomNoRem: false,
         onJobReserve,
-        isAffiliated
+        isAffiliated,
+        hours,
+        hoursFactor,
+        isPartTime: hours < 45
       };
     }
 
-    // Si el empleado tiene un sueldo personalizado/manual para casos extraordinarios (jornada reducida, licencias, acuerdos especiales),
+    // Si el empleado tiene un sueldo personalizado/manual para casos extraordinarios (licencias especiales, acuerdos particulares),
     // se respeta ese valor exacto como sueldo bruto y NO se pisa con la escala ni con la antigüedad.
     const isCustomSalary = Boolean(emp.customSalary && emp.customSalary > 0);
     const grossSalary = isCustomSalary ? Number(emp.customSalary) : (basic + seniorityAmount);
 
-    // Si el empleado tiene fijado un concepto no remunerativo manual, se respeta ese monto en vez del de la escala.
+    // Si el empleado tiene fijado un concepto no remunerativo manual, se respeta ese monto en vez del prorrateado de la escala.
     const isCustomNoRem = isCustomSalary && emp.customNoRem !== null && emp.customNoRem !== undefined;
     if (isCustomNoRem) {
       noRem = Number(emp.customNoRem);
     }
 
-    // Cuota sindical (Art. 50 inc. a CCT 659/13 y Ley 23.551 Art. 38):
-    // La retención del 2% (sobre conceptos remunerativos y no remunerativos) aplica exclusivamente
-    // a los trabajadores AFILIADOS a ATFAR. Los empleados NO afiliados tienen aporte $0
-    // (la farmacia no les retiene cuota sindical en el recibo de haberes).
-    const unionAporte = isAffiliated ? (grossSalary + noRem) * 0.02 : 0;
+    // Cuota sindical y aportes sobre sumas no remunerativas:
+    // - Afiliados (Art. 50 inc. a CCT 659/13): 2% sobre remunerativo + 2% sobre no remunerativo.
+    // - No afiliados (Cláusula Quinta Acta Acuerdo Paritario y pauta de desafiliación ATFAR):
+    //   0% sobre remunerativo, pero SÍ devengan e integran el 2% sobre las sumas no remunerativas.
+    const unionAporte = isAffiliated
+      ? (grossSalary + noRem) * 0.02
+      : noRem * 0.02;
     const mutualAporte = 0;
     const totalAporte = unionAporte;
 
@@ -264,7 +278,10 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
       isCustomSalary,
       isCustomNoRem,
       onJobReserve,
-      isAffiliated
+      isAffiliated,
+      hours,
+      hoursFactor,
+      isPartTime: hours < 45
     };
   };
 
@@ -344,6 +361,8 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
             pharmacistLicense: calc.categoryName === 'Farmacéutico' ? employee.pharmacistLicense || null : null,
             promoted: calc.promoted,
             isAffiliate: calc.isAffiliated,
+            hours: calc.hours,
+            isPartTime: calc.isPartTime,
             seniorityYears: calc.years,
             seniorityPct: calc.seniorityPct,
             isCustomSalary: calc.isCustomSalary,
@@ -607,6 +626,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 {employee.fullName}
                                 <span className="block text-[9px] text-muted-foreground font-mono">
                                   {employee.cuil} • <span className="font-sans font-medium text-slate-500">{calc.categoryName}</span>
+                                  {calc.isPartTime && (
+                                    <span className="ml-1 inline-flex items-center px-1.5 py-0.5 bg-indigo-50 text-indigo-700 font-extrabold rounded text-[8px] border border-indigo-200 align-middle" title="Jornada parcial prorrateada sobre base de 45 hs">
+                                      {calc.hours} hs/sem
+                                    </span>
+                                  )}
                                   {calc.onJobReserve ? (
                                     <span className="ml-1 inline-flex items-center px-1.5 py-0.5 bg-sky-500/10 text-sky-700 rounded text-[8px] font-black uppercase border border-sky-500/25 align-middle" title="Reserva de puesto / licencia sin goce: no cobra sueldo, aporte $0">
                                       Reserva de puesto desde {formatDateAR(employee.jobReserveSince)}
@@ -655,7 +679,9 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                 ) : calc.isAffiliated ? (
                                   <span className="text-[9px] text-slate-500 block font-sans">2% (Rem + No Rem)</span>
                                 ) : (
-                                  <span className="text-[9px] text-slate-400 block font-sans italic">No afiliado (0%)</span>
+                                  <span className="text-[9px] text-amber-700 font-bold block font-sans" title="Aporte del 2% sobre sumas no remunerativas (Cláusula 5ª Acta Acuerdo)">
+                                    2% (Solo No Rem)
+                                  </span>
                                 )}
                               </td>
                               <td className="py-2 px-3 text-right font-mono font-extrabold text-primary">

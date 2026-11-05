@@ -48,6 +48,7 @@ export interface Employee {
   entry_date: string;
   entryDate?: string;
   weekly_hours?: number;
+  weeklyHours?: number;
   active: boolean;
   is_affiliate: boolean;
   isAffiliate?: boolean;
