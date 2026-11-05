@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS public.employees (
     cuil TEXT NOT NULL,
     category TEXT, -- Modified to support registration without initial category
     entry_date DATE, -- Modified to support registration without initial entry_date
-    weekly_hours INTEGER DEFAULT 44 NOT NULL,
+    weekly_hours NUMERIC DEFAULT 45 NOT NULL,
     active BOOLEAN DEFAULT true NOT NULL,
     receipt_url TEXT,
     receipt_date TIMESTAMP WITH TIME ZONE,
@@ -494,6 +494,9 @@ CREATE POLICY "Members view their month marks" ON public.pharmacy_month_marks
         SELECT 1 FROM public.pharmacy_members pm
         WHERE pm.pharmacy_id = pharmacy_month_marks.pharmacy_id AND pm.user_id = (SELECT auth.uid())
     ));
+
+-- 15. Migration: Permitir decimales en horas semanales (ej. 22.5 hs para media jornada CCT 659/13).
+ALTER TABLE public.employees ALTER COLUMN weekly_hours TYPE NUMERIC;
 
 -- ----------------------------------------------------
 -- MULTI-PHARMACY MEMBERSHIP (un usuario puede gestionar varias farmacias,

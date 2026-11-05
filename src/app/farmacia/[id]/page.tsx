@@ -319,7 +319,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               cuil: emp.cuil,
               category: emp.category,
               entryDate: emp.entry_date,
-              weeklyHours: emp.weekly_hours,
+              weeklyHours: emp.weekly_hours !== null && emp.weekly_hours !== undefined ? Number(emp.weekly_hours) : 45,
               active: emp.active,
               isAffiliate: !!emp.is_affiliate,
               receiptUrl: emp.receipt_url,
@@ -477,7 +477,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             cuil: newEmpCuil,
             category: newEmpCategory,
             entry_date: newEmpEntryDate,
-            weekly_hours: newEmpWeeklyHours,
+            weekly_hours: Number(newEmpWeeklyHours) || 45,
             active: true,
             is_affiliate: newEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
@@ -596,7 +596,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             cuil: editEmpCuil,
             category: editEmpCategory,
             entry_date: editEmpEntryDate,
-            weekly_hours: editEmpWeeklyHours,
+            weekly_hours: Number(editEmpWeeklyHours) || 45,
             is_affiliate: editEmpIsAffiliate,
             custom_salary: parsedCustomSalary,
             custom_no_rem: parsedCustomNoRem,
@@ -1206,14 +1206,19 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Período Inicial</label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Período Inicial / Inicio de Actividades</label>
+                        <span className="text-[10px] text-slate-400 font-semibold">Opcional / Informativo</span>
+                      </div>
                       <input 
                         type="date" 
                         value={profileData.initialPeriod} 
                         onChange={(e) => handleProfileFieldChange('initialPeriod', e.target.value)} 
                         className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required
                       />
+                      <span className="text-[10px] text-slate-500 font-medium block mt-1 leading-snug">
+                        Fecha de inicio de actividad o primer período que declara en el portal. Es un dato registral: <strong>no calcula deuda anterior</strong> ni genera cobros retroactivos.
+                      </span>
                     </div>
                   </div>
 
