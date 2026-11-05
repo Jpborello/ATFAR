@@ -3,11 +3,12 @@
 
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2, Info, ShieldCheck } from 'lucide-react';
+import { FileText, ArrowLeft, Send, CheckCircle2, Clock, Loader2, Users, AlertCircle, Building2, ShieldCheck } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { calculateSeniorityYears, getSeniorityPercentage, isReceiptValid, getCurrentCategory, formatDateAR } from '@/lib/dateUtils';
 import SupportContact from '@/components/shared/SupportContact';
+import { MONTHS_ES, SALARY_PERIOD_KEYS, parsePeriodLabel } from '@/lib/constants/calendar';
 
 import { Employee, Pharmacy, SalaryScale } from '@/types';
 
@@ -27,20 +28,6 @@ const FALLBACK_SALARIES: Record<string, number> = {
   'Personal en Gestión de Farmacia': 1644204.40,
   'Farmacéutico': 1895145.60
 };
-
-// Nombres de mes en español (índice 0 = Enero) y su clave correspondiente en salary_scales.period.
-// Antes esto estaba hardcodeado a mano solo para Junio/Julio/Agosto 2026 - se rompía apenas pasaba ese trimestre.
-const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-const SALARY_PERIOD_KEYS = ['jan', 'feb', 'march', 'april', 'may', 'june', 'july', 'aug', 'sep', 'oct', 'nov', 'dec'];
-
-/** Parsea una etiqueta "Mes AAAA" (ej. "Julio 2026") a { year, monthIndex } (0-indexado). */
-function parsePeriodLabel(label: string): { year: number; monthIndex: number } | null {
-  const [monthName, yearStr] = label.split(' ');
-  const monthIndex = MONTHS_ES.findIndex((m) => m === monthName);
-  const year = parseInt(yearStr, 10);
-  if (monthIndex === -1 || isNaN(year)) return null;
-  return { year, monthIndex };
-}
 
 /** Genera las opciones de período declarable: el mes actual y los dos anteriores. */
 function buildDeclarablePeriods(): string[] {

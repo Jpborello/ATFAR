@@ -50,14 +50,13 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [deletingInvoiceId, setDeletingInvoiceId] = useState<string | null>(null);
 
-  // Plus Pagos online checkout
+  // Plus Pagos online checkout (oculto por defecto hasta tener credenciales de Banco Santa Fe)
+  const isPlusPagosEnabled = process.env.NEXT_PUBLIC_PLUS_PAGOS_ENABLED === 'true';
   const [onlineCheckoutLoading, setOnlineCheckoutLoading] = useState(false);
   const [onlinePaymentUnavailable, setOnlinePaymentUnavailable] = useState(false);
 
-
-
   // Transfer States
-  const [paymentMethod, setPaymentMethod] = useState<'online' | 'transfer'>('online');
+  const [paymentMethod, setPaymentMethod] = useState<'online' | 'transfer'>('transfer');
   const [transactionFileName, setTransactionFileName] = useState('');
   const [transactionCode, setTransactionCode] = useState('');
   const [transferDate, setTransferDate] = useState('');
@@ -131,6 +130,18 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           } else {
             setInvoices([]);
           }
+
+          // Verificar si retornó de una simulación exitosa de Plus Pagos
+          if (typeof window !== 'undefined') {
+            const searchParams = new URLSearchParams(window.location.search);
+            if (searchParams.get('simulated_success') === 'true') {
+              const tx = searchParams.get('tx') || '';
+              toast.success('¡Pago de Plus Pagos acreditado!', {
+                description: `Operación ${tx} validada y acreditada correctamente (Modo Sandbox).`,
+              });
+              window.history.replaceState({}, '', window.location.pathname);
+            }
+          }
         }
       } catch (err) {
         console.error("Error loading invoices:", err);
@@ -148,7 +159,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
   const handleOpenCheckout = (invoice: Invoice) => {
     setCheckoutInvoice(invoice);
     setPaymentSuccess(false);
-    setPaymentMethod('transfer');
+    setPaymentMethod(isPlusPagosEnabled ? 'online' : 'transfer');
     setOnlinePaymentUnavailable(false);
     setTransactionFileName('');
     setTransactionCode(invoice.invoiceNumber); // Prefill transactionCode with invoice number!
@@ -630,35 +641,42 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           <div className="lg:col-span-4">
             {checkoutInvoice ? (
               <div className={`bg-card border-2 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden animate-fadeIn transition-colors ${
-                paymentMethod === 'online' ? 'border-primary' : 'border-emerald-500'
+                isPlusPagosEnabled && paymentMethod === 'online' ? 'border-primary' : 'border-emerald-500'
               }`}>
-                {/* Header with Switcher Tabs */}
-                <div className="space-y-3">
-                  <div className="flex bg-muted p-1 rounded-xl">
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('online')}
-                      className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
-                        paymentMethod === 'online'
-                          ? 'bg-card text-primary shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Pago Online
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('transfer')}
-                      className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
-                        paymentMethod === 'transfer'
-                          ? 'bg-emerald-600 text-white shadow-sm'
-                          : 'text-muted-foreground hover:text-foreground'
-                      }`}
-                    >
-                      Transferencia
-                    </button>
+                {/* Header with Switcher Tabs (solo visible si Plus Pagos está habilitado) */}
+                {isPlusPagosEnabled ? (
+                  <div className="space-y-3">
+                    <div className="flex bg-muted p-1 rounded-xl">
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('online')}
+                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
+                          paymentMethod === 'online'
+                            ? 'bg-card text-primary shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Pago Online
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPaymentMethod('transfer')}
+                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
+                          paymentMethod === 'transfer'
+                            ? 'bg-emerald-600 text-white shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
+                        }`}
+                      >
+                        Transferencia
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex items-center gap-2 pb-2 border-b border-border text-emerald-800 font-extrabold text-xs uppercase tracking-wider">
+                    <Building2 className="w-4 h-4 text-emerald-600" />
+                    <span>Informar Transferencia Bancaria</span>
+                  </div>
+                )}
 
                 {paymentSuccess ? (
                   <div className="text-center py-6 space-y-4">
@@ -688,17 +706,20 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                       Volver
                     </button>
                   </div>
-                ) : paymentMethod === 'online' ? (
+                ) : isPlusPagosEnabled && paymentMethod === 'online' ? (
                   <div className="space-y-5 text-center py-6">
                     <div className="inline-flex p-4 bg-primary/10 text-primary rounded-full">
                       <CreditCard className="w-8 h-8" />
                     </div>
                     <div className="space-y-2">
-                      <h4 className="font-extrabold text-foreground text-sm">Pago Online (Plus Pagos)</h4>
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 text-red-700 text-[10px] font-black uppercase tracking-wider border border-red-500/20">
+                        Nuevo Banco de Santa Fe
+                      </span>
+                      <h4 className="font-extrabold text-foreground text-sm">Pago Online con Plus Pagos</h4>
                       <p className="text-[11px] text-muted-foreground leading-relaxed font-semibold">
                         {onlinePaymentUnavailable
-                          ? 'Esta función estará disponible próximamente. Por el momento, por favor realizá tus pagos mediante transferencia bancaria y adjuntá el comprobante en la pestaña de **Transferencia**.'
-                          : 'Pagá esta boleta online con Plus Pagos (Banco de Santa Fe): tarjeta de débito, QR o saldo de billetera.'}
+                          ? 'Esta función estará disponible próximamente en producción. Por el momento, podés abonar por transferencia bancaria.'
+                          : 'Aboná esta boleta en el acto a través del botón oficial de Plus Pagos (Débito, Transferencia 3.0, QR o Billetera Santa Fe).'}
                       </p>
                     </div>
                     {!onlinePaymentUnavailable && (
@@ -711,10 +732,10 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                         {onlineCheckoutLoading ? (
                           <>
                             <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                            Conectando con Plus Pagos...
+                            Conectando con Banco Santa Fe...
                           </>
                         ) : (
-                          'Pagar con Plus Pagos'
+                          'Pagar con Plus Pagos (Banco Santa Fe)'
                         )}
                       </button>
                     )}

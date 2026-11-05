@@ -249,14 +249,28 @@ function LoginContent() {
         process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
+      const cleanEmail = email.trim().toLowerCase();
+
+      if (!cleanEmail) {
+        setErrorMsg('Por favor ingresá tu correo electrónico.');
+        setLoading(false);
+        return;
+      }
+
+      if (!password) {
+        setErrorMsg('Por favor ingresá tu contraseña.');
+        setLoading(false);
+        return;
+      }
+
       if (!isConfigured) {
         // Simulation mode
         await new Promise((resolve) => setTimeout(resolve, 1500));
         
         // Match specific test emails for simulation, or redirect by role
-        if (email.includes('admin')) {
+        if (cleanEmail.includes('admin')) {
           router.push('/admin');
-        } else if (email.includes('farmacia') || email.includes('owner')) {
+        } else if (cleanEmail.includes('farmacia') || cleanEmail.includes('owner')) {
           router.push('/farmacia');
         } else {
           router.push('/empleado');
@@ -265,13 +279,33 @@ function LoginContent() {
       }
 
       const { data: authData, error: authError } = await withTimeout(
-        supabase.auth.signInWithPassword({ email, password }),
+        supabase.auth.signInWithPassword({ email: cleanEmail, password }),
         10000,
         'La respuesta está tardando más de lo normal. Probá iniciar sesión de nuevo.'
       );
 
-      if (authError) throw new Error(authError.message);
-      if (!authData.user) throw new Error('Usuario no encontrado.');
+      if (authError) {
+        let msg = 'El correo electrónico o la contraseña ingresada son incorrectos.';
+        const lower = authError.message.toLowerCase();
+        if (lower.includes('email not confirmed')) {
+          msg = 'Tu correo electrónico aún no ha sido confirmado. Revisá tu casilla de correo o spam.';
+        } else if (lower.includes('too many requests')) {
+          msg = 'Demasiados intentos fallidos. Por favor esperá unos minutos antes de volver a intentar.';
+        } else if (lower.includes('user disabled')) {
+          msg = 'Esta cuenta ha sido deshabilitada por administración.';
+        } else if (lower.includes('tardando') || lower.includes('timeout')) {
+          msg = authError.message;
+        }
+        setErrorMsg(msg);
+        setLoading(false);
+        return;
+      }
+
+      if (!authData?.user) {
+        setErrorMsg('No se encontró el usuario.');
+        setLoading(false);
+        return;
+      }
 
       // Fetch profile role
       const { data: profile, error: profileError } = await withTimeout(
@@ -280,7 +314,11 @@ function LoginContent() {
         'La respuesta está tardando más de lo normal. Probá iniciar sesión de nuevo.'
       );
 
-      if (profileError) throw new Error('Error al consultar el perfil de usuario.');
+      if (profileError || !profile) {
+        setErrorMsg('Error al consultar el perfil de usuario. Verificá que tu cuenta esté habilitada.');
+        setLoading(false);
+        return;
+      }
 
       if (profile.role === 'admin') {
         router.push('/admin');
@@ -290,7 +328,6 @@ function LoginContent() {
         router.push('/empleado');
       }
     } catch (err: unknown) {
-      console.error(err);
       setErrorMsg(err instanceof Error ? err.message : 'Error al iniciar sesión.');
     } finally {
       setLoading(false);
@@ -313,14 +350,18 @@ function LoginContent() {
         return;
       }
 
-      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail, {
+      const cleanForgot = forgotEmail.trim().toLowerCase();
+      const { error } = await supabase.auth.resetPasswordForEmail(cleanForgot, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw new Error(error.message);
+      if (error) {
+        setErrorMsg('No pudimos enviar el correo de recuperación. Verificá que el email sea correcto.');
+        setForgotLoading(false);
+        return;
+      }
       setForgotSent(true);
     } catch (err: unknown) {
-      console.error(err);
       setErrorMsg(err instanceof Error ? err.message : 'Error al enviar el correo de recuperación.');
     } finally {
       setForgotLoading(false);
@@ -381,9 +422,11 @@ function LoginContent() {
         return;
       }
 
+      const cleanEmail = email.trim().toLowerCase();
+
       // 1. Sign up user
       const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password,
         options: {
           data: {
@@ -395,9 +438,21 @@ function LoginContent() {
       });
 
       if (authError) {
-        throw new Error(authError.message);
+        let msg = authError.message;
+        if (msg.includes('already registered')) {
+          msg = 'Ya existe un usuario registrado con este correo electrónico. Intentá iniciar sesión o recuperar tu contraseña.';
+        } else if (msg.includes('Password should be at least')) {
+          msg = 'La contraseña debe tener al menos 6 caracteres.';
+        }
+        setErrorMsg(msg);
+        setLoading(false);
+        return;
       }
-      if (!authData.user) throw new Error('Error en el registro.');
+      if (!authData?.user) {
+        setErrorMsg('Error en el registro. Por favor intentá nuevamente.');
+        setLoading(false);
+        return;
+      }
 
       if (registerRole === 'pharmacy_owner') {
         let pharmacyError;
@@ -475,9 +530,11 @@ function LoginContent() {
               .maybeSingle();
 
             if (possibleDuplicate) {
-              throw new Error(
+              setErrorMsg(
                 `Ya existe una farmacia registrada con el nombre "${normalizedName}" (CUIT ${possibleDuplicate.cuit}). Si creés que es un error, o si hay varios titulares para la misma farmacia, contactate con el sindicato antes de registrarte de nuevo para evitar una farmacia duplicada.`
               );
+              setLoading(false);
+              return;
             }
 
             // Insert a new pharmacy
@@ -506,7 +563,11 @@ function LoginContent() {
           }
         }
 
-        if (pharmacyError) throw new Error(`Error al registrar farmacia: ${pharmacyError.message}`);
+        if (pharmacyError) {
+          setErrorMsg(`Error al registrar farmacia: ${pharmacyError.message}`);
+          setLoading(false);
+          return;
+        }
 
         if (linkedPharmacyId) {
           const { error: memberError } = await supabase
@@ -532,7 +593,6 @@ function LoginContent() {
         router.push('/empleado');
       }
     } catch (err: unknown) {
-      console.error(err);
       setErrorMsg(err instanceof Error ? err.message : 'Error en el registro.');
     } finally {
       setLoading(false);

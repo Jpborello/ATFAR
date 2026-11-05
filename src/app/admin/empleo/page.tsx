@@ -75,7 +75,27 @@ export default function AdminEmpleoPage() {
   }
 
   useEffect(() => {
-    fetchApplications();
+    let ignore = false;
+    async function loadApplications() {
+      try {
+        const { data, error } = await supabase
+          .from('job_applications')
+          .select('*')
+          .order('created_at', { ascending: true });
+
+        if (error) throw error;
+        if (!ignore) setApplications(data || []);
+      } catch (err) {
+        console.error('Error loading applications:', err);
+        toast.error('No pudimos cargar las postulaciones.', {
+          description: 'Revisá tu conexión y volvé a intentarlo.',
+        });
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    void loadApplications();
+    return () => { ignore = true; };
   }, []);
 
   const handleUploadFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

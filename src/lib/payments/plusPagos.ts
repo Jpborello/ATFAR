@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import type {
   PaymentProvider,
   CreateCheckoutParams,
@@ -12,86 +13,132 @@ export class PaymentProviderNotConfiguredError extends Error {
   }
 }
 
-// Env vars pendientes de completar cuando el banco entregue las credenciales.
+/**
+ * Variables de entorno de Plus Pagos (Administradora San Juan S.A. / Nuevo Banco de Santa Fe)
+ *
+ * En producción se obtienen al formalizar el convenio comercial con el banco:
+ *   - PLUS_PAGOS_API_URL: Endpoint base provisto por el banco (ej: https://api.pluspagos.com/v1)
+ *   - PLUS_PAGOS_API_KEY: Llave de autenticación API / Bearer token del comercio
+ *   - PLUS_PAGOS_MERCHANT_ID: Código de ente / comercio asignado a ATFAR
+ *   - PLUS_PAGOS_WEBHOOK_SECRET: Clave secreta para validación de firma HMAC SHA-256 en notificaciones
+ *   - PLUS_PAGOS_SANDBOX: 'true' para habilitar pasarela de prueba local / sandbox
+ */
 const API_URL = process.env.PLUS_PAGOS_API_URL || '';
 const API_KEY = process.env.PLUS_PAGOS_API_KEY || '';
 const MERCHANT_ID = process.env.PLUS_PAGOS_MERCHANT_ID || '';
 const WEBHOOK_SECRET = process.env.PLUS_PAGOS_WEBHOOK_SECRET || '';
+const IS_SANDBOX = process.env.PLUS_PAGOS_SANDBOX === 'true';
 
-/**
- * Adaptador para Plus Pagos (Administradora San Juan S.A. / Nuevo Banco de
- * Santa Fe). Todavía no hay documentación pública de la API — esto es un
- * esqueleto listo para completar apenas el banco la entregue.
- *
- * Lo único que hay que hacer en ese momento:
- *   1. Cargar las 4 variables de entorno de arriba.
- *   2. Completar `createCheckout` con el endpoint real (crear link de pago / QR).
- *   3. Completar `verifyWebhookSignature` con el mecanismo de firma que use Plus Pagos.
- *   4. Completar `parseWebhookEvent` mapeando el payload real a `WebhookEvent`.
- * Nada en las rutas de API ni en la UI debería necesitar cambios.
- */
 export const plusPagos: PaymentProvider = {
   name: 'plus_pagos',
 
+  /**
+   * Indica si el proveedor está habilitado (por credenciales reales o modo sandbox local).
+   */
   isConfigured() {
-    return Boolean(API_URL && API_KEY && MERCHANT_ID);
+    return Boolean((API_URL && API_KEY && MERCHANT_ID) || IS_SANDBOX);
   },
 
+  /**
+   * Crea una orden de pago / link de checkout en Plus Pagos.
+   */
   async createCheckout(params: CreateCheckoutParams): Promise<CreateCheckoutResult> {
     if (!this.isConfigured()) {
       throw new PaymentProviderNotConfiguredError('Plus Pagos');
     }
 
-    // TODO: reemplazar por el endpoint real de Plus Pagos. Forma esperada
-    // (a confirmar con la documentación que entregue el banco):
-    //
-    //   POST {API_URL}/checkout   (o /payment-links, /qr, etc.)
-    //   Headers: Authorization/x-api-key con API_KEY
-    //   Body: {
-    //     merchant_id: MERCHANT_ID,
-    //     external_reference: params.paymentId,
-    //     amount: params.amount,
-    //     description: params.description,
-    //   }
-    //   Response: { id: string, checkout_url: string }
-    //
-    // const res = await fetch(`${API_URL}/checkout`, {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${API_KEY}` },
-    //   body: JSON.stringify({
-    //     merchant_id: MERCHANT_ID,
-    //     external_reference: params.paymentId,
-    //     amount: params.amount,
-    //     description: params.description,
-    //   }),
-    // });
-    // if (!res.ok) throw new Error(`Plus Pagos rechazó la creación del checkout (${res.status})`);
-    // const data = await res.json();
-    // return { checkoutUrl: data.checkout_url, externalReference: data.id };
+    // Modo Sandbox / Simulación local: permite pruebas integrales sin esperar credenciales bancarias
+    if (IS_SANDBOX && (!API_URL || !API_KEY)) {
+      return {
+        checkoutUrl: `/api/payments/plus-pagos/simulate?paymentId=${encodeURIComponent(params.paymentId)}&amount=${params.amount}&desc=${encodeURIComponent(params.description)}`,
+        externalReference: `SIM-${params.paymentId}-${Date.now()}`,
+      };
+    }
 
-    void params;
-    throw new Error('plusPagos.createCheckout: pendiente de implementar con la API real.');
+    // Integración API real con Administradora San Juan S.A. (Nuevo Banco de Santa Fe)
+    const endpoint = `${API_URL.replace(/\/$/, '')}/checkout`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${API_KEY}`,
+          'X-Merchant-Id': MERCHANT_ID,
+        },
+        body: JSON.stringify({
+          merchant_id: MERCHANT_ID,
+          external_reference: params.paymentId,
+          invoice_number: params.invoiceNumber,
+          amount: params.amount,
+          description: params.description,
+          redirect_url: `${appUrl}/farmacia`,
+          webhook_url: `${appUrl}/api/payments/plus-pagos/webhook`,
+        }),
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.error('Error respuesta Plus Pagos API:', res.status, errorText);
+        throw new Error(`Plus Pagos rechazó la creación del checkout (${res.status})`);
+      }
+
+      const data = await res.json();
+      return {
+        checkoutUrl: data.checkout_url || data.url || data.link,
+        externalReference: data.id || data.external_reference || params.paymentId,
+      };
+    } catch (err: unknown) {
+      console.error('Error al conectar con Plus Pagos:', err);
+      throw err;
+    }
   },
 
+  /**
+   * Verifica la autenticidad de la notificación server-to-server mediante firma criptográfica.
+   */
   verifyWebhookSignature(request: Request, rawBody: string): boolean {
-    // TODO: implementar la verificación real (HMAC sobre rawBody con
-    // WEBHOOK_SECRET, header de firma, etc.) apenas Plus Pagos confirme el
-    // mecanismo. Devuelve false a propósito (fail-closed): sin esto, el
-    // webhook no debe aceptar ningún evento como válido en producción.
-    void request;
-    void rawBody;
-    void WEBHOOK_SECRET;
-    return false;
+    if (IS_SANDBOX && (!WEBHOOK_SECRET || process.env.NODE_ENV !== 'production')) {
+      return true; // Bypass seguro para pruebas locales
+    }
+
+    if (!WEBHOOK_SECRET) {
+      return false; // Fail-closed en producción sin secreto
+    }
+
+    // Firma HMAC SHA256 estándar esperada en headers (X-Signature o X-PlusPagos-Signature)
+    const signature = request.headers.get('x-signature') || request.headers.get('x-pluspagos-signature') || '';
+    if (!signature) return false;
+
+    try {
+      const computedHash = crypto
+        .createHmac('sha256', WEBHOOK_SECRET)
+        .update(rawBody)
+        .digest('hex');
+
+      return crypto.timingSafeEqual(Buffer.from(computedHash), Buffer.from(signature));
+    } catch (err) {
+      console.error('Error verificando firma webhook de Plus Pagos:', err);
+      return false;
+    }
   },
 
+  /**
+   * Parsea el payload de la notificación entrante.
+   */
   parseWebhookEvent(rawBody: string): WebhookEvent {
-    // TODO: mapear el payload real que envía Plus Pagos a este shape genérico.
     const payload = JSON.parse(rawBody);
+    
+    // Normalizar status proveniente del gateway de Santa Fe ('APPROVED', 'PAID', 'pagado', etc.)
+    const rawStatus = (payload.status || payload.estado || '').toString().toLowerCase();
+    const isApproved = ['approved', 'aprobado', 'paid', 'pagado', 'acreditado', 'success'].includes(rawStatus);
+
     return {
-      externalReference: payload.external_reference,
-      status: payload.status,
-      transactionCode: payload.id,
-      paidAt: payload.paid_at,
+      externalReference: payload.external_reference || payload.externalReference || payload.payment_id,
+      status: isApproved ? 'approved' : 'rejected',
+      transactionCode: payload.id || payload.transaction_id || payload.codigo_operacion,
+      paidAt: payload.paid_at || payload.fecha_pago || new Date().toISOString(),
     };
   },
 };

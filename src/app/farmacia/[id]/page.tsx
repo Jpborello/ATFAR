@@ -14,98 +14,25 @@ import {
   ArrowRight,
   MapPin,
   Plus,
-  Trash2,
   Loader2,
-  X,
   Briefcase,
-  Upload,
   Clock,
-  Sparkles,
-  Pencil,
-  DollarSign,
   Info,
   ShieldCheck
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { calculateSeniority, getCurrentCategory, getReceiptStatus, getPharmacyDebtStatus, PharmacyDebtStatus, formatDateAR, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
+import { getPharmacyDebtStatus, PharmacyDebtStatus, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
+import { getLatestPeriod } from '@/lib/constants/calendar';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 import SupportContact from '@/components/shared/SupportContact';
-
-interface Employee {
-  id: string;
-  fullName: string;
-  cuil: string;
-  category: string;
-  entryDate: string;
-  weeklyHours?: number;
-  active: boolean;
-  isAffiliate: boolean;
-  receiptUrl?: string;
-  receiptDate?: string;
-  customSalary?: number | null;
-  customNoRem?: number | null;
-  pharmacistLicense?: string | null;
-  jobReserveSince?: string | null;
-}
-
-const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-
-/** De una lista de períodos "Mes AAAA" devuelve el más reciente (o null si no hay ninguno). */
-function getLatestPeriod(periods: (string | null | undefined)[]): string | null {
-  let best: { label: string; order: number } | null = null;
-  for (const label of periods) {
-    if (!label) continue;
-    const [name, yearStr] = label.trim().split(' ');
-    const month = MONTHS_ES.indexOf(name);
-    const year = parseInt(yearStr, 10);
-    if (month === -1 || isNaN(year)) continue;
-    const order = year * 12 + month;
-    if (!best || order > best.order) best = { label, order };
-  }
-  return best ? best.label : null;
-}
-
-function NotAffiliateField({ id, isAffiliate, onChange }: { id: string; isAffiliate: boolean; onChange: (v: boolean) => void }) {
-  return (
-    <div className={`flex items-start gap-3 p-4 rounded-2xl border ${isAffiliate ? 'bg-slate-50 border-border/80' : 'bg-amber-50 border-amber-300'}`}>
-      <input
-        type="checkbox"
-        id={id}
-        checked={!isAffiliate}
-        onChange={(e) => onChange(!e.target.checked)}
-        className="w-5 h-5 accent-amber-600 cursor-pointer rounded mt-0.5"
-      />
-      <label htmlFor={id} className="cursor-pointer select-none space-y-0.5">
-        <span className="text-sm font-bold text-slate-800 block">NO es afiliado a ATFAR</span>
-        <span className="text-xs text-slate-500 font-medium block leading-snug">
-          {isAffiliate
-            ? 'Sin marcar: se lo considera afiliado y se liquida la cuota sindical del 2% (remunerativo + no remunerativo).'
-            : 'Marcado: no se le retiene cuota sindical sobre el sueldo remunerativo. Tributa el 2% sobre las sumas no remunerativas (Cláusula 5ª Acta Acuerdo).'}
-        </span>
-      </label>
-    </div>
-  );
-}
-
-function PharmacistLicenseField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
-  return (
-    <div className="p-4 bg-indigo-500/5 border border-indigo-500/25 rounded-2xl space-y-2">
-      <label className="text-sm font-bold text-slate-800 block">N° de Matrícula Profesional *</label>
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder="Ej: 4521"
-        className="w-full rounded-xl border border-border px-4 py-2.5 bg-white text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 text-[#0f172a]"
-        required
-      />
-      <span className="text-xs text-slate-600 font-medium block leading-snug">
-        La categoría Farmacéutico exige título universitario y matrícula habilitante (la controlan las auditorías de farmacia). No se asigna por antigüedad.
-      </span>
-    </div>
-  );
-}
+import { Employee } from '@/types';
+import ProfileModal, { PharmacyProfileData } from '@/components/farmacia/ProfileModal';
+import AddEmployeeModal from '@/components/farmacia/AddEmployeeModal';
+import EditEmployeeModal from '@/components/farmacia/EditEmployeeModal';
+import UpdateReceiptModal from '@/components/farmacia/UpdateReceiptModal';
+import TutorialGuideModal from '@/components/farmacia/TutorialGuideModal';
+import EmployeeTable from '@/components/farmacia/EmployeeTable';
 
 export default function FarmaciaDashboard({ params }: { params: Promise<{ id: string }> }) {
   const { id: pharmacyId } = use(params);
@@ -135,7 +62,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [updateReceiptFile, setUpdateReceiptFile] = useState<File | null>(null);
 
   // Detailed profile state
-  const [profileData, setProfileData] = useState({
+  const [profileData, setProfileData] = useState<PharmacyProfileData>({
     cuit: '',
     razonSocial: '',
     nombreFantasia: '',
@@ -193,32 +120,10 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     { id: '1', title: 'Nueva Homologación CCT 659/13', summary: 'Se informa a las farmacias la escala de Julio 2026 vigente para liquidaciones.', date: '25 Jun 2026' }
   ]);
 
-  // CCT Categories List
-  const cctCategories = [
-    'Cadetes',
-    'Aprendiz Ayudante',
-    'Personal Auxiliar Interno y Externo',
-    'Personal con Asignación Específica',
-    'Ayudante en Gestión de Farmacia',
-    'Personal en Gestión de Farmacia',
-    'Farmacéutico'
-  ];
-
   useEffect(() => {
     const fetchPharmacy = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-
-        const isConfigured =
-          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
-          !!process.env.NEXT_PUBLIC_SUPABASE_URL;
-
-        if (!isConfigured) {
-          setPharmacyName(profileData.nombreFantasia || profileData.razonSocial);
-          setPharmacyCuit(profileData.cuit);
-          setPharmacyAddress(profileData.declaredAddresses);
-          return;
-        }
 
         if (!session) {
           window.location.href = '/login';
@@ -367,7 +272,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     window.location.href = '/';
   };
 
-  const handleProfileFieldChange = (field: string, value: string | number) => {
+  const handleProfileFieldChange = (field: keyof PharmacyProfileData, value: string | number) => {
     setProfileData(prev => ({
       ...prev,
       [field]: value
@@ -539,25 +444,28 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   };
 
   const handleOpenEditEmployee = (emp: Employee) => {
+    const customSal = emp.customSalary ?? emp.custom_salary;
+    const customNoR = emp.customNoRem ?? emp.custom_no_rem;
+    const jobRes = emp.jobReserveSince ?? emp.job_reserve_since ?? '';
     setEditingEmployee(emp);
-    setEditEmpName(emp.fullName);
+    setEditEmpName(emp.fullName || emp.full_name || '');
     setEditEmpCuil(emp.cuil);
     setEditEmpCategory(emp.category);
-    setEditEmpEntryDate(emp.entryDate);
-    setEditEmpWeeklyHours(emp.weeklyHours || 45);
-    setEditEmpIsAffiliate(emp.isAffiliate);
-    if (emp.customSalary && emp.customSalary > 0) {
+    setEditEmpEntryDate(emp.entryDate || emp.entry_date || '');
+    setEditEmpWeeklyHours(emp.weeklyHours ?? emp.weekly_hours ?? 45);
+    setEditEmpIsAffiliate(emp.isAffiliate ?? emp.is_affiliate ?? false);
+    if (customSal && Number(customSal) > 0) {
       setEditEmpSalaryType('manual');
-      setEditEmpCustomSalary(emp.customSalary.toString());
-      setEditEmpCustomNoRem(emp.customNoRem !== null && emp.customNoRem !== undefined ? emp.customNoRem.toString() : '0');
+      setEditEmpCustomSalary(customSal.toString());
+      setEditEmpCustomNoRem(customNoR !== null && customNoR !== undefined ? customNoR.toString() : '0');
     } else {
       setEditEmpSalaryType('automatico');
       setEditEmpCustomSalary('');
       setEditEmpCustomNoRem('0');
     }
-    setEditEmpPharmacistLicense(emp.pharmacistLicense || '');
-    setEditEmpOnJobReserve(Boolean(emp.jobReserveSince));
-    setEditEmpJobReserveSince(emp.jobReserveSince || '');
+    setEditEmpPharmacistLicense(emp.pharmacistLicense ?? emp.pharmacist_license ?? '');
+    setEditEmpOnJobReserve(Boolean(jobRes));
+    setEditEmpJobReserveSince(jobRes);
     setIsEditEmployeeModalOpen(true);
   };
 
@@ -975,148 +883,15 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="border-b border-border text-slate-500 font-bold uppercase tracking-wider bg-slate-50">
-                    <th className="py-3 px-4">Nombre y Apellido</th>
-                    <th className="py-3 px-4">CUIL</th>
-                    <th className="py-3 px-4">Categoría Profesional / Régimen</th>
-                    <th className="py-3 px-4 text-center">Afiliado (2%)</th>
-                    <th className="py-3 px-4 text-center">Recibo Sueldo (6m)</th>
-                    <th className="py-3 px-4 text-center">Ingreso</th>
-                    <th className="py-3 px-4 text-center">Antigüedad</th>
-                    <th className="py-3 px-4 text-center">Acciones</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/60 font-semibold text-slate-700">
-                  {employees.map((emp) => {
-                    const catInfo = getCurrentCategory(emp.category, emp.entryDate);
-                    const receiptStatus = emp.jobReserveSince
-                      ? { valid: true, label: 'No requerido', color: 'emerald' }
-                      : getReceiptStatus(emp.receiptDate);
-                    return (
-                      <tr key={emp.id} className="hover:bg-slate-50 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-[#0f172a]">{emp.fullName}</td>
-                        <td className="py-3.5 px-4 font-mono text-slate-500">{emp.cuil}</td>
-                        <td className="py-3.5 px-4 text-slate-500">
-                          <div className="flex flex-col">
-                            <span className="font-bold text-[#0f172a]">{catInfo.category}</span>
-                            {emp.jobReserveSince && (
-                              <span className="inline-flex items-center gap-1 mt-1 text-[9px] text-sky-700 font-extrabold uppercase tracking-wider bg-sky-500/10 border border-sky-500/25 px-2 py-0.5 rounded w-max" title="No cobra sueldo: no genera aporte en la DDJJ ni requiere recibo">
-                                Reserva de puesto desde {formatDateAR(emp.jobReserveSince)}
-                              </span>
-                            )}
-                            {emp.customSalary && emp.customSalary > 0 ? (
-                              <div className="flex flex-col gap-0.5 mt-1">
-                                <span className="inline-flex items-center gap-1 text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded w-max" title="Base Remunerativa pactada">
-                                  <DollarSign className="w-3 h-3 text-amber-700" />
-                                  <span>Rem: ${emp.customSalary.toLocaleString('es-AR')}</span>
-                                </span>
-                                {emp.customNoRem !== null && emp.customNoRem !== undefined && (
-                                  <span className="text-[8px] text-amber-900/80 font-bold tracking-wider bg-amber-500/10 px-1.5 py-0.5 rounded w-max border border-amber-500/20" title="Concepto No Remunerativo pactado">
-                                    No Rem: ${emp.customNoRem.toLocaleString('es-AR')}
-                                  </span>
-                                )}
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-1 mt-0.5">
-                                <span className="text-[9px] text-slate-400 font-semibold">CCT Automático</span>
-                                {catInfo.promoted && (
-                                  <span className="text-[9px] text-emerald-600 font-black uppercase tracking-wider bg-emerald-500/10 px-1.5 py-0.5 rounded border border-emerald-500/20">
-                                    Promovido (+{catInfo.steps} cat.)
-                                  </span>
-                                )}
-                              </div>
-                            )}
-                            {catInfo.category === PHARMACIST_CATEGORY && (
-                              emp.pharmacistLicense ? (
-                                <span className="text-[9px] text-indigo-700 font-black uppercase tracking-wider bg-indigo-500/10 px-1.5 py-0.5 rounded border border-indigo-500/20 w-max mt-1">
-                                  Matrícula N° {emp.pharmacistLicense}
-                                </span>
-                              ) : (
-                                <button
-                                  onClick={() => handleOpenEditEmployee(emp)}
-                                  className="mt-1.5 p-2 bg-red-50 border border-red-200 rounded-lg max-w-xs text-left cursor-pointer hover:bg-red-100 transition-colors"
-                                >
-                                  <span className="text-[9px] text-red-700 font-black uppercase tracking-wider block">Falta N° de matrícula</span>
-                                  <span className="text-[9px] text-red-700/80 font-semibold leading-snug block">
-                                    La categoría Farmacéutico requiere la matrícula profesional. Hacé clic para cargarla.
-                                  </span>
-                                </button>
-                              )
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          {emp.isAffiliate ? (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-emerald-500/10 text-emerald-700 rounded text-[10px] font-black uppercase border border-emerald-500/25" title="Afiliado: cuota sindical del 2% sobre Remunerativo + No Remunerativo">
-                              Sí (2% Total)
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-0.5 px-2 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[10px] font-black uppercase border border-amber-500/30" title="No Afiliado: $0 en remunerativo; cuota del 2% sobre conceptos No Remunerativos">
-                              No (2% No Rem)
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex flex-col items-center gap-1">
-                            <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border ${
-                              receiptStatus.valid 
-                                ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' 
-                                : 'bg-red-500/10 text-red-600 border-red-500/20'
-                            }`}>
-                              {receiptStatus.label}
-                            </span>
-                            {emp.receiptUrl && (
-                              <a
-                                href={emp.receiptUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] text-primary underline hover:opacity-80 inline-flex items-center gap-0.5 font-bold"
-                              >
-                                <FileText className="w-3 h-3" />
-                                <span>Ver PDF</span>
-                              </a>
-                            )}
-                          </div>
-                        </td>
-                        <td className="py-3.5 px-4 text-center text-slate-500">{emp.entryDate}</td>
-                        <td className="py-3.5 px-4 text-center text-slate-500 font-bold">{calculateSeniority(emp.entryDate)}</td>
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              onClick={() => handleOpenEditEmployee(emp)}
-                              className="p-1.5 rounded-lg border border-border hover:bg-primary/10 text-slate-600 hover:text-primary hover:border-primary/30 transition-colors bg-white cursor-pointer shadow-sm"
-                              title="Editar empleado o fijar sueldo personalizado"
-                            >
-                              <Pencil className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setSelectedEmpForReceipt(emp);
-                                setIsUpdateReceiptModalOpen(true);
-                              }}
-                              className="p-1.5 rounded-lg border border-border hover:bg-secondary/10 text-slate-600 hover:text-secondary hover:border-secondary/30 transition-colors bg-white cursor-pointer shadow-sm"
-                              title="Cargar / Actualizar Recibo de Sueldo (Requerido cada 6 meses)"
-                            >
-                              <Upload className="w-3.5 h-3.5" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteEmployee(emp.id)}
-                              className="p-1.5 rounded-lg border border-border hover:bg-red-50 text-slate-400 hover:text-red-500 hover:border-red-200 transition-colors bg-white cursor-pointer shadow-sm"
-                              title="Dar de Baja"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+            <EmployeeTable
+              employees={employees}
+              onEdit={handleOpenEditEmployee}
+              onOpenReceiptModal={(emp) => {
+                setSelectedEmpForReceipt(emp);
+                setIsUpdateReceiptModalOpen(true);
+              }}
+              onDelete={handleDeleteEmployee}
+            />
           </div>
 
           {/* Announcements Card (Pharmacy Exclusives) */}
@@ -1152,1031 +927,117 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
       </main>
 
       {/* Edit Profile Modal */}
-      {isProfileModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-2xl w-full shadow-premium-lg relative animate-scaleIn my-8">
-            <button
-              onClick={() => setIsProfileModalOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <h3 className="text-xl font-extrabold text-[#0f172a] tracking-tight mb-6 flex items-center gap-2">
-              <Building2 className="w-6 h-6 text-primary" />
-              <span>Configuración del Perfil de Farmacia</span>
-            </h3>
-
-            {/* Tabs control */}
-            <div className="flex border-b border-border mb-6 font-bold text-xs uppercase tracking-wider">
-              <button
-                onClick={() => setProfileTab('empresa')}
-                className={`py-3 px-4 border-b-2 transition-all cursor-pointer ${
-                  profileTab === 'empresa' 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                Datos de la Empresa
-              </button>
-              <button
-                onClick={() => setProfileTab('contactos')}
-                className={`py-3 px-4 border-b-2 transition-all cursor-pointer ${
-                  profileTab === 'contactos' 
-                    ? 'border-primary text-primary' 
-                    : 'border-transparent text-slate-400 hover:text-slate-600'
-                }`}
-              >
-                Responsables y RRHH
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveProfile} className="space-y-6">
-              {profileTab === 'empresa' ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">CUIT de la Farmacia</label>
-                      <input 
-                        type="text" 
-                        value={profileData.cuit} 
-                        onChange={(e) => handleProfileFieldChange('cuit', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider">Período Inicial / Inicio de Actividades</label>
-                        <span className="text-[10px] text-slate-400 font-semibold">Opcional / Informativo</span>
-                      </div>
-                      <input 
-                        type="date" 
-                        value={profileData.initialPeriod} 
-                        onChange={(e) => handleProfileFieldChange('initialPeriod', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      />
-                      <span className="text-[10px] text-slate-500 font-medium block mt-1 leading-snug">
-                        Fecha de inicio de actividad o primer período que declara en el portal. Es un dato registral: <strong>no calcula deuda anterior</strong> ni genera cobros retroactivos.
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Razón Social</label>
-                      <input 
-                        type="text" 
-                        value={profileData.razonSocial} 
-                        onChange={(e) => handleProfileFieldChange('razonSocial', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre Fantasía</label>
-                      <input 
-                        type="text" 
-                        value={profileData.nombreFantasia} 
-                        onChange={(e) => handleProfileFieldChange('nombreFantasia', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">WhatsApp Comercial</label>
-                      <input 
-                        type="text" 
-                        value={profileData.whatsapp} 
-                        onChange={(e) => handleProfileFieldChange('whatsapp', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Actividad Económica AFIP</label>
-                      <input 
-                        type="text" 
-                        value={profileData.actividadEconomica} 
-                        onChange={(e) => handleProfileFieldChange('actividadEconomica', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Domicilios Declarados (Sedes / Sucursales)</label>
-                    <input 
-                      type="text" 
-                      value={profileData.declaredAddresses} 
-                      onChange={(e) => handleProfileFieldChange('declaredAddresses', e.target.value)} 
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      placeholder="Calle y Nro, Localidad"
-                      required
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Filiales</label>
-                      <input 
-                        type="text" 
-                        value={profileData.branches} 
-                        onChange={(e) => handleProfileFieldChange('branches', e.target.value)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Cant. de Empleados Declarada</label>
-                      <input 
-                        type="number" 
-                        value={profileData.declaredEmployeeCount} 
-                        onChange={(e) => handleProfileFieldChange('declaredEmployeeCount', parseInt(e.target.value) || 0)} 
-                        className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block uppercase tracking-wider mb-1">Observaciones</label>
-                    <textarea 
-                      value={profileData.notes} 
-                      onChange={(e) => handleProfileFieldChange('notes', e.target.value)} 
-                      rows={2}
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a] resize-none"
-                    />
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Responsable Legal */}
-                  <div className="space-y-3.5 border-b border-border pb-4">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Responsable Principal / Firma Autorizada</span>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email</label>
-                        <input 
-                          type="email" 
-                          value={profileData.respEmail} 
-                          onChange={(e) => handleProfileFieldChange('respEmail', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Teléfono</label>
-                        <input 
-                          type="text" 
-                          value={profileData.respPhone} 
-                          onChange={(e) => handleProfileFieldChange('respPhone', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          required
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email Alternativo</label>
-                        <input 
-                          type="email" 
-                          value={profileData.respAltEmail} 
-                          onChange={(e) => handleProfileFieldChange('respAltEmail', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Responsable de RRHH / Segundo Contacto */}
-                  <div className="space-y-3.5">
-                    <span className="text-[10px] font-bold text-primary uppercase tracking-widest block font-sans">Segundo Responsable (RRHH / Contabilidad / Apoderado)</span>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Nombre Completo del Responsable</label>
-                        <input 
-                          type="text" 
-                          value={profileData.hrName || ''} 
-                          onChange={(e) => handleProfileFieldChange('hrName', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          placeholder="Ej: Roberto Gómez"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Relación / Cargo / Oficina</label>
-                        <input 
-                          type="text" 
-                          value={profileData.hrRole || ''} 
-                          onChange={(e) => handleProfileFieldChange('hrRole', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          placeholder="Ej: Contador, Recursos Humanos"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email RRHH</label>
-                        <input 
-                          type="email" 
-                          value={profileData.hrEmail || ''} 
-                          onChange={(e) => handleProfileFieldChange('hrEmail', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          placeholder="rrhh@ejemplo.com"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Teléfono RRHH</label>
-                        <input 
-                          type="text" 
-                          value={profileData.hrPhone || ''} 
-                          onChange={(e) => handleProfileFieldChange('hrPhone', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                          placeholder="Ej: 3415556677"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[10px] font-bold text-slate-700 block uppercase tracking-wider mb-1">Email Alt. RRHH</label>
-                        <input 
-                          type="email" 
-                          value={profileData.hrAltEmail || ''} 
-                          onChange={(e) => handleProfileFieldChange('hrAltEmail', e.target.value)} 
-                          className="w-full rounded-xl border border-border px-4 py-2 bg-background text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <div className="pt-4 border-t border-border flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsProfileModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
-                >
-                  Guardar Perfil
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <ProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        profileData={profileData}
+        onFieldChange={handleProfileFieldChange}
+        onSave={handleSaveProfile}
+        profileTab={profileTab}
+        setProfileTab={setProfileTab}
+      />
 
       {/* Add Employee Modal */}
-      {isEmployeeModalOpen && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl max-w-xl w-full shadow-premium-lg relative animate-scaleIn flex flex-col max-h-[92vh] my-auto">
-            {/* Sticky Header */}
-            <div className="p-5 sm:p-6 pb-4 border-b border-border/80 flex items-center justify-between flex-shrink-0">
-              <h3 className="text-xl font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2.5">
-                <Briefcase className="w-6 h-6 text-primary flex-shrink-0" />
-                <span>Registrar Empleado en Nómina</span>
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsEmployeeModalOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Cerrar ventana"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <form onSubmit={handleAddEmployee} className="flex flex-col flex-1 overflow-hidden">
-              {/* Scrollable Form Body */}
-              <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
-                <div>
-                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Nombre y Apellido *</label>
-                  <input 
-                    type="text" 
-                    value={newEmpName} 
-                    onChange={(e) => setNewEmpName(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                    placeholder="Ej: Juan Pérez"
-                    required
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-bold text-slate-800 block mb-1.5">CUIL del Empleado *</label>
-                    <input 
-                      type="text" 
-                      value={newEmpCuil} 
-                      onChange={(e) => setNewEmpCuil(e.target.value)} 
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      placeholder="27-XXXXXXXX-X o sin guiones"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-bold text-slate-800 block mb-1.5">Fecha de Ingreso *</label>
-                    <input 
-                      type="date" 
-                      value={newEmpEntryDate} 
-                      onChange={(e) => setNewEmpEntryDate(e.target.value)} 
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Categoría Profesional CCT *</label>
-                  <select
-                    value={newEmpCategory}
-                    onChange={(e) => setNewEmpCategory(e.target.value)}
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                  >
-                    {cctCategories.map((cat, idx) => (
-                      <option key={idx} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {newEmpCategory === PHARMACIST_CATEGORY && (
-                  <PharmacistLicenseField value={newEmpPharmacistLicense} onChange={setNewEmpPharmacistLicense} />
-                )}
-
-                <div className="flex items-start gap-3 p-4 bg-secondary/5 border border-secondary/20 rounded-2xl">
-                  <Sparkles className="w-5 h-5 text-secondary flex-shrink-0 mt-0.5" />
-                  <p className="text-xs text-slate-700 leading-relaxed font-semibold">
-                    <span className="font-black text-secondary">Promoción automática por antigüedad:</span> por convenio, cada 5 años el
-                    sistema asciende solo al empleado una categoría, aunque nadie la actualice a mano acá. Nunca asciende a
-                    Farmacéutico: esa categoría depende del título y la matrícula profesional, y se carga a mano con el número de matrícula.
-                    <span className="block mt-1 text-slate-500 font-medium">
-                      Ej: ingresó en 2021 como <strong className="text-slate-700">Cadetes</strong> → hoy el sistema ya lo liquida como{' '}
-                      <strong className="text-slate-700">Aprendiz Ayudante</strong> en las declaraciones.
-                    </span>
-                  </p>
-                </div>
-
-                <NotAffiliateField id="new-emp-not-affiliate" isAffiliate={newEmpIsAffiliate} onChange={setNewEmpIsAffiliate} />
-
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-bold text-slate-800">Horas Semanales Declaradas</label>
-                    <div className="flex items-center gap-1.5">
-                      <input 
-                        type="number"
-                        min="1"
-                        max="45"
-                        step="0.5"
-                        value={newEmpWeeklyHours}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          setNewEmpWeeklyHours(isNaN(val) ? 0 : Math.min(45, Math.max(0, val)));
-                        }}
-                        className="w-16 px-2 py-0.5 text-center font-extrabold text-primary bg-primary/5 rounded border border-primary/20 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                      <span className="text-xs font-bold text-slate-500">hs</span>
-                    </div>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="45" 
-                    step="0.5"
-                    value={newEmpWeeklyHours} 
-                    onChange={(e) => setNewEmpWeeklyHours(parseFloat(e.target.value))} 
-                    className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
-                  />
-                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs a 45 hs (jornada completa CCT 659/13). Media jornada: 22.5 hs.</span>
-                </div>
-
-                {/* Régimen de Sueldo */}
-                <div className="border border-border/90 rounded-2xl p-4 sm:p-5 bg-slate-50/80 space-y-3.5">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                      <span>Régimen de Sueldo para Aportes</span>
-                    </label>
-                    <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${
-                      newEmpSalaryType === 'manual' 
-                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
-                        : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
-                    }`}>
-                      {newEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setNewEmpSalaryType('automatico');
-                        setNewEmpCustomSalary('');
-                      }}
-                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                        newEmpSalaryType === 'automatico'
-                          ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
-                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1">
-                        ✓ Automático por Convenio
-                      </span>
-                      <span className="text-xs text-slate-500 font-normal leading-tight">
-                        Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setNewEmpSalaryType('manual')}
-                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                        newEmpSalaryType === 'manual'
-                          ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
-                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1">
-                        ✏️ Sueldo Personalizado
-                      </span>
-                      <span className="text-xs text-slate-500 font-normal leading-tight">
-                        Para casos extraordinarios (jornada reducida, licencias, acuerdos).
-                      </span>
-                    </button>
-                  </div>
-
-                  {newEmpSalaryType === 'manual' && (
-                    <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Conceptos Remunerativos ($ ARS) *
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                            <input
-                              type="number"
-                              min="1"
-                              step="0.01"
-                              value={newEmpCustomSalary}
-                              onChange={(e) => setNewEmpCustomSalary(e.target.value)}
-                              placeholder="Ej: 1450000.00"
-                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                              required={newEmpSalaryType === 'manual'}
-                            />
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Conceptos No Remunerativos ($ ARS)
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={newEmpCustomNoRem}
-                              onChange={(e) => setNewEmpCustomNoRem(e.target.value)}
-                              placeholder="Ej: 0.00"
-                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                            />
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-amber-800 font-semibold bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed">
-                        <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                <div className="p-4 bg-slate-50 border border-border/80 rounded-2xl space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-slate-800">
-                      Recibo de Sueldo (PDF o Imagen)
-                    </label>
-                    <span className="text-[11px] font-bold text-slate-500 bg-slate-200/70 px-2 py-0.5 rounded-md">
-                      Opcional en el alta inicial
-                    </span>
-                  </div>
-                  <input 
-                    type="file"
-                    accept=".pdf,image/*"
-                    onChange={(e) => setNewEmpReceiptFile(e.target.files?.[0] || null)}
-                    className="w-full text-sm text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-secondary/15 file:text-secondary hover:file:bg-secondary/20 cursor-pointer"
-                  />
-                  <span className="text-xs text-slate-500 font-medium block">
-                    Subí el <strong>último recibo de sueldo</strong> que tengas del empleado (el más reciente, no importa de qué mes).
-                    Vale por 6 meses desde que lo cargás: cuando se venza, el sistema te avisa para subir uno nuevo.
-                    Podés registrar al empleado ahora y adjuntar el recibo más adelante.
-                  </span>
-                </div>
-              </div>
-
-              {/* Sticky Footer */}
-              <div className="p-4 sm:p-5 border-t border-border bg-slate-50/80 rounded-b-3xl flex items-center justify-end gap-3 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsEmployeeModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-sm font-bold hover:bg-slate-100 transition-all cursor-pointer bg-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={uploadingReceipt}
-                  className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-2"
-                >
-                  {uploadingReceipt ? 'Guardando...' : 'Registrar Empleado'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
+      <AddEmployeeModal
+        isOpen={isEmployeeModalOpen}
+        onClose={() => setIsEmployeeModalOpen(false)}
+        name={newEmpName}
+        setName={setNewEmpName}
+        cuil={newEmpCuil}
+        setCuil={setNewEmpCuil}
+        entryDate={newEmpEntryDate}
+        setEntryDate={setNewEmpEntryDate}
+        category={newEmpCategory}
+        setCategory={setNewEmpCategory}
+        pharmacistLicense={newEmpPharmacistLicense}
+        setPharmacistLicense={setNewEmpPharmacistLicense}
+        isAffiliate={newEmpIsAffiliate}
+        setIsAffiliate={setNewEmpIsAffiliate}
+        weeklyHours={newEmpWeeklyHours}
+        setWeeklyHours={setNewEmpWeeklyHours}
+        salaryType={newEmpSalaryType}
+        setSalaryType={setNewEmpSalaryType}
+        customSalary={newEmpCustomSalary}
+        setCustomSalary={setNewEmpCustomSalary}
+        customNoRem={newEmpCustomNoRem}
+        setCustomNoRem={setNewEmpCustomNoRem}
+        onReceiptFileChange={setNewEmpReceiptFile}
+        onSubmit={handleAddEmployee}
+        uploadingReceipt={uploadingReceipt}
+      />
       {/* Edit Employee Modal */}
-      {isEditEmployeeModalOpen && editingEmployee && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl max-w-xl w-full shadow-premium-lg relative animate-scaleIn flex flex-col max-h-[92vh] my-auto">
-            {/* Sticky Header */}
-            <div className="p-5 sm:p-6 pb-4 border-b border-border/80 flex items-center justify-between flex-shrink-0">
-              <div>
-                <h3 className="text-xl font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2.5">
-                  <Pencil className="w-5.5 h-5.5 text-primary flex-shrink-0" />
-                  <span>Editar Empleado y Régimen de Sueldo</span>
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Ajustá los datos laborales o fijá un sueldo bruto personalizado para casos extraordinarios.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setIsEditEmployeeModalOpen(false)}
-                className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
-                title="Cerrar ventana"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <EditEmployeeModal
+        isOpen={isEditEmployeeModalOpen && !!editingEmployee}
+        onClose={() => setIsEditEmployeeModalOpen(false)}
+        name={editEmpName}
+        setName={setEditEmpName}
+        cuil={editEmpCuil}
+        setCuil={setEditEmpCuil}
+        entryDate={editEmpEntryDate}
+        setEntryDate={setEditEmpEntryDate}
+        category={editEmpCategory}
+        setCategory={setEditEmpCategory}
+        pharmacistLicense={editEmpPharmacistLicense}
+        setPharmacistLicense={setEditEmpPharmacistLicense}
+        isAffiliate={editEmpIsAffiliate}
+        setIsAffiliate={setEditEmpIsAffiliate}
+        weeklyHours={editEmpWeeklyHours}
+        setWeeklyHours={setEditEmpWeeklyHours}
+        onJobReserve={editEmpOnJobReserve}
+        setOnJobReserve={setEditEmpOnJobReserve}
+        jobReserveSince={editEmpJobReserveSince}
+        setJobReserveSince={setEditEmpJobReserveSince}
+        salaryType={editEmpSalaryType}
+        setSalaryType={setEditEmpSalaryType}
+        customSalary={editEmpCustomSalary}
+        setCustomSalary={setEditEmpCustomSalary}
+        customNoRem={editEmpCustomNoRem}
+        setCustomNoRem={setEditEmpCustomNoRem}
+        onSubmit={handleSaveEditEmployee}
+        saving={savingEditEmployee}
+      />
 
-            <form onSubmit={handleSaveEditEmployee} className="flex flex-col flex-1 overflow-hidden">
-              {/* Scrollable Form Body */}
-              <div className="p-5 sm:p-6 overflow-y-auto space-y-5 flex-1 text-slate-800">
-                <div>
-                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Nombre y Apellido *</label>
-                  <input 
-                    type="text" 
-                    value={editEmpName} 
-                    onChange={(e) => setEditEmpName(e.target.value)} 
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                    required
-                  />
-                </div>
+      {/* Update Receipt Modal */}
+      <UpdateReceiptModal
+        isOpen={isUpdateReceiptModalOpen && !!selectedEmpForReceipt}
+        onClose={() => {
+          setIsUpdateReceiptModalOpen(false);
+          setSelectedEmpForReceipt(null);
+        }}
+        employeeName={selectedEmpForReceipt?.fullName || selectedEmpForReceipt?.full_name || ''}
+        employeeCuil={selectedEmpForReceipt?.cuil || ''}
+        onFileChange={setUpdateReceiptFile}
+        onSubmit={handleUpdateSingleReceipt}
+        uploading={uploadingReceipt}
+      />
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-bold text-slate-800 block mb-1.5">CUIL *</label>
-                    <input 
-                      type="text" 
-                      value={editEmpCuil} 
-                      onChange={(e) => setEditEmpCuil(e.target.value)} 
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-bold text-slate-800 block mb-1.5">Fecha de Ingreso *</label>
-                    <input 
-                      type="date" 
-                      value={editEmpEntryDate} 
-                      onChange={(e) => setEditEmpEntryDate(e.target.value)} 
-                      className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-sm font-bold text-slate-800 block mb-1.5">Categoría Profesional CCT *</label>
-                  <select
-                    value={editEmpCategory}
-                    onChange={(e) => setEditEmpCategory(e.target.value)}
-                    className="w-full rounded-xl border border-border px-4 py-2.5 bg-background text-base sm:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                  >
-                    {cctCategories.map((cat, idx) => (
-                      <option key={idx} value={cat}>{cat}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {editEmpCategory === PHARMACIST_CATEGORY && (
-                  <PharmacistLicenseField value={editEmpPharmacistLicense} onChange={setEditEmpPharmacistLicense} />
-                )}
-
-                <NotAffiliateField id="edit-emp-not-affiliate" isAffiliate={editEmpIsAffiliate} onChange={setEditEmpIsAffiliate} />
-
-                <div>
-                  <div className="flex justify-between items-center mb-1.5">
-                    <label className="text-sm font-bold text-slate-800">Horas Semanales</label>
-                    <div className="flex items-center gap-1.5">
-                      <input 
-                        type="number"
-                        min="1"
-                        max="45"
-                        step="0.5"
-                        value={editEmpWeeklyHours}
-                        onChange={(e) => {
-                          const val = parseFloat(e.target.value);
-                          setEditEmpWeeklyHours(isNaN(val) ? 0 : Math.min(45, Math.max(0, val)));
-                        }}
-                        className="w-16 px-2 py-0.5 text-center font-extrabold text-primary bg-primary/5 rounded border border-primary/20 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
-                      />
-                      <span className="text-xs font-bold text-slate-500">hs</span>
-                    </div>
-                  </div>
-                  <input 
-                    type="range" 
-                    min="1" 
-                    max="45" 
-                    step="0.5"
-                    value={editEmpWeeklyHours} 
-                    onChange={(e) => setEditEmpWeeklyHours(parseFloat(e.target.value))} 
-                    className="w-full accent-primary h-2.5 bg-slate-200 rounded-lg cursor-pointer"
-                  />
-                  <span className="text-xs text-slate-500 font-semibold mt-1 block">Rango: 1 hs a 45 hs (jornada completa CCT 659/13). Media jornada: 22.5 hs.</span>
-                </div>
-
-                {/* Reserva de puesto (art. 211 LCT) / licencia sin goce */}
-                <div className="border border-sky-500/25 rounded-2xl p-4 sm:p-5 bg-sky-500/5 space-y-3">
-                  <div className="flex items-start gap-3">
-                    <input
-                      type="checkbox"
-                      id="edit-emp-job-reserve"
-                      checked={editEmpOnJobReserve}
-                      onChange={(e) => setEditEmpOnJobReserve(e.target.checked)}
-                      className="w-5 h-5 accent-sky-600 cursor-pointer rounded mt-0.5"
-                    />
-                    <label htmlFor="edit-emp-job-reserve" className="cursor-pointer select-none space-y-0.5">
-                      <span className="text-sm font-bold text-slate-800 block">Reserva de puesto / licencia sin goce de sueldo</span>
-                      <span className="text-xs text-slate-600 font-medium block leading-snug">
-                        Ej.: licencia por enfermedad que superó los meses pagos (art. 211 LCT). Sigue en nómina, pero no cobra sueldo: el aporte del período es $0 y no se le pide recibo.
-                      </span>
-                    </label>
-                  </div>
-                  {editEmpOnJobReserve && (
-                    <div className="pl-8 animate-fadeIn pt-1">
-                      <label className="text-xs font-bold text-slate-700 block mb-1">En reserva desde</label>
-                      <input
-                        type="date"
-                        value={editEmpJobReserveSince}
-                        onChange={(e) => setEditEmpJobReserveSince(e.target.value)}
-                        className="w-full sm:w-56 rounded-xl border border-border px-4 py-2.5 bg-white text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-sky-500/20 text-[#0f172a]"
-                        required={editEmpOnJobReserve}
-                      />
-                      <span className="text-xs text-slate-500 font-medium block mt-1">Cuando vuelva a trabajar, destildá esta opción.</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Régimen de Sueldo (Automático vs Manual) */}
-                <div className={`border border-border/90 rounded-2xl p-4 sm:p-5 bg-slate-50/80 space-y-3.5 ${editEmpOnJobReserve ? 'opacity-50' : ''}`}>
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-extrabold text-slate-800 flex items-center gap-1.5">
-                      <DollarSign className="w-4 h-4 text-primary" />
-                      <span>Régimen de Sueldo para Aportes</span>
-                    </label>
-                    <span className={`text-xs font-black uppercase px-2.5 py-0.5 rounded-full ${
-                      editEmpSalaryType === 'manual'
-                        ? 'bg-amber-500/15 text-amber-800 border border-amber-500/30' 
-                        : 'bg-emerald-500/10 text-emerald-700 border border-emerald-500/20'
-                    }`}>
-                      {editEmpSalaryType === 'manual' ? 'Sueldo Fijo Manual' : 'Automático CCT'}
-                    </span>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditEmpSalaryType('automatico');
-                        setEditEmpCustomSalary('');
-                      }}
-                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                        editEmpSalaryType === 'automatico'
-                          ? 'border-primary bg-primary/5 text-primary shadow-sm ring-1 ring-primary'
-                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1">
-                        ✓ Automático por Convenio
-                      </span>
-                      <span className="text-xs text-slate-500 font-normal leading-tight">
-                        Calcula según escala CCT 659/13 vigente + escalafón por antigüedad (Art. 15: 7% al año, +2% por año).
-                      </span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setEditEmpSalaryType('manual')}
-                      className={`p-3.5 rounded-xl border text-xs font-bold transition-all text-left flex flex-col gap-1 cursor-pointer ${
-                        editEmpSalaryType === 'manual'
-                          ? 'border-amber-600 bg-amber-500/10 text-amber-900 shadow-sm ring-1 ring-amber-500'
-                          : 'border-border bg-white text-slate-600 hover:bg-slate-50'
-                      }`}
-                    >
-                      <span className="font-extrabold text-sm flex items-center gap-1">
-                        ✏️ Sueldo Personalizado
-                      </span>
-                      <span className="text-xs text-slate-500 font-normal leading-tight">
-                        Para casos extraordinarios (jornada reducida, licencias, acuerdos).
-                      </span>
-                    </button>
-                  </div>
-
-                  {editEmpSalaryType === 'manual' && (
-                    <div className="pt-2 border-t border-border/60 space-y-3 animate-fadeIn">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Conceptos Remunerativos ($ ARS) *
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                            <input
-                              type="number"
-                              min="1"
-                              step="0.01"
-                              value={editEmpCustomSalary}
-                              onChange={(e) => setEditEmpCustomSalary(e.target.value)}
-                              placeholder="Ej: 1450000.00"
-                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                              required={editEmpSalaryType === 'manual'}
-                            />
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium block mt-1">Sueldo bruto base sujeto a aportes.</span>
-                        </div>
-
-                        <div>
-                          <label className="text-xs font-bold text-slate-700 block mb-1">
-                            Conceptos No Remunerativos ($ ARS)
-                          </label>
-                          <div className="relative">
-                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">$</span>
-                            <input
-                              type="number"
-                              min="0"
-                              step="0.01"
-                              value={editEmpCustomNoRem}
-                              onChange={(e) => setEditEmpCustomNoRem(e.target.value)}
-                              placeholder="Ej: 0.00"
-                              className="w-full rounded-xl border border-border pl-8 pr-4 py-2.5 bg-white text-sm font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 text-[#0f172a]"
-                            />
-                          </div>
-                          <span className="text-xs text-slate-500 font-medium block mt-1">Sumas no remunerativas. Si no percibe, dejá 0.</span>
-                        </div>
-                      </div>
-
-                      <p className="text-xs text-amber-800 font-semibold bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 leading-relaxed">
-                        <strong>Aviso para contadores:</strong> El sistema liquidará los aportes basándose exactamente en estas dos bases (Remunerativo y No Remunerativo) y <u>no los modificará</u> con aumentos de escala ni antigüedad.
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Sticky Footer */}
-              <div className="p-4 sm:p-5 border-t border-border bg-slate-50/80 rounded-b-3xl flex items-center justify-end gap-3 flex-shrink-0">
-                <button
-                  type="button"
-                  onClick={() => setIsEditEmployeeModalOpen(false)}
-                  className="px-5 py-2.5 rounded-xl border border-border text-slate-700 text-sm font-bold hover:bg-slate-100 transition-all cursor-pointer bg-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={savingEditEmployee}
-                  className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-sm font-bold hover:bg-primary/95 transition-all shadow-premium cursor-pointer disabled:opacity-50 flex items-center gap-2"
-                >
-                  {savingEditEmployee ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                      <span>Guardando...</span>
-                    </>
-                  ) : (
-                    <span>Guardar Cambios</span>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Update Employee Salary Receipt Modal */}
-      {isUpdateReceiptModalOpen && selectedEmpForReceipt && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto py-6 sm:py-10 animate-fadeIn">
-          <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 max-w-md w-full shadow-premium-lg relative animate-scaleIn space-y-6 my-auto">
-            <button
-              onClick={() => {
-                setIsUpdateReceiptModalOpen(false);
-                setSelectedEmpForReceipt(null);
-              }}
-              className="absolute top-4 right-4 p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="space-y-1">
-              <h3 className="text-lg font-extrabold text-[#0f172a] tracking-tight flex items-center gap-2">
-                <Upload className="w-5 h-5 text-secondary" />
-                <span>Actualizar Recibo de Sueldo</span>
-              </h3>
-              <p className="text-xs text-slate-500 font-semibold">
-                Empleado: <strong className="text-slate-800">{selectedEmpForReceipt.fullName}</strong> ({selectedEmpForReceipt.cuil})
-              </p>
-            </div>
-
-            <form onSubmit={handleUpdateSingleReceipt} className="space-y-5">
-              <div className="p-4 bg-slate-50 border border-border rounded-2xl space-y-2">
-                <span className="text-xs font-bold text-slate-700 block">Adjuntar nuevo recibo (PDF o Foto):</span>
-                <input 
-                  type="file" 
-                  accept=".pdf,image/*"
-                  required
-                  onChange={(e) => setUpdateReceiptFile(e.target.files?.[0] || null)}
-                  className="w-full text-xs text-slate-600 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-primary/10 file:text-primary hover:file:bg-primary/20 cursor-pointer"
-                />
-                <span className="text-[10px] text-slate-500 font-semibold block leading-relaxed">
-                  Al subir este archivo se actualizará la fecha del recibo a la fecha actual y se habilitará la vigencia por los próximos 6 meses.
-                </span>
-              </div>
-
-              <div className="pt-3 border-t border-border flex items-center justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsUpdateReceiptModalOpen(false);
-                    setSelectedEmpForReceipt(null);
-                  }}
-                  className="px-4 py-2 rounded-xl border border-border text-slate-700 text-xs font-bold uppercase tracking-wider hover:bg-slate-50 transition-all cursor-pointer bg-white"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={uploadingReceipt}
-                  className="px-5 py-2 rounded-xl bg-secondary text-secondary-foreground text-xs font-bold uppercase tracking-wider hover:bg-secondary/95 transition-all shadow-md cursor-pointer disabled:opacity-50"
-                >
-                  {uploadingReceipt ? 'Subiendo...' : 'Guardar Recibo'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Onboarding Tutorial Modal */}
-      {showTutorial && (
-        <div className="fixed inset-0 bg-slate-900/70 backdrop-blur-md z-[100] flex items-center justify-center p-4 overflow-y-auto animate-fadeIn">
-          <div className="bg-card border border-border/80 rounded-3xl p-6 sm:p-8 max-w-xl w-full shadow-premium-lg relative animate-scaleIn space-y-6">
-            
-            {/* Header info */}
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-black text-primary uppercase tracking-widest bg-primary/5 px-2.5 py-1 rounded-lg border border-primary/10">
-                Paso {tutorialStep} de 4
-              </span>
-              
-              <button 
-                onClick={async () => {
-                  try {
-                    if (userId) {
-                      await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
-                    }
-                  } catch (e) {
-                    console.error(e);
-                  }
-                  setShowTutorial(false);
-                }}
-                className="text-xs text-muted-foreground hover:text-foreground font-bold cursor-pointer"
-              >
-                Omitir guía
-              </button>
-            </div>
-
-            {/* Step content */}
-            <div className="space-y-4 text-foreground">
-              {tutorialStep === 1 && (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary mb-2">
-                    <Building2 className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">¡Bienvenido al Portal de Farmacias de ATFAR!</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Esta guía te asistirá en los primeros pasos necesarios para habilitar tu cuenta y comenzar a utilizar el sistema de liquidaciones de aportes obligatorios.
-                  </p>
-                </div>
-              )}
-
-              {tutorialStep === 2 && (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center text-amber-600 mb-2">
-                    <MapPin className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 1: Mi Farmacia y Ubicación</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Antes que nada, verificá los datos de tu sucursal en el mapa de ATFAR. Hacé clic en &quot;Ver / Editar Perfil&quot; en el panel principal para completar tu razón social, CUIT y datos de contacto actualizados.
-                  </p>
-                </div>
-              )}
-
-              {tutorialStep === 3 && (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-emerald-500/10 rounded-2xl flex items-center justify-center text-emerald-600 mb-2">
-                    <Users className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 2: Nómina de Empleados</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Cargá a tus empleados en la nómina activa ingresando su Nombre, CUIL, Categoría Profesional del CCT 659/13 y Fecha de Ingreso.
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Mantener esta lista al día es obligatorio y sirve para calcular de forma transparente el básico de las declaraciones mensuales.
-                  </p>
-                </div>
-              )}
-
-              {tutorialStep === 4 && (
-                <div className="space-y-3">
-                  <div className="w-12 h-12 bg-blue-500/10 rounded-2xl flex items-center justify-center text-blue-600 mb-2">
-                    <FileText className="w-6 h-6" />
-                  </div>
-                  <h3 className="text-xl font-extrabold text-foreground tracking-tight">Paso 3: Declaraciones y Reportar Pago</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed font-semibold">
-                    Todos los meses debés generar tu Declaración Jurada, descargar la boleta de pago y realizar el depósito o transferencia bancaria.
-                  </p>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Una vez realizado el pago, recordá subir el comprobante de transferencia desde la sección de &quot;Declaraciones y Pagos&quot; para que el sindicato concilie y apruebe tu estado de cuenta.
-                  </p>
-                </div>
-              )}
-            </div>
-
-            {/* Step indicators */}
-            <div className="flex gap-1.5 justify-center py-2">
-              {[1, 2, 3, 4].map((step) => (
-                <div 
-                  key={step} 
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    step === tutorialStep ? 'w-8 bg-primary' : 'w-2 bg-slate-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Navigation buttons */}
-            <div className="pt-4 border-t border-border flex justify-between items-center">
-              <button
-                disabled={tutorialStep === 1}
-                onClick={() => setTutorialStep(prev => prev - 1)}
-                className="px-4 py-2 rounded-xl border border-border text-xs font-bold text-slate-700 disabled:opacity-30 disabled:pointer-events-none hover:bg-slate-50 cursor-pointer bg-white transition-all"
-              >
-                Anterior
-              </button>
-
-              {tutorialStep < 4 ? (
-                <button
-                  onClick={() => setTutorialStep(prev => prev + 1)}
-                  className="px-5 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-bold cursor-pointer hover:bg-primary/95 transition-all shadow-premium"
-                >
-                  Siguiente
-                </button>
-              ) : (
-                <button
-                  onClick={async () => {
-                    try {
-                      if (userId) {
-                        await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
-                      }
-                    } catch (e) {
-                      console.error(e);
-                    }
-                    setShowTutorial(false);
-                  }}
-                  className="px-6 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold cursor-pointer hover:bg-emerald-700 transition-all shadow-premium"
-                >
-                  ¡Comenzar!
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Tutorial Guide Modal */}
+      <TutorialGuideModal
+        isOpen={showTutorial}
+        onClose={async () => {
+          try {
+            if (userId) {
+              await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          setShowTutorial(false);
+        }}
+        step={tutorialStep}
+        onNext={() => setTutorialStep((prev) => prev + 1)}
+        onPrev={() => setTutorialStep((prev) => prev - 1)}
+        onFinish={async () => {
+          try {
+            if (userId) {
+              await supabase.from('profiles').update({ seen_tutorial: true }).eq('id', userId);
+            }
+          } catch (e) {
+            console.error(e);
+          }
+          setShowTutorial(false);
+        }}
+      />
     </div>
   );
 }

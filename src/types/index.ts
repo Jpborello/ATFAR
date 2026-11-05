@@ -41,16 +41,16 @@ export interface Pharmacy {
 export interface Employee {
   id: string;
   pharmacy_id?: string;
-  full_name: string;
+  full_name?: string;
   fullName?: string;
   cuil: string;
   category: string;
-  entry_date: string;
+  entry_date?: string;
   entryDate?: string;
   weekly_hours?: number;
   weeklyHours?: number;
-  active: boolean;
-  is_affiliate: boolean;
+  active?: boolean;
+  is_affiliate?: boolean;
   isAffiliate?: boolean;
   receipt_url?: string;
   receiptUrl?: string;
@@ -98,6 +98,8 @@ export interface DdjjDetail {
     pharmacistLicense?: string | null;
     promoted: boolean;
     isAffiliate?: boolean;
+    hours?: number;
+    isPartTime?: boolean;
     seniorityYears: number;
     seniorityPct: number;
     isCustomSalary: boolean;

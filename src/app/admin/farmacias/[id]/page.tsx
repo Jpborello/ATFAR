@@ -6,8 +6,6 @@ import {
   Building2, 
   User, 
   Phone, 
-  Mail, 
-  MapPin, 
   ArrowLeft, 
   FileText, 
   CheckCircle2, 
@@ -91,6 +89,7 @@ interface Employee {
   customNoRem?: number | null;
   pharmacistLicense?: string | null;
   jobReserveSince?: string | null;
+  weeklyHours?: number;
 }
 
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
@@ -189,7 +188,8 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           customSalary: e.custom_salary ? Number(e.custom_salary) : null,
           customNoRem: e.custom_no_rem !== null && e.custom_no_rem !== undefined ? Number(e.custom_no_rem) : null,
           pharmacistLicense: (e.pharmacist_license as string | null) ?? null,
-          jobReserveSince: (e.job_reserve_since as string | null) ?? null
+          jobReserveSince: (e.job_reserve_since as string | null) ?? null,
+          weeklyHours: e.weekly_hours !== null && e.weekly_hours !== undefined ? Number(e.weekly_hours) : 45
         })) : [];
 
         // Fetch real payments
@@ -753,6 +753,11 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                   Reserva de puesto desde {formatDateAR(emp.jobReserveSince)}
                                 </span>
                               )}
+                              {emp.weeklyHours && emp.weeklyHours < 45 && (
+                                <span className="text-[9px] text-indigo-700 font-black uppercase tracking-wider bg-indigo-500/10 px-2 py-0.5 rounded w-max mt-1 border border-indigo-500/20" title={`Jornada reducida de ${emp.weeklyHours} horas semanales (base CCT 45 hs)`}>
+                                  Jornada: {emp.weeklyHours} hs/sem
+                                </span>
+                              )}
                               {emp.customSalary && emp.customSalary > 0 ? (
                                 <div className="flex flex-col gap-0.5 mt-1">
                                   <span className="text-[9px] text-amber-800 font-extrabold uppercase tracking-wider bg-amber-500/15 px-2 py-0.5 rounded w-max border border-amber-500/30">
@@ -922,6 +927,11 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                                       ) : e.isAffiliate === false ? (
                                         <span className="text-slate-500 font-semibold uppercase text-[8px] bg-slate-100 px-1 py-0.5 rounded border border-slate-200">No Afiliado (2% No Rem)</span>
                                       ) : null}
+                                      {e.hours && e.hours < 45 && (
+                                        <span className="text-indigo-700 font-bold uppercase text-[8px] bg-indigo-50 px-1 py-0.5 rounded border border-indigo-200 block w-max mt-0.5">
+                                          {e.hours} hs/sem
+                                        </span>
+                                      )}
                                     </td>
                                     <td className="py-1.5 px-2.5 text-center text-muted-foreground">
                                       {e.seniorityYears}a · {Math.round(e.seniorityPct * 100)}%

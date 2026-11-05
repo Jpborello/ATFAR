@@ -194,8 +194,8 @@ export default function FarmaciasPanelPage() {
     if (tab !== 'padron') return;
     const term = padronQuery.trim();
     if (term.length < 2) {
-      setPadronResults([]);
-      return;
+      const clearTimer = setTimeout(() => setPadronResults([]), 0);
+      return () => clearTimeout(clearTimer);
     }
     const safeTerm = term.replace(/[,()%]/g, '');
     const handle = setTimeout(async () => {
@@ -298,9 +298,6 @@ export default function FarmaciasPanelPage() {
 
   // Si el admin busca algo o la lista cambia de tamaño, volvemos a la página 1
   // para no quedar "perdido" en una página que ya no tiene resultados.
-  useEffect(() => {
-    setPage(1);
-  }, [searchQuery]);
 
   const totalPages = Math.max(1, Math.ceil(filteredRegistradas.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages);
@@ -407,7 +404,10 @@ export default function FarmaciasPanelPage() {
               type="text"
               placeholder="Buscar por nombre o CUIT..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
               className="w-full pl-11 pr-4 py-3 rounded-xl border border-border bg-card focus:outline-none focus:ring-2 focus:ring-secondary/50 text-sm transition-all"
             />
           </div>

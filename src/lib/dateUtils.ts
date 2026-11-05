@@ -1,12 +1,7 @@
-export const cctCategories = [
-  'Cadetes',
-  'Aprendiz Ayudante',
-  'Personal Auxiliar Interno y Externo',
-  'Personal con Asignación Específica',
-  'Ayudante en Gestión de Farmacia',
-  'Personal en Gestión de Farmacia',
-  'Farmacéutico'
-];
+import { CCT_CATEGORIES, PHARMACIST_CATEGORY } from '@/lib/constants/cct';
+
+export { CCT_CATEGORIES, PHARMACIST_CATEGORY };
+export const cctCategories: string[] = [...CCT_CATEGORIES];
 
 export function calculateSeniorityYears(entryDateStr: string | null | undefined): number {
   if (!entryDateStr) return 0;
@@ -72,7 +67,6 @@ export function calculateSeniority(entryDateStr: string | null | undefined): str
   return parts.join(' y ');
 }
 
-export const PHARMACIST_CATEGORY = 'Farmacéutico';
 
 export function getCurrentCategory(
   registeredCategory: string,
