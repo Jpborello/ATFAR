@@ -49,7 +49,7 @@ function MisFarmaciasContent() {
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   const [linkStep, setLinkStep] = useState<'search' | 'confirm' | 'new'>('search');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<{ id: string; name: string; address: string; cuit: string }[]>([]);
+  const [searchResults, setSearchResults] = useState<{ id: string; name: string; address: string; cuit: string; registered?: boolean }[]>([]);
   const [searching, setSearching] = useState(false);
   const [linking, setLinking] = useState(false);
 
@@ -196,11 +196,15 @@ function MisFarmaciasContent() {
     const delayDebounceFn = setTimeout(async () => {
       setSearching(true);
       try {
+        const cleanCuit = searchQuery.replace(/\D/g, '');
+        const queryFilter = cleanCuit.length >= 3
+          ? `name.ilike.%${searchQuery}%,cuit.ilike.%${searchQuery}%,cuit.ilike.%${cleanCuit}%`
+          : `name.ilike.%${searchQuery}%,cuit.ilike.%${searchQuery}%`;
+
         const { data, error } = await supabase
           .from('pharmacies')
-          .select('id, name, address, cuit')
-          .eq('registered', false)
-          .or(`name.ilike.%${searchQuery}%,cuit.ilike.%${searchQuery}%`)
+          .select('id, name, address, cuit, registered')
+          .or(queryFilter)
           .limit(10);
 
         if (!error && data) {
@@ -294,6 +298,56 @@ function MisFarmaciasContent() {
     }
     setLinking(true);
     try {
+      const cleanCuit = form.cuit.replace(/\D/g, '');
+
+      // 1. Verificar si ya existe una farmacia con este CUIT
+      const { data: existingPharm } = await supabase
+        .from('pharmacies')
+        .select('id, name, registered, owner_id')
+        .or(`cuit.eq.${form.cuit},cuit.eq.${cleanCuit}`)
+        .maybeSingle();
+
+      if (existingPharm) {
+        if (!existingPharm.registered || !existingPharm.owner_id) {
+          // Farmacia del padrón que aún no fue reclamada: la reclamamos directamente
+          const { error: updateError } = await supabase
+            .from('pharmacies')
+            .update({
+              owner_id: userId,
+              registered: true,
+              has_debt: true,
+              name: form.name,
+              razon_social: form.razonSocial || form.name,
+              address: form.address,
+            })
+            .eq('id', existingPharm.id);
+
+          if (updateError) throw updateError;
+
+          const { error: memberError } = await supabase
+            .from('pharmacy_members')
+            .upsert({ pharmacy_id: existingPharm.id, user_id: userId, role: 'owner' }, { onConflict: 'pharmacy_id,user_id' });
+
+          if (memberError) throw memberError;
+
+          toast.success('Farmacia vinculada correctamente a tu cuenta.');
+          setIsLinkModalOpen(false);
+          loadPharmacies();
+          return;
+        } else {
+          // Ya fue registrada por otro usuario
+          toast.error(
+            `La farmacia "${existingPharm.name}" (CUIT ${form.cuit}) ya se encuentra registrada en el sistema.`,
+            {
+              description: 'Si sos su contador o personal de liquidación, comunicate con ATFAR para que asocien tu cuenta a esta farmacia.',
+              duration: 8000,
+            }
+          );
+          return;
+        }
+      }
+
+      // 2. Si no existe, crear la nueva farmacia
       const { data: newPharm, error: insertError } = await supabase
         .from('pharmacies')
         .insert({
@@ -320,7 +374,14 @@ function MisFarmaciasContent() {
       setIsLinkModalOpen(false);
       loadPharmacies();
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al crear la farmacia.';
+      let msg = 'Error al crear la farmacia.';
+      if (err instanceof Error) {
+        if (err.message.includes('unique') || err.message.includes('duplicate')) {
+          msg = 'Ya existe una farmacia con ese CUIT en el sistema. Comunicate con ATFAR para asociarla.';
+        } else {
+          msg = err.message;
+        }
+      }
       toast.error(msg);
     } finally {
       setLinking(false);
@@ -508,15 +569,30 @@ function MisFarmaciasContent() {
                 {searchResults.length > 0 && (
                   <div className="border border-border rounded-xl max-h-56 overflow-y-auto divide-y divide-border/60">
                     {searchResults.map((pharm) => (
-                      <button
-                        key={pharm.id}
-                        type="button"
-                        onClick={() => selectResult(pharm)}
-                        className="w-full text-left p-3 text-xs hover:bg-primary/5 transition-colors cursor-pointer"
-                      >
-                        <span className="font-bold text-[#0f172a] block">{pharm.name}</span>
-                        <span className="text-muted-foreground">{pharm.address}</span>
-                      </button>
+                      pharm.registered ? (
+                        <div key={pharm.id} className="w-full text-left p-3 text-xs bg-amber-50/70 space-y-1">
+                          <div className="flex items-center justify-between gap-2">
+                            <span className="font-bold text-[#0f172a]">{pharm.name}</span>
+                            <span className="text-[10px] font-black uppercase bg-amber-200/80 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300">
+                              Ya Registrada
+                            </span>
+                          </div>
+                          <span className="text-muted-foreground block">{pharm.address} • CUIT: {pharm.cuit}</span>
+                          <span className="text-[11px] text-amber-800 font-semibold block leading-snug">
+                            Esta farmacia ya tiene un titular registrado. Si sos su contador o administrador, comunicate con ATFAR para que asocien tu cuenta.
+                          </span>
+                        </div>
+                      ) : (
+                        <button
+                          key={pharm.id}
+                          type="button"
+                          onClick={() => selectResult(pharm)}
+                          className="w-full text-left p-3 text-xs hover:bg-primary/5 transition-colors cursor-pointer"
+                        >
+                          <span className="font-bold text-[#0f172a] block">{pharm.name}</span>
+                          <span className="text-muted-foreground">{pharm.address} • CUIT: {pharm.cuit}</span>
+                        </button>
+                      )
                     ))}
                   </div>
                 )}

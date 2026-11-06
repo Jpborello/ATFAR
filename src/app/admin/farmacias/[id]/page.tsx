@@ -92,11 +92,33 @@ interface Employee {
   weeklyHours?: number;
 }
 
+interface PharmacyMember {
+  id: string;
+  user_id: string;
+  role: string;
+  created_at: string;
+  profiles?: {
+    id: string;
+    full_name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  } | {
+    id: string;
+    full_name?: string | null;
+    email?: string | null;
+    phone?: string | null;
+  }[] | null;
+}
+
 export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [loading, setLoading] = useState(true);
   const [pharmacy, setPharmacy] = useState<PharmacyDetail | null>(null);
   const [employees, setEmployees] = useState<Employee[]>([]);
+  const [members, setMembers] = useState<PharmacyMember[]>([]);
+  const [newMemberEmail, setNewMemberEmail] = useState('');
+  const [addingMember, setAddingMember] = useState(false);
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
   // Desde el listado, "Ver pagos" abre directo esta pestaña (?tab=pagos). La
   // página muestra un loader hasta tener datos, así que leer la URL acá no
   // genera diferencias de hidratación.
@@ -153,6 +175,7 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           });
 
           setEmployees([]);
+          setMembers([]);
           setLoading(false);
           return;
         }
@@ -238,6 +261,14 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
 
         setEmployees(mappedEmployees);
 
+        // Fetch linked members (owners, accountants)
+        const { data: memberList } = await supabase
+          .from('pharmacy_members')
+          .select('id, user_id, role, created_at, profiles:user_id(id, full_name, email, phone)')
+          .eq('pharmacy_id', id);
+
+        setMembers((memberList as unknown as PharmacyMember[]) || []);
+
         if (pharmData) {
           setPharmacy({
             id: pharmData.id,
@@ -320,6 +351,56 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
       toast.error(msg);
     } finally {
       setDeletingPaymentId(null);
+    }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMemberEmail.trim()) return;
+    setAddingMember(true);
+    try {
+      const res = await fetch(`/api/admin/pharmacies/${id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'add', email: newMemberEmail.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al vincular usuario.');
+      toast.success(data.message || 'Usuario vinculado exitosamente.');
+      setNewMemberEmail('');
+      setReloadKey((k) => k + 1);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al vincular usuario.');
+    } finally {
+      setAddingMember(false);
+    }
+  };
+
+  const handleRemoveMember = async (memberId: string, memberName: string) => {
+    const ok = await confirmDialog({
+      title: 'Quitar Acceso',
+      message: `¿Estás seguro de que querés desvincular a "${memberName}" de esta farmacia? Ya no podrá ver ni liquidar esta farmacia.`,
+      confirmLabel: 'Sí, quitar acceso',
+      cancelLabel: 'Cancelar',
+      danger: true,
+    });
+    if (!ok) return;
+
+    setRemovingMemberId(memberId);
+    try {
+      const res = await fetch(`/api/admin/pharmacies/${id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'remove', memberId }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al quitar acceso.');
+      toast.success(data.message || 'Acceso revocado.');
+      setReloadKey((k) => k + 1);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : 'Error al quitar acceso.');
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
@@ -701,6 +782,109 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                 </div>
               )}
             </div>
+
+            {/* Usuarios y Contadores con Acceso al Portal */}
+            <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6 md:col-span-2">
+              <div className="border-b border-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-secondary" />
+                    Usuarios y Contadores con Acceso al Portal
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Personas autorizadas a ingresar a este panel para ver nómina, recibos y emitir declaraciones juradas
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-bold bg-muted px-3 py-1.5 rounded-xl text-foreground self-start sm:self-auto">
+                  {members.length} {members.length === 1 ? 'usuario vinculado' : 'usuarios vinculados'}
+                </span>
+              </div>
+
+              {/* Formulario para vincular por email */}
+              <form onSubmit={handleAddMember} className="bg-slate-50 border border-border rounded-2xl p-4 sm:p-5 space-y-3">
+                <span className="text-xs font-bold text-slate-800 block">Vincular nuevo contador o usuario a esta farmacia</span>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    required
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="email-del-contador@gmail.com"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <button
+                    type="submit"
+                    disabled={addingMember}
+                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {addingMember && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>Vincular Usuario</span>
+                  </button>
+                </div>
+                <span className="text-[11px] text-muted-foreground block">
+                  El usuario debe estar registrado en el portal de ATFAR con ese correo. Al vincularlo, verá esta farmacia en su pantalla &quot;Mis Farmacias&quot;.
+                </span>
+              </form>
+
+              {/* Lista de usuarios vinculados */}
+              <div className="space-y-3">
+                {members.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No hay usuarios vinculados a esta farmacia.</p>
+                ) : (
+                  members.map((m) => {
+                    const prof = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                    const isPharmacyOwner = pharmacy?.responsibleEmail && prof?.email && pharmacy.responsibleEmail.toLowerCase() === prof.email.toLowerCase();
+                    return (
+                      <div
+                        key={m.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-border bg-background/60 hover:bg-muted/10 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            {(prof?.full_name || prof?.email || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm text-[#0f172a] block">
+                                {prof?.full_name || 'Sin nombre cargado'}
+                              </span>
+                              {isPharmacyOwner ? (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded border border-emerald-500/20">
+                                  Titular Farmacia
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-700 px-2 py-0.5 rounded border border-sky-500/20">
+                                  Estudio / Contador
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground font-semibold mt-0.5 flex-wrap">
+                              <span>{prof?.email || 'Sin correo'}</span>
+                              {prof?.phone && <span>• Tel: {prof.phone}</span>}
+                              <span>• Vinculado: {new Date(m.created_at).toLocaleDateString('es-AR')}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(m.id, prof?.full_name || prof?.email || 'este usuario')}
+                          disabled={removingMemberId === m.id}
+                          className="self-end sm:self-auto p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors text-xs font-bold cursor-pointer disabled:opacity-50"
+                          title="Quitar acceso a esta farmacia"
+                        >
+                          {removingMemberId === m.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -1030,6 +1214,109 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
                   ))}
                 </div>
               )}
+            </div>
+
+            {/* Usuarios y Contadores con Acceso al Portal */}
+            <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6 md:col-span-2">
+              <div className="border-b border-border pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-lg font-extrabold text-foreground flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-secondary" />
+                    Usuarios y Contadores con Acceso al Portal
+                  </h2>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    Personas autorizadas a ingresar a este panel para ver nómina, recibos y emitir declaraciones juradas
+                  </p>
+                </div>
+                <span className="text-xs font-mono font-bold bg-muted px-3 py-1.5 rounded-xl text-foreground self-start sm:self-auto">
+                  {members.length} {members.length === 1 ? 'usuario vinculado' : 'usuarios vinculados'}
+                </span>
+              </div>
+
+              {/* Formulario para vincular por email */}
+              <form onSubmit={handleAddMember} className="bg-slate-50 border border-border rounded-2xl p-4 sm:p-5 space-y-3">
+                <span className="text-xs font-bold text-slate-800 block">Vincular nuevo contador o usuario a esta farmacia</span>
+                <div className="flex flex-col sm:flex-row gap-3">
+                  <input
+                    type="email"
+                    required
+                    value={newMemberEmail}
+                    onChange={(e) => setNewMemberEmail(e.target.value)}
+                    placeholder="email-del-contador@gmail.com"
+                    className="flex-1 px-4 py-2.5 rounded-xl border border-border bg-white text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-primary/30"
+                  />
+                  <button
+                    type="submit"
+                    disabled={addingMember}
+                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-sm disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    {addingMember && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                    <span>Vincular Usuario</span>
+                  </button>
+                </div>
+                <span className="text-[11px] text-muted-foreground block">
+                  El usuario debe estar registrado en el portal de ATFAR con ese correo. Al vincularlo, verá esta farmacia en su pantalla &quot;Mis Farmacias&quot;.
+                </span>
+              </form>
+
+              {/* Lista de usuarios vinculados */}
+              <div className="space-y-3">
+                {members.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-4">No hay usuarios vinculados a esta farmacia.</p>
+                ) : (
+                  members.map((m) => {
+                    const prof = Array.isArray(m.profiles) ? m.profiles[0] : m.profiles;
+                    const isPharmacyOwner = pharmacy?.responsibleEmail && prof?.email && pharmacy.responsibleEmail.toLowerCase() === prof.email.toLowerCase();
+                    return (
+                      <div
+                        key={m.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-2xl border border-border bg-background/60 hover:bg-muted/10 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center font-bold text-sm flex-shrink-0">
+                            {(prof?.full_name || prof?.email || 'U').charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="font-bold text-sm text-[#0f172a] block">
+                                {prof?.full_name || 'Sin nombre cargado'}
+                              </span>
+                              {isPharmacyOwner ? (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 px-2 py-0.5 rounded border border-emerald-500/20">
+                                  Titular Farmacia
+                                </span>
+                              ) : (
+                                <span className="text-[9px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-700 px-2 py-0.5 rounded border border-sky-500/20">
+                                  Estudio / Contador
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground font-semibold mt-0.5 flex-wrap">
+                              <span>{prof?.email || 'Sin correo'}</span>
+                              {prof?.phone && <span>• Tel: {prof.phone}</span>}
+                              <span>• Vinculado: {new Date(m.created_at).toLocaleDateString('es-AR')}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMember(m.id, prof?.full_name || prof?.email || 'este usuario')}
+                          disabled={removingMemberId === m.id}
+                          className="self-end sm:self-auto p-2 rounded-xl border border-red-200 text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors text-xs font-bold cursor-pointer disabled:opacity-50"
+                          title="Quitar acceso a esta farmacia"
+                        >
+                          {removingMemberId === m.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
           </div>
         )}
