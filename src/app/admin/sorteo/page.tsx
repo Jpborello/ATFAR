@@ -52,11 +52,31 @@ export default function AdminSorteoPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Estados del Sorteo de Ganadoras
-  const [winners, setWinners] = useState<SorteoEntry[] | null>(null);
+  // Estados del Sorteo de Ganadoras (con persistencia en localStorage)
+  const [winners, setWinners] = useState<SorteoEntry[] | null>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('atfar_sorteo_dia_madre_winners');
+        return saved ? JSON.parse(saved) : null;
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      if (winners && winners.length > 0) {
+        localStorage.setItem('atfar_sorteo_dia_madre_winners', JSON.stringify(winners));
+      } else if (winners === null) {
+        localStorage.removeItem('atfar_sorteo_dia_madre_winners');
+      }
+    }
+  }, [winners]);
 
   useEffect(() => {
     async function fetchEntries() {
@@ -233,10 +253,10 @@ export default function AdminSorteoPage() {
           {winners && winners.length > 0 && !isModalOpen && (
             <button
               onClick={() => setIsModalOpen(true)}
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-card border border-pink-500/30 text-pink-600 hover:bg-pink-500/10 text-xs font-bold uppercase tracking-wider transition-all shadow-premium"
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-card border-2 border-pink-500/40 text-pink-600 hover:bg-pink-500/10 text-xs font-bold uppercase tracking-wider transition-all shadow-premium cursor-pointer"
             >
               <Trophy className="w-4 h-4 text-amber-500" />
-              <span>Ver Ganadoras ({winners.length})</span>
+              <span>Ver Ganadoras Guardadas ({winners.length})</span>
             </button>
           )}
 
@@ -451,13 +471,14 @@ export default function AdminSorteoPage() {
                           </div>
                         </div>
 
-                        {/* Botón Suplente / Reemplazar esta ganadora si el recibo no está en regla */}
+                        {/* Botón Suplente / Reemplazar esta ganadora si el recibo no está en regla o no corresponde */}
                         <button
                           onClick={() => handleReplaceWinner(index)}
-                          className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-pink-600 hover:border-pink-500/30 hover:bg-pink-500/10 transition-all text-[11px]"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-pink-300 text-pink-700 bg-pink-50 hover:bg-pink-100 hover:border-pink-400 transition-all text-xs font-bold shadow-xs cursor-pointer"
                           title="Sortear un reemplazo para este puesto"
                         >
                           <RefreshCw className="w-3.5 h-3.5" />
+                          <span>Cambiar / Re-sortear</span>
                         </button>
                       </div>
 
