@@ -19,6 +19,7 @@ import {
   X,
   Sparkles,
   UserCheck,
+  History,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -31,6 +32,66 @@ interface SorteoEntry {
   receipt_url: string;
   created_at: string;
 }
+
+// Sorteo oficial realizado el 03/11/2026 (con Javier Damplo en puesto 8 para re-sorteo)
+const INITIAL_PREVIOUS_DRAW: SorteoEntry[] = [
+  {
+    id: '2ff2188c-e3fd-478a-9a14-882c8f04b345',
+    full_name: 'Mónica Montero',
+    phone: '3413126940',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792164857657-vdymn6mw12g.pdf',
+    created_at: '2026-10-16T15:34:19.560227+00:00',
+  },
+  {
+    id: '918a6e65-0346-4b8a-bf40-31d6dba40ddc',
+    full_name: 'Debora Micaela horvath',
+    phone: '3413835904',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792535065814-6n436n0sgrg.jpg',
+    created_at: '2026-10-20T22:24:30.165784+00:00',
+  },
+  {
+    id: '373e2ad0-6c07-4cc6-aeba-326459d80f88',
+    full_name: 'Mariela Belletich',
+    phone: '+543413185532',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792085061289-zn5mwfw4f2n.pdf',
+    created_at: '2026-10-15T17:24:24.442+00:00',
+  },
+  {
+    id: 'd09944d9-2a58-4baa-807a-bf924edd9a31',
+    full_name: 'Brenda Antonella Ledesma',
+    phone: '3462568041',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792170077688-jfo53qa3vkn.PDF',
+    created_at: '2026-10-16T17:01:19.382522+00:00',
+  },
+  {
+    id: '5629cf6a-e64b-48bc-99f4-c8cee62431c9',
+    full_name: 'Vanina Andrea gallardo',
+    phone: '3412818289',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792185779199-m04oc6ayadj.png',
+    created_at: '2026-10-16T21:23:01.64407+00:00',
+  },
+  {
+    id: '59f75ee7-386d-403b-982b-57f593fadd55',
+    full_name: 'Alicia Menconi',
+    phone: '3462565165',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792242028769-djdwtvno3xr.jpg',
+    created_at: '2026-10-17T13:00:36.227658+00:00',
+  },
+  {
+    id: '56344a93-0c50-446f-bcbc-39ba4378b2e9',
+    full_name: 'Barbara Belén Castillo',
+    phone: '3462597230',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1793277604327-a3ppf8dgd48.jpg',
+    created_at: '2026-10-29T12:40:12.039034+00:00',
+  },
+  {
+    id: '5a6e3440-c34e-4346-8a12-f1b23fd1c163',
+    full_name: 'JAVIER DAMPLO',
+    phone: '3413267269',
+    receipt_url: 'https://wdmtyxzafrxuibqqxbbv.supabase.co/storage/v1/object/public/receipts/sorteo-dia-madre/1792088096094-8o7uibfjq5i.jpg',
+    created_at: '2026-10-15T18:14:58.96259+00:00',
+  },
+];
 
 // Helpers puros/externos para barajado y selección al azar
 function shuffleArray<T>(array: T[]): T[] {
@@ -57,12 +118,12 @@ export default function AdminSorteoPage() {
     if (typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('atfar_sorteo_dia_madre_winners');
-        return saved ? JSON.parse(saved) : null;
+        if (saved) return JSON.parse(saved);
       } catch {
-        return null;
+        // fallback
       }
     }
-    return null;
+    return INITIAL_PREVIOUS_DRAW;
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -174,7 +235,7 @@ export default function AdminSorteoPage() {
     }, 400);
   };
 
-  // Reemplazar / Re-sortear una ganadora individual (suplente si el recibo no cumple)
+  // Reemplazar / Re-sortear una ganadora individual (suplente si el recibo no cumple o no corresponde)
   const handleReplaceWinner = (winnerIndex: number) => {
     if (!winners) return;
 
@@ -186,7 +247,14 @@ export default function AdminSorteoPage() {
       return;
     }
 
-    const replacement = getRandomElement(availableCandidates);
+    // Excluir varones registrados por error en el sorteo del Día de la Madre
+    const MEN_NAMES = ['javier damplo', 'mauricio dominguez', 'martin malvicino'];
+    const femaleOnlyCandidates = availableCandidates.filter(
+      c => !MEN_NAMES.some(m => c.full_name.toLowerCase().includes(m))
+    );
+    const candidatePool = femaleOnlyCandidates.length > 0 ? femaleOnlyCandidates : availableCandidates;
+
+    const replacement = getRandomElement(candidatePool);
     const updated = [...winners];
     const previousWinner = updated[winnerIndex];
     updated[winnerIndex] = replacement;
@@ -195,6 +263,12 @@ export default function AdminSorteoPage() {
     toast.info(`Puesto #${winnerIndex + 1} re-sorteado:`, {
       description: `${replacement.full_name} reemplaza a ${previousWinner.full_name}`,
     });
+  };
+
+  const handleRestorePreviousDraw = () => {
+    setWinners(INITIAL_PREVIOUS_DRAW);
+    setIsModalOpen(true);
+    toast.success('Sorteo del 03/11/2026 restaurado con los 8 puestos.');
   };
 
   // Copiar lista de ganadoras para WhatsApp o redes
@@ -259,6 +333,16 @@ export default function AdminSorteoPage() {
               <span>Ver Ganadoras Guardadas ({winners.length})</span>
             </button>
           )}
+
+          {/* Botón Restaurar Sorteo del 03/11/2026 */}
+          <button
+            onClick={handleRestorePreviousDraw}
+            className="inline-flex items-center gap-2 px-4 py-3 rounded-2xl bg-card border border-border text-foreground hover:bg-muted text-xs font-bold uppercase tracking-wider transition-all shadow-sm cursor-pointer"
+            title="Cargar el sorteo original del 03/11/2026 para re-sortear el puesto #8"
+          >
+            <History className="w-4 h-4 text-pink-500" />
+            <span>Restaurar Sorteo 03/11</span>
+          </button>
 
           {/* Botón Principal: Sortear 8 Ganadoras */}
           <button
