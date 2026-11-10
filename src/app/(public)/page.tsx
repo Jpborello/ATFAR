@@ -17,9 +17,12 @@ import {
   TrendingUp,
   ChevronLeft,
   Ribbon,
-  X
+  X,
+  Trophy,
+  Bike
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import GanadorasSorteoModal from '@/components/sorteo/GanadorasSorteoModal';
 
 // Banda de luto: reemplaza el carrusel del hero por un comunicado fijo.
 // Se apaga sola después de la fecha límite, no hace falta acordarse de sacarla a mano.
@@ -29,16 +32,37 @@ const MOURNING_MODE_UNTIL = new Date('2026-08-24T00:00:00-03:00');
 const SORTEO_DIA_MADRE_UNTIL = new Date('2026-10-25T23:59:59-03:00');
 const SORTEO_DIA_MADRE_SEEN_KEY = 'atfar_sorteo_dia_madre_seen';
 
+// Publicación oficial de Ganadoras del Sorteo Día de la Madre: dura 1 semana (hasta el 17/11/2026 a las 23:59:59 inclusive).
+// Cumplida la semana, se apaga sola automáticamente.
+const GANADORAS_SORTEO_UNTIL = new Date('2026-11-17T23:59:59-03:00');
+const GANADORAS_SORTEO_SEEN_KEY = 'atfar_ganadoras_sorteo_madre_seen';
+
 export default function HomePage() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const isMourningMode = new Date() < MOURNING_MODE_UNTIL;
   const isSorteoDiaMadreActive = new Date() < SORTEO_DIA_MADRE_UNTIL;
+  const isGanadorasActive = new Date() <= GANADORAS_SORTEO_UNTIL;
   const [showSorteoModal, setShowSorteoModal] = useState(false);
+  const [showGanadorasModal, setShowGanadorasModal] = useState(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [activeScaleSlide, setActiveScaleSlide] = useState<any | null>(null);
 
   useEffect(() => {
-    if (!isSorteoDiaMadreActive) return;
+    if (!isGanadorasActive) return;
+    try {
+      const alreadySeen = sessionStorage.getItem(GANADORAS_SORTEO_SEEN_KEY);
+      if (!alreadySeen) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setShowGanadorasModal(true);
+        sessionStorage.setItem(GANADORAS_SORTEO_SEEN_KEY, '1');
+      }
+    } catch {
+      setShowGanadorasModal(true);
+    }
+  }, [isGanadorasActive]);
+
+  useEffect(() => {
+    if (!isSorteoDiaMadreActive || isGanadorasActive) return;
     // sessionStorage solo existe en el cliente: necesitamos el efecto (no un
     // inicializador de useState) para no romper el render del servidor.
     try {
@@ -53,7 +77,7 @@ export default function HomePage() {
       setShowSorteoModal(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isSorteoDiaMadreActive, isGanadorasActive]);
 
   useEffect(() => {
     async function fetchActiveScale() {
@@ -262,6 +286,14 @@ export default function HomePage() {
 
   return (
     <div className="bg-background text-foreground min-h-screen space-y-20 pb-16 relative">
+      {/* Modal oficial de Ganadoras del Sorteo Día de la Madre */}
+      {isGanadorasActive && (
+        <GanadorasSorteoModal
+          isOpen={showGanadorasModal}
+          onClose={() => setShowGanadorasModal(false)}
+        />
+      )}
+
       {/* Sorteo Día de la Madre — Modal (aparece una vez por sesión) */}
       {isSorteoDiaMadreActive && showSorteoModal && (
         <div
@@ -422,6 +454,65 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+      )}
+
+      {/* Sorteo Día de la Madre — Ganadoras Oficiales (dura 1 semana) */}
+      {isGanadorasActive && (
+        <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4">
+          <div
+            onClick={() => setShowGanadorasModal(true)}
+            className="w-full group flex flex-col sm:flex-row items-stretch gap-0 bg-card border-2 border-emerald-500/30 hover:border-emerald-500 rounded-3xl overflow-hidden shadow-premium hover:shadow-premium-lg transition-all text-left cursor-pointer"
+          >
+            <div className="relative w-full sm:w-64 min-h-[180px] bg-gradient-to-br from-emerald-800 via-[#0d5c3e] to-teal-950 p-6 flex flex-col justify-between text-white flex-shrink-0">
+              <div className="space-y-1">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-white text-[10px] font-black uppercase tracking-widest w-fit border border-white/20">
+                  <Trophy className="w-3 h-3 text-amber-300" /> Sorteo Oficial
+                </span>
+                <h3 className="text-xl font-bold font-serif pt-1 text-white">
+                  Día de la Madre
+                </h3>
+              </div>
+              <div className="bg-slate-950/80 backdrop-blur-md rounded-xl p-3 border border-amber-400/50 mt-3 shadow-md">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] uppercase font-black text-amber-300">1º Premio</span>
+                  <span className="text-xs font-black text-amber-200 flex items-center gap-1">
+                    <Bike className="w-3.5 h-3.5" /> Bicicleta
+                  </span>
+                </div>
+                <span className="text-base font-black text-white block mt-1 tracking-wide font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)] [text-shadow:_0_0_2px_#000000,_0_2px_4px_rgba(0,0,0,0.9)]">
+                  Mónica Montero
+                </span>
+              </div>
+            </div>
+
+            <div className="flex-1 p-6 sm:p-8 flex flex-col justify-center space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 text-[10px] font-black uppercase tracking-widest w-fit border border-emerald-500/20">
+                  <Sparkles className="w-3 h-3 text-amber-500" /> ¡Nómina Oficial de Ganadoras!
+                </span>
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0f172a] dark:text-white">
+                ¡Felicitaciones a las 8 compañeras ganadoras!
+              </h2>
+              <p className="text-sm text-[#64748b] leading-relaxed font-medium max-w-xl">
+                Agradecemos a todas las afiliadas que participaron. Pronto nos estaremos comunicando con cada una de ustedes para coordinar la entrega de los premios.
+              </p>
+              <div className="flex items-center gap-3 pt-1">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowGanadorasModal(true);
+                  }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-white text-xs font-bold uppercase tracking-wider hover:bg-secondary transition-all shadow-sm"
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  <span>Ver las 8 ganadoras</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
       )}
 
       {/* Sorteo Día de la Madre — Promo Card */}

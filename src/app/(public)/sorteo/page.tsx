@@ -2,10 +2,15 @@
 'use client';
 
 import { useState } from 'react';
-import { Gift, Upload, Send, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import { Gift, Upload, Send, CheckCircle, AlertCircle, FileText, Trophy, Bike, Sparkles, Phone, HeartHandshake } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
+import { GANADORAS_OFICIALES } from '@/components/sorteo/GanadorasSorteoModal';
+
+// Fecha límite para exhibición de ganadoras: 1 semana (hasta el 17/11/2026 inclusive)
+const GANADORAS_SORTEO_UNTIL = new Date('2026-11-17T23:59:59-03:00');
 
 export default function SorteoDiaMadrePage() {
+  const isGanadorasActive = new Date() <= GANADORAS_SORTEO_UNTIL;
   const [formData, setFormData] = useState({
     fullName: '',
     phone: '',
@@ -125,7 +130,115 @@ export default function SorteoDiaMadrePage() {
           </p>
         </div>
 
-        {status === 'success' ? (
+        {isGanadorasActive ? (
+          <div className="space-y-8 animate-fadeIn">
+            {/* Header Ganadoras */}
+            <div className="bg-gradient-to-br from-emerald-800 via-[#0d5c3e] to-teal-950 text-white rounded-3xl p-6 sm:p-8 shadow-xl text-center space-y-3 relative overflow-hidden">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/15 border border-white/20 text-white text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Nómina Oficial de Ganadoras</span>
+              </div>
+              <h2 className="text-2xl sm:text-4xl font-extrabold font-serif text-white tracking-tight">
+                ¡Felicitaciones a las Compañeras de Farmacia!
+              </h2>
+              <p className="text-sm text-emerald-100 max-w-xl mx-auto leading-relaxed">
+                El sorteo se realizó entre todas las afiliadas que enviaron su participación para el Día de la Madre.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Afiche a la izquierda */}
+              <div className="lg:col-span-4 space-y-4">
+                <div className="rounded-2xl overflow-hidden border border-border shadow-lg">
+                  <img
+                    src="/images/sorteo_dia_madre.jpeg"
+                    alt="Sorteo Día de la Madre - ATFAR"
+                    className="w-full h-auto block"
+                  />
+                </div>
+                <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-900 dark:text-emerald-200 text-xs space-y-2">
+                  <div className="flex items-center gap-2 font-bold">
+                    <HeartHandshake className="w-4 h-4 text-emerald-600" />
+                    <span>Entrega de premios</span>
+                  </div>
+                  <p className="text-emerald-800/80 dark:text-emerald-300/80 leading-relaxed">
+                    Pronto se estarán comunicando con ustedes desde la secretaría del sindicato para coordinar la entrega de cada uno de los premios.
+                  </p>
+                </div>
+              </div>
+
+              {/* Lista de ganadoras a la derecha */}
+              <div className="lg:col-span-8 space-y-4">
+                {/* 1º Premio Bicicleta */}
+                <div className="rounded-2xl bg-gradient-to-r from-emerald-950 via-[#064e3b] to-emerald-950 border-2 border-amber-400 p-5 sm:p-6 shadow-xl text-white">
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+                    <div className="flex items-center gap-4">
+                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-amber-400 to-amber-600 text-slate-950 flex items-center justify-center shadow-md flex-shrink-0 border-2 border-amber-300">
+                        <Trophy className="w-7 h-7 text-slate-950" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 justify-center sm:justify-start">
+                          <span className="px-2.5 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black text-[10px] uppercase tracking-wider shadow-sm">
+                            1º Premio
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-xs font-extrabold text-amber-300">
+                            <Bike className="w-3.5 h-3.5" /> Bicicleta
+                          </span>
+                        </div>
+                        <h3 className="text-xl sm:text-2xl font-black text-white mt-1 tracking-wide font-serif drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] [text-shadow:_0_0_2px_#000000,_0_2px_4px_rgba(0,0,0,0.9)]">
+                          Mónica Montero
+                        </h3>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-black/40 border border-white/20 shadow-xs text-xs font-mono font-bold text-amber-200">
+                      <Phone className="w-3.5 h-3.5 text-amber-400" />
+                      <span>341 •••• 6940</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 2º al 8º */}
+                <div className="bg-card border border-border rounded-2xl p-5 sm:p-6 shadow-md space-y-3">
+                  <div className="flex items-center justify-between border-b border-border pb-3">
+                    <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                      Premios 2º al 8º
+                    </span>
+                    <span className="text-xs font-semibold text-emerald-700 dark:text-emerald-400">
+                      Premios sorpresa
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                    {GANADORAS_OFICIALES.slice(1).map((g) => (
+                      <div
+                        key={g.puesto}
+                        className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-border hover:border-emerald-500/30 transition-all"
+                      >
+                        <div className="flex items-center gap-3 min-w-0 pr-2">
+                          <div className="w-8 h-8 rounded-lg bg-emerald-700/10 text-emerald-700 dark:text-emerald-400 dark:bg-emerald-500/20 font-black text-xs flex items-center justify-center flex-shrink-0">
+                            {g.puesto}º
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs sm:text-sm font-bold text-[#0f172a] dark:text-white truncate">
+                              {g.nombre}
+                            </h4>
+                            <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <Gift className="w-3 h-3 text-amber-500" /> Premio a comunicar
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="text-[11px] font-mono font-semibold text-muted-foreground whitespace-nowrap pl-1">
+                          {g.telefonoProtegido}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : status === 'success' ? (
           <div className="bg-card border border-emerald-500/20 rounded-3xl p-8 text-center space-y-6 shadow-xl glass max-w-2xl mx-auto">
             <div className="inline-flex p-4 bg-emerald-500/10 text-emerald-500 rounded-full">
               <CheckCircle className="w-12 h-12" />
