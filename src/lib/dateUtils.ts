@@ -146,6 +146,17 @@ export function getPharmacyDebtStatus(
   return { status: 'al_dia', label: 'Al Día' };
 }
 
+export const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+/** "Septiembre 2026" -> "2026-09" */
+export function periodLabelToKey(label: string): string | null {
+  const [name, yearStr] = label.trim().split(' ');
+  const month = MONTHS_ES.findIndex((m) => m.toLowerCase() === (name || '').toLowerCase());
+  const year = parseInt(yearStr, 10);
+  if (month === -1 || isNaN(year)) return null;
+  return `${year}-${String(month + 1).padStart(2, '0')}`;
+}
+
 /**
  * Formatea una fecha YYYY-MM-DD o ISO a DD/MM/AAAA en horario local sin desfase de zona horaria UTC.
  */

@@ -4,14 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDays, CheckCircle2, XCircle, Clock, AlertTriangle, Minus, Loader2, X, FileText, Hand } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
-import { formatDateAR } from '@/lib/dateUtils';
+import { formatDateAR, MONTHS_ES, periodLabelToKey } from '@/lib/dateUtils';
 
 // Primer período que se declaró en el sistema (Julio 2026). Los meses
 // anteriores no existen para el almanaque.
 const SYSTEM_START = { year: 2026, month: 6 }; // month 0-indexado
 const YEARS_SHOWN = 6; // 2026 a 2031
-
-const MONTHS_ES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
 
 type MonthState = 'pagado' | 'informado' | 'debe' | 'a_pagar' | 'sin_ddjj' | 'en_curso' | 'futuro' | 'antes';
 
@@ -28,7 +26,7 @@ interface CalendarPayment {
 }
 
 interface MonthMark {
-  id: string;
+  id?: string;
   period: string; // YYYY-MM-DD (primer día del mes)
   paid: boolean;
   note: string | null;
@@ -76,15 +74,6 @@ function StateIcon({ state, className }: { state: MonthState; className?: string
 }
 
 const monthKey = (year: number, month: number) => `${year}-${String(month + 1).padStart(2, '0')}`;
-
-/** "Septiembre 2026" -> "2026-09" */
-function periodLabelToKey(label: string): string | null {
-  const [name, yearStr] = label.trim().split(' ');
-  const month = MONTHS_ES.findIndex((m) => m.toLowerCase() === (name || '').toLowerCase());
-  const year = parseInt(yearStr, 10);
-  if (month === -1 || isNaN(year)) return null;
-  return monthKey(year, month);
-}
 
 const money = (n: number) => `$${n.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
@@ -185,6 +174,90 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
     setNote(mi.mark?.note || '');
   };
 
+  /**
+   * Recalcula si la farmacia tiene deuda considerando boletas y marcas manuales
+   * en todos los meses transcurridos desde Julio 2026 hasta la fecha actual.
+   */
+  const syncPharmacyDebtStatus = async (
+    targetPharmacyId: string,
+    currentPays: CalendarPayment[],
+    currentMarks: MonthMark[]
+  ) => {
+    try {
+      const nowInstance = new Date();
+      const cKey = monthKey(nowInstance.getFullYear(), nowInstance.getMonth());
+      const tStr = `${nowInstance.getFullYear()}-${String(nowInstance.getMonth() + 1).padStart(2, '0')}-${String(nowInstance.getDate()).padStart(2, '0')}`;
+
+      const payMap = new Map<string, CalendarPayment>();
+      currentPays.forEach((p) => {
+        const k = periodLabelToKey(p.period);
+        if (k) payMap.set(k, p);
+      });
+
+      const markMap = new Map<string, MonthMark>();
+      currentMarks.forEach((m) => {
+        markMap.set(m.period.slice(0, 7), m);
+      });
+
+      let hasDebt = false;
+      let curY = SYSTEM_START.year;
+      let curM = SYSTEM_START.month;
+
+      while (true) {
+        const k = monthKey(curY, curM);
+        if (k > cKey) break;
+
+        const p = payMap.get(k);
+        const m = markMap.get(k);
+
+        let state: MonthState;
+        if (p) {
+          if (p.status === 'pagado') state = 'pagado';
+          else if (p.status === 'en_revision') state = 'informado';
+          else state = p.due_date && p.due_date < tStr ? 'debe' : 'a_pagar';
+        } else if (m) {
+          state = m.paid ? 'pagado' : 'debe';
+        } else if (k < cKey) {
+          state = 'sin_ddjj';
+        } else {
+          state = 'en_curso';
+        }
+
+        if (state === 'debe' || state === 'sin_ddjj') {
+          hasDebt = true;
+          break;
+        }
+
+        curM++;
+        if (curM > 11) {
+          curM = 0;
+          curY++;
+        }
+      }
+
+      if (!hasDebt) {
+        for (const p of currentPays) {
+          if ((p.status === 'impago' || p.status === 'unpaid') && p.due_date && p.due_date < tStr) {
+            hasDebt = true;
+            break;
+          }
+        }
+      }
+
+      const untilDate = `${nowInstance.getFullYear()}-12-31`;
+      await supabase
+        .from('pharmacies')
+        .update(
+          hasDebt
+            ? { has_debt: true, debt_override_until: null }
+            : { has_debt: false, debt_override_until: untilDate }
+        )
+        .eq('id', targetPharmacyId);
+    } catch (err) {
+      console.error('Error syncing pharmacy debt status:', err);
+    }
+  };
+
   const setPaid = async (mi: MonthInfo, paid: boolean) => {
     setSaving(true);
     try {
@@ -206,6 +279,15 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
       }
 
       // La marca guarda quién, cuándo y la nota, para la auditoría.
+      const newMark: MonthMark = {
+        id: mi.mark?.id,
+        period: `${mi.key}-01`,
+        paid,
+        note: note.trim() || null,
+        marked_by_name: adminName,
+        marked_at: new Date().toISOString(),
+      };
+
       const { error: markErr } = await supabase
         .from('pharmacy_month_marks')
         .upsert(
@@ -222,6 +304,13 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
         );
       if (markErr) throw markErr;
 
+      // Actualizar cálculo de deuda en la base para que sincronice farmacias y dashboards
+      const updatedPayments = mi.payment
+        ? payments.map((p) => (p.id === mi.payment!.id ? { ...p, status: paid ? 'pagado' : 'impago', pay_date: paid ? (p.pay_date || todayStr) : null } : p))
+        : payments;
+      const updatedMarks = marks.filter((m) => m.period.slice(0, 7) !== mi.key).concat([newMark]);
+      await syncPharmacyDebtStatus(pharmacyId, updatedPayments, updatedMarks);
+
       toast.success(`${MONTHS_ES[mi.month]} ${mi.year} marcado como ${paid ? 'PAGADO' : 'NO PAGADO'}.`);
       setSelected(null);
       await load();
@@ -229,6 +318,90 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
     } catch (err) {
       console.error('Error marking month:', err);
       toast.error('No se pudo guardar. Probá de nuevo.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /**
+   * Marca todos los meses transcurridos desde Julio 2026 hasta la fecha como pagados en un solo clic,
+   * y deja a la farmacia en estado "Al Día".
+   */
+  const markAllPastMonthsPaid = async () => {
+    if (!window.confirm('¿Querés marcar todos los meses transcurridos como PAGADOS? Esta acción registrará la auditoría administrativa de ATFAR y dejará a la farmacia en estado "Al Día".')) {
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      let adminName: string | null = null;
+      if (session?.user) {
+        const { data: prof } = await supabase.from('profiles').select('full_name').eq('id', session.user.id).maybeSingle();
+        adminName = prof?.full_name || session.user.email || null;
+      }
+
+      const recordsToUpsert: Array<{
+        pharmacy_id: string;
+        period: string;
+        paid: boolean;
+        note: string;
+        marked_by: string | null;
+        marked_by_name: string | null;
+        marked_at: string;
+      }> = [];
+
+      let curY = SYSTEM_START.year;
+      let curM = SYSTEM_START.month;
+
+      while (true) {
+        const k = monthKey(curY, curM);
+        if (k > currentKey) break;
+
+        recordsToUpsert.push({
+          pharmacy_id: pharmacyId,
+          period: `${k}-01`,
+          paid: true,
+          note: 'Auditoría administrativa ATFAR (Al día)',
+          marked_by: session?.user?.id || null,
+          marked_by_name: adminName,
+          marked_at: new Date().toISOString(),
+        });
+
+        curM++;
+        if (curM > 11) {
+          curM = 0;
+          curY++;
+        }
+      }
+
+      const { error: markErr } = await supabase
+        .from('pharmacy_month_marks')
+        .upsert(recordsToUpsert, { onConflict: 'pharmacy_id,period' });
+      if (markErr) throw markErr;
+
+      // Actualizar pagos web que estuvieran pendientes o impagos
+      for (const p of payments) {
+        if (p.status !== 'pagado') {
+          await supabase.from('payments').update({ status: 'pagado', pay_date: todayStr }).eq('id', p.id);
+        }
+      }
+
+      // Marcar la farmacia al día en la base
+      await supabase
+        .from('pharmacies')
+        .update({
+          has_debt: false,
+          debt_override_until: `${now.getFullYear()}-12-31`,
+        })
+        .eq('id', pharmacyId);
+
+      toast.success('Todos los meses transcurridos fueron marcados como PAGADOS y la farmacia quedó Al Día.');
+      await load();
+      onChanged?.();
+    } catch (err) {
+      console.error('Error marking all past months as paid:', err);
+      toast.error('No se pudo marcar todos los meses. Probá de nuevo.');
     } finally {
       setSaving(false);
     }
@@ -248,7 +421,17 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
             Tocá un mes para ver el detalle o marcarlo como pagado.
           </p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            disabled={saving || (counts.debe === 0 && counts.sin_ddjj === 0)}
+            onClick={markAllPastMonthsPaid}
+            className="px-3.5 py-2 rounded-xl text-xs font-black bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1.5"
+            title="Marcar todos los meses hasta hoy como pagados y dejar la farmacia Al Día"
+          >
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            <span>Marcar todo Al Día</span>
+          </button>
           {years.map((y) => (
             <button
               key={y}
