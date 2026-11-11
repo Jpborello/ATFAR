@@ -3,13 +3,13 @@
 
 import { use, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { 
-  Building2, 
-  Users, 
-  FileText, 
-  CreditCard, 
-  LogOut, 
-  CheckCircle2, 
+import {
+  Building2,
+  Users,
+  FileText,
+  CreditCard,
+  LogOut,
+  CheckCircle2,
   AlertTriangle,
   ArrowRight,
   MapPin,
@@ -18,7 +18,8 @@ import {
   Briefcase,
   Clock,
   Info,
-  ShieldCheck
+  ShieldCheck,
+  Sparkles
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -43,12 +44,12 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [pharmacyAddress, setPharmacyAddress] = useState('...');
   const [debtStatus, setDebtStatus] = useState<{ status: PharmacyDebtStatus; label: string }>({ status: 'al_dia', label: 'Al Día' });
   const [lastDeclaredPeriod, setLastDeclaredPeriod] = useState<string | null>(null);
-  
+
   // Tutorial states
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(1);
   const [userId, setUserId] = useState<string | null>(null);
-  
+
   // Modals state
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isEmployeeModalOpen, setIsEmployeeModalOpen] = useState(false);
@@ -281,8 +282,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
 
   const handleSaveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
-    const isConfigured = 
-      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+    const isConfigured =
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
       !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
     if (isConfigured) {
@@ -343,8 +344,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     let uploadedReceiptUrl = '';
     const nowIso = new Date().toISOString();
 
-    const isConfigured = 
-      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+    const isConfigured =
+      process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
       !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
     try {
@@ -554,8 +555,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
     const nowIso = new Date().toISOString();
 
     try {
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
       let publicUrl = '';
@@ -676,18 +677,18 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             <span>Mis Farmacias</span>
           </Link>
           <button
-          onClick={handleLogout}
-          className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-red-500 hover:bg-red-50/50 text-xs font-bold transition-all cursor-pointer bg-white"
-        >
-          <LogOut className="w-4 h-4" />
-          <span>Cerrar Sesión</span>
+            onClick={handleLogout}
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-border text-red-500 hover:bg-red-50/50 text-xs font-bold transition-all cursor-pointer bg-white"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>Cerrar Sesión</span>
           </button>
         </div>
       </header>
 
       {/* Main container */}
       <main className="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-        
+
         {/* Pharmacy Details card */}
         <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -806,7 +807,7 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           {/* Summary metrics card */}
           <div className="bg-card border border-border rounded-3xl p-6 shadow-premium glass space-y-4">
             <h3 className="font-bold text-[#0f172a] text-sm border-b border-border pb-2">Estado del Período</h3>
-            
+
             <div className="space-y-3 text-xs font-bold text-slate-500">
               <div className="flex justify-between">
                 <span>Último Período Declarado:</span>
@@ -839,9 +840,68 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           </div>
         </div>
 
+        {/* Banner Promocional: Bolsa de Trabajo / Empleo ATFAR */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#062c24] via-[#093e33] to-[#0f172a] text-white p-6 sm:p-8 shadow-premium border border-emerald-500/30">
+          {/* Background decorative glow & watermark */}
+          <div className="absolute -right-8 -bottom-8 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-white/[0.04] pointer-events-none hidden xl:block">
+            <Briefcase className="w-64 h-64" />
+          </div>
+
+          <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+            <div className="space-y-3 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Bolsa de Empleo Oficial · Convenio CCT 659/13</span>
+              </div>
+              <h3 className="text-xl sm:text-2xl font-black tracking-tight text-white leading-tight">
+                ¿Buscás incorporar personal en tu farmacia?
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed font-medium">
+                Priorizá a los postulantes registrados en la <strong className="text-white font-bold">Bolsa de Trabajo de ATFAR</strong>. 
+                Accedé de forma 100% gratuita a currículums de profesionales farmacéuticos, auxiliares, idóneos y personal administrativo capacitado de la región.
+              </p>
+              
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2 pt-1 text-[11px] font-semibold text-emerald-200/90">
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Perfiles con experiencia en el rubro
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Acceso 100% gratuito e inmediato
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  Contacto directo por WhatsApp o Email
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 flex-shrink-0">
+              <Link
+                href="/farmacia/postulantes"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/30 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                <Users className="w-4 h-4 text-slate-950" />
+                <span>Ver Postulantes Disponibles</span>
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </Link>
+              <a
+                href="https://wa.me/5493416629930?text=Hola%20ATFAR,%20desde%20la%20farmacia%20estamos%20buscando%20incorporar%20personal%20y%20queremos%20solicitar%20perfiles%20de%20la%20Bolsa%20de%20Trabajo."
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/10 hover:bg-white/15 text-white border border-white/15 text-[11px] font-bold tracking-wide transition-all"
+              >
+                <span>Solicitar perfil específico al Sindicato</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
         {/* Main Grid split for Staff and Announcements */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Staff Table Summary */}
           <div className="lg:col-span-8 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">

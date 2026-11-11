@@ -23,6 +23,8 @@ import {
   EyeOff,
   AlertCircle,
   Clock,
+  Briefcase,
+  ArrowRight,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
@@ -465,13 +467,56 @@ function MisFarmaciasContent() {
               Elegí una farmacia para gestionar su nómina, declaraciones y pagos. ¿Sos un estudio contable con varias farmacias a cargo? Vinculalas todas acá, con una sola cuenta.
             </p>
           </div>
-          <button
-            onClick={openLinkModal}
-            className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Vincular otra Farmacia</span>
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              href="/farmacia/postulantes"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl border border-border text-slate-800 hover:bg-slate-50 text-xs font-bold uppercase tracking-wider transition-all cursor-pointer bg-white shadow-sm"
+            >
+              <Briefcase className="w-4 h-4 text-emerald-600" />
+              <span>Bolsa de Empleo</span>
+            </Link>
+            <button
+              onClick={openLinkModal}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Vincular otra Farmacia</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Banner Promocional: Bolsa de Empleo ATFAR */}
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#062c24] via-[#093e33] to-[#0f172a] text-white p-6 sm:p-7 shadow-premium border border-emerald-500/30">
+          <div className="absolute -right-8 -bottom-8 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute right-6 top-1/2 -translate-y-1/2 text-white/[0.04] pointer-events-none hidden md:block">
+            <Briefcase className="w-48 h-48" />
+          </div>
+
+          <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-black uppercase tracking-wider">
+                <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Bolsa de Trabajo Oficial ATFAR</span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-black text-white tracking-tight">
+                ¿Necesitás incorporar personal en tus farmacias?
+              </h2>
+              <p className="text-xs text-slate-200/90 leading-relaxed font-medium">
+                Priorizá la contratación de trabajadores registrados en nuestra bolsa gremial. Accedé sin costo a CVs de farmacéuticos matriculados, auxiliares e idóneos con experiencia.
+              </p>
+            </div>
+
+            <div className="flex-shrink-0">
+              <Link
+                href="/farmacia/postulantes"
+                className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-2xl bg-emerald-400 hover:bg-emerald-300 text-slate-950 font-black text-xs uppercase tracking-wider shadow-lg shadow-emerald-500/20 transition-all hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              >
+                <Users className="w-4 h-4 text-slate-950" />
+                <span>Ver Postulantes Disponibles</span>
+                <ArrowRight className="w-4 h-4 text-slate-950" />
+              </Link>
+            </div>
+          </div>
         </div>
 
         {pharmacies.length === 0 ? (
