@@ -144,6 +144,19 @@ function MisFarmaciasContent() {
         return;
       }
 
+      // Sincronizar automáticamente si este email fue declarado como contador por alguna farmacia
+      try {
+        const syncRes = await fetch('/api/memberships/sync', { method: 'POST' });
+        const syncData = await syncRes.json();
+        if (syncData?.linked > 0) {
+          toast.success(`¡Vinculamos automáticamente ${syncData.linked} farmacia${syncData.linked > 1 ? 's' : ''} a tu cuenta!`, {
+            description: `Acceso habilitado para: ${syncData.names.join(', ')}`,
+          });
+        }
+      } catch (syncErr) {
+        console.error('Error auto-syncing memberships:', syncErr);
+      }
+
       const { data: memberships, error } = await supabase
         .from('pharmacy_members')
         .select('pharmacy_id, pharmacies(*, payments(status, due_date))')

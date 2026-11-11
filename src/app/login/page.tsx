@@ -15,7 +15,8 @@ import {
   AlertCircle,
   Sparkles,
   Eye,
-  EyeOff
+  EyeOff,
+  Briefcase
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import SupportContact from '@/components/shared/SupportContact';
@@ -45,7 +46,7 @@ function LoginContent() {
   const initialTab = searchParams.get('tab') === 'register' ? 'register' : 'login';
   
   const [activeTab, setActiveTab] = useState<'login' | 'register'>(initialTab);
-  const [registerRole, setRegisterRole] = useState<'employee' | 'pharmacy_owner'>('employee');
+  const [registerRole, setRegisterRole] = useState<'employee' | 'pharmacy_owner' | 'accountant'>('employee');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   
@@ -227,7 +228,7 @@ function LoginContent() {
     return () => clearTimeout(delayDebounceFn);
   }, [searchQuery]);
 
-  const handleRoleSelect = (role: 'employee' | 'pharmacy_owner') => {
+  const handleRoleSelect = (role: 'employee' | 'pharmacy_owner' | 'accountant') => {
     setRegisterRole(role);
     if (role === 'pharmacy_owner') {
       const alreadySeen = localStorage.getItem('seen_register_guide');
@@ -414,7 +415,7 @@ function LoginContent() {
       if (!isConfigured) {
         // Simulation mode
         await new Promise((resolve) => setTimeout(resolve, 1500));
-        if (registerRole === 'pharmacy_owner') {
+        if (registerRole === 'pharmacy_owner' || registerRole === 'accountant') {
           router.push('/farmacia');
         } else {
           router.push('/empleado');
@@ -424,14 +425,16 @@ function LoginContent() {
 
       const cleanEmail = email.trim().toLowerCase();
 
-      // 1. Sign up user
+      // 1. Sign up user (los roles válidos en Supabase son admin, pharmacy_owner o employee)
+      const assignedRole = registerRole === 'employee' ? 'employee' : 'pharmacy_owner';
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: cleanEmail,
         password,
         options: {
           data: {
             full_name: fullName,
-            role: registerRole,
+            role: assignedRole,
+            user_type: registerRole === 'accountant' ? 'accountant' : registerRole,
             phone: formattedPhone,
           }
         }
@@ -576,6 +579,10 @@ function LoginContent() {
           if (memberError) console.error('Error al vincular pharmacy_members:', memberError.message);
         }
 
+        router.push('/farmacia');
+      } else if (registerRole === 'accountant') {
+        // Para estudios contables no se registra farmacia nueva:
+        // Van directo a /farmacia donde el auto-sync vincula sus farmacias declaradas
         router.push('/farmacia');
       } else {
         // Vincular esta cuenta con la fila de nómina que su farmacia ya declaró (por CUIL).
@@ -797,10 +804,21 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm pt-3.5 pb-3.5"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm pt-3.5 pb-3.5 cursor-pointer"
               >
                 {loading ? 'Validando...' : 'Ingresar'}
               </button>
+
+              {/* Ayuda visible para estudios contables */}
+              <div className="bg-sky-50/80 border border-sky-200/80 rounded-2xl p-3.5 text-xs text-sky-950 space-y-1 mt-4 text-left">
+                <div className="flex items-center gap-1.5 font-bold text-sky-900">
+                  <Briefcase className="w-4 h-4 text-sky-600 flex-shrink-0" />
+                  <span>¿Sos contador o estudio contable?</span>
+                </div>
+                <p className="text-[11px] text-sky-800 leading-relaxed font-medium">
+                  Si tus farmacias clientes ya te declararon en ATFAR, creá tu usuario desde la solapa <strong>&quot;Registrarse&quot;</strong> seleccionando <strong>Estudio Contable</strong>. Al ingresar, se vincularán automáticamente a tu cuenta.
+                </p>
+              </div>
 
             </form>
           ) : (
@@ -809,12 +827,12 @@ function LoginContent() {
               {/* Role Selection Cards */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-muted-foreground">
-                  Tipo de Afiliación
+                  Tipo de Registro
                 </label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div
                     onClick={() => handleRoleSelect('employee')}
-                    className={`border p-4 rounded-xl text-center cursor-pointer transition-all ${
+                    className={`border p-3.5 rounded-xl text-center cursor-pointer transition-all ${
                       registerRole === 'employee'
                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                         : 'border-border bg-card hover:bg-muted/10'
@@ -825,7 +843,7 @@ function LoginContent() {
                   </div>
                   <div
                     onClick={() => handleRoleSelect('pharmacy_owner')}
-                    className={`border p-4 rounded-xl text-center cursor-pointer transition-all ${
+                    className={`border p-3.5 rounded-xl text-center cursor-pointer transition-all ${
                       registerRole === 'pharmacy_owner'
                         ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
                         : 'border-border bg-card hover:bg-muted/10'
@@ -834,14 +852,37 @@ function LoginContent() {
                     <Building2 className="w-5 h-5 mx-auto text-secondary mb-1" />
                     <span className="block text-xs font-bold text-foreground">Farmacia / Dueño</span>
                   </div>
+                  <div
+                    onClick={() => handleRoleSelect('accountant')}
+                    className={`border p-3.5 rounded-xl text-center cursor-pointer transition-all ${
+                      registerRole === 'accountant'
+                        ? 'border-secondary bg-secondary/5 ring-1 ring-secondary'
+                        : 'border-border bg-card hover:bg-muted/10'
+                    }`}
+                  >
+                    <Briefcase className="w-5 h-5 mx-auto text-secondary mb-1" />
+                    <span className="block text-xs font-bold text-foreground">Estudio Contable</span>
+                  </div>
                 </div>
               </div>
+
+              {registerRole === 'accountant' && (
+                <div className="bg-sky-50 border border-sky-200 rounded-2xl p-4 text-xs text-sky-950 space-y-1.5 animate-fadeIn text-left">
+                  <div className="flex items-center gap-2 font-bold text-sky-900">
+                    <Briefcase className="w-4 h-4 text-sky-600 flex-shrink-0" />
+                    <span>Panel Multicuenta para Estudios Contables</span>
+                  </div>
+                  <p className="text-[11px] text-sky-800 leading-relaxed font-medium">
+                    Vas a poder gestionar todas las farmacias que tengas a cargo con este único usuario. Al iniciar sesión, el sistema vinculará automáticamente las farmacias que hayan declarado tu correo como liquidador.
+                  </p>
+                </div>
+              )}
 
               {/* General Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Nombre Completo del Titular *
+                    {registerRole === 'accountant' ? 'Nombre del Estudio o Contador *' : 'Nombre Completo del Titular *'}
                   </label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -850,7 +891,7 @@ function LoginContent() {
                       required
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      placeholder="Ej. Emanuel Borello"
+                      placeholder={registerRole === 'accountant' ? 'Ej: Estudio Pastor & Asoc.' : 'Ej. Emanuel Borello'}
                       className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-border bg-background focus:outline-none focus:ring-2 focus:ring-secondary/55 text-sm transition-all text-foreground font-semibold"
                     />
                   </div>
@@ -1221,9 +1262,13 @@ function LoginContent() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm pt-3.5 pb-3.5"
+                className="w-full inline-flex items-center justify-center px-6 py-3 rounded-xl bg-secondary text-secondary-foreground font-bold hover:bg-secondary/90 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed text-sm pt-3.5 pb-3.5 cursor-pointer"
               >
-                {loading ? 'Creando cuenta...' : 'Crear mi Cuenta'}
+                {loading
+                  ? 'Creando cuenta...'
+                  : registerRole === 'accountant'
+                  ? 'Crear Cuenta de Estudio Contable'
+                  : 'Crear mi Cuenta'}
               </button>
             </form>
           )}

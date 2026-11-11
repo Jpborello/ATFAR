@@ -752,20 +752,25 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           {/* DDJJ link */}
           <div className="bg-card border border-border rounded-3xl p-6 shadow-premium hover:shadow-premium-lg transition-all space-y-4 flex flex-col justify-between glass">
             <div className="space-y-3">
-              <div className="p-3 bg-primary/5 text-primary rounded-xl inline-block border border-primary/10">
-                <FileText className="w-6 h-6 text-secondary" />
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-primary/5 text-primary rounded-xl inline-block border border-primary/10">
+                  <FileText className="w-6 h-6 text-secondary" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-500/20">
+                  CCT 659/13
+                </span>
               </div>
-              <h3 className="font-bold text-lg text-[#0f172a]">Declaraciones Juradas</h3>
+              <h3 className="font-bold text-lg text-[#0f172a]">Liquidación y Boletas</h3>
               <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                Presentá la planilla mensual obligatoria informando la nómina del CCT correspondiente a tu local.
+                Liquidá los aportes del mes, calculá el 2% sindical y emití la boleta oficial con código de barras.
               </p>
             </div>
             <div className="pt-4">
               <Link
                 href={`/farmacia/${pharmacyId}/declaraciones`}
-                className="w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium"
               >
-                <span>Nueva DDJJ</span>
+                <span>Liquidar y Emitir Boleta</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -774,20 +779,25 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
           {/* Payments link */}
           <div className="bg-card border border-border rounded-3xl p-6 shadow-premium hover:shadow-premium-lg transition-all space-y-4 flex flex-col justify-between glass">
             <div className="space-y-3">
-              <div className="p-3 bg-primary/5 text-primary rounded-xl inline-block border border-primary/10">
-                <CreditCard className="w-6 h-6 text-secondary" />
+              <div className="flex items-center justify-between">
+                <div className="p-3 bg-primary/5 text-primary rounded-xl inline-block border border-primary/10">
+                  <CreditCard className="w-6 h-6 text-secondary" />
+                </div>
+                <span className="text-[10px] font-black uppercase tracking-wider bg-sky-500/10 text-sky-700 px-2.5 py-1 rounded-full border border-sky-500/20">
+                  Aportes y Cuotas
+                </span>
               </div>
-              <h3 className="font-bold text-lg text-[#0f172a]">Pagos de Aportes</h3>
+              <h3 className="font-bold text-lg text-[#0f172a]">Pagos e Informar Comprobante</h3>
               <p className="text-xs text-slate-500 leading-relaxed font-semibold">
-                Consultá tu estado de cuenta corriente, descargá recibos y pagá aportes vencidos con Mercado Pago.
+                Consultá tu estado de cuenta, pagá online o subí tu comprobante bancario para dar por cancelado el mes.
               </p>
             </div>
             <div className="pt-4">
               <Link
                 href={`/farmacia/${pharmacyId}/pagos`}
-                className="w-full inline-flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium"
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-primary text-primary-foreground text-xs font-black uppercase tracking-wider hover:bg-primary/95 transition-all shadow-premium"
               >
-                <span>Ver Cuentas y Pagar</span>
+                <span>Informar Pago o Transferencia</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>

@@ -627,11 +627,11 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                         <thead>
                           <tr className="border-b border-border bg-slate-50/75 text-[9px] font-bold text-muted-foreground uppercase">
                             <th className="py-2.5 px-3">Empleado / Categoría</th>
-                            <th className="py-2.5 px-3 text-center">Afiliado (2%)</th>
+                            <th className="py-2.5 px-3 text-center">Afiliado</th>
                             <th className="py-2.5 px-3 text-right">Base Remun.</th>
                             <th className="py-2.5 px-3 text-right">No Remun.</th>
-                            <th className="py-2.5 px-3 text-right">Aporte Sindical (2%)</th>
-                            <th className="py-2.5 px-3 text-right font-black">Total Aporte</th>
+                            <th className="py-2.5 px-3 text-center">Base de Cálculo (2%)</th>
+                            <th className="py-2.5 px-3 text-right font-black">Aporte a Pagar</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-border/60">
@@ -663,12 +663,12 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                               </td>
                               <td className="py-2 px-3 text-center">
                                 {employee.isAffiliate ? (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-emerald-500/10 text-emerald-700 rounded text-[9px] font-black uppercase border border-emerald-500/25" title="Afiliado: cuota sindical del 2% sobre Remunerativo + No Remunerativo">
-                                    Sí (2% Total)
+                                  <span className="inline-flex items-center px-2 py-0.5 bg-emerald-500/10 text-emerald-700 rounded text-[9px] font-black uppercase border border-emerald-500/25" title="Afiliado: cuota sindical del 2% sobre Remunerativo + No Remunerativo">
+                                    Sí
                                   </span>
                                 ) : (
-                                  <span className="inline-flex items-center px-1.5 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[9px] font-black uppercase border border-amber-500/30" title="No Afiliado: $0 en remunerativo; cuota del 2% sobre conceptos No Remunerativos">
-                                    No (2% No Rem)
+                                  <span className="inline-flex items-center px-2 py-0.5 bg-amber-500/15 text-amber-800 rounded text-[9px] font-black uppercase border border-amber-500/30" title="No Afiliado: $0 en remunerativo; cuota del 2% sobre conceptos No Remunerativos">
+                                    No
                                   </span>
                                 )}
                               </td>
@@ -688,23 +688,27 @@ export default function DeclaracionesPage({ params }: { params: Promise<{ id: st
                                   <span className="text-[8px] text-slate-400 block font-sans">Escala CCT</span>
                                 )}
                               </td>
-                              <td className="py-2 px-3 text-right font-mono text-slate-500 text-[10px]">
+                              <td className="py-2 px-3 text-center">
                                 {calc.onJobReserve ? (
-                                  <span className="text-[9px] text-sky-600 block font-sans">Sin goce (0%)</span>
+                                  <span className="px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-bold text-[9px] border border-sky-200">
+                                    Reserva (0%)
+                                  </span>
                                 ) : calc.isAffiliated ? (
-                                  <div>
-                                    <span className="text-[10px] text-slate-700 font-bold block font-mono">
-                                      ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  <div className="inline-flex flex-col items-center">
+                                    <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-bold text-[9px] border border-emerald-200">
+                                      2% s/ Total
                                     </span>
-                                    <span className="text-[8px] text-slate-400 block font-sans">2% (Rem + No Rem)</span>
+                                    <span className="text-[9px] text-muted-foreground font-mono mt-0.5">
+                                      Base: ${(calc.grossSalary + calc.noRem).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
                                   </div>
                                 ) : (
-                                  <div>
-                                    <span className="text-[10px] text-amber-800 font-bold block font-mono">
-                                      ${calc.totalAporte.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  <div className="inline-flex flex-col items-center">
+                                    <span className="px-2 py-0.5 rounded bg-amber-50 text-amber-900 font-bold text-[9px] border border-amber-200" title="Aporte solidario sobre sumas no remunerativas según CCT 659/13">
+                                      2% s/ No Rem
                                     </span>
-                                    <span className="text-[8px] text-amber-700 font-bold block font-sans" title="Aporte del 2% sobre sumas no remunerativas (Cláusula 5ª Acta Acuerdo)">
-                                      2% (Solo No Rem)
+                                    <span className="text-[9px] text-amber-800 font-bold font-mono mt-0.5">
+                                      Base: ${calc.noRem.toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                     </span>
                                   </div>
                                 )}
