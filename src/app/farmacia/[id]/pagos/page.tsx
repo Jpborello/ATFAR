@@ -366,7 +366,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           <div class="header">
             <div class="logo-text">ATFAR</div>
             <div class="subtitle">Asociación de Trabajadores de Farmacias de Rosario</div>
-            <div class="subtitle" style="font-size: 10px; margin-top: 2px;">Personería Gremial Nº 1391 • CUIT 30-54827379-1</div>
+            <div class="subtitle" style="font-size: 10px; margin-top: 2px;">Personería Gremial Nº 1391 • CUIT 30-54811780-8</div>
             <div class="title">BOLETA DE APORTES SINDICALES (CCT 659/13)</div>
           </div>
 
@@ -440,7 +440,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
               Nº Cuenta: <strong>000001951907</strong><br/>
               CBU: <strong>3300000610000019519073</strong><br/>
               Alias: <strong>PILA.TORNO.ZAR</strong><br/>
-              CUIT: <strong>30-54827379-1</strong>
+              CUIT: <strong>30-54811780-8</strong>
             </div>
           </div>
           `}
@@ -804,7 +804,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                         </div>
                         <div className="flex justify-between">
                           <span>CUIT:</span>
-                          <span className="font-bold text-emerald-950">30-54827379-1</span>
+                          <span className="font-bold text-emerald-950">30-54811780-8</span>
                         </div>
                       </div>
                     </div>
@@ -952,7 +952,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
               <div className="text-center bg-slate-50/50 border border-slate-100 rounded-2xl p-4 space-y-1">
                 <span className="text-sm font-black text-primary block tracking-wider">ATFAR</span>
                 <span className="text-[10px] text-muted-foreground font-bold uppercase block">Asoc. Trabajadores de Farmacias de Rosario</span>
-                <span className="text-[9px] text-slate-400 block">Personería Gremial Nº 1391 • CUIT 30-54827379-1</span>
+                <span className="text-[9px] text-slate-400 block">Personería Gremial Nº 1391 • CUIT 30-54811780-8</span>
               </div>
 
               {/* Pharmacy Details */}
