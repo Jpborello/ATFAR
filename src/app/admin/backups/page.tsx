@@ -26,9 +26,11 @@ import {
   ChevronRight,
   Eye,
   X,
-  FileText
+  FileText,
+  HelpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import BackupGuideModal from '@/components/admin/BackupGuideModal';
 import {
   LocalDbSnapshot,
   saveLocalSnapshot,
@@ -53,12 +55,23 @@ export default function AdminBackupsPage() {
   const [selectedPharmacyId, setSelectedPharmacyId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'operaciones' | 'archivos' | 'restaurar'>('operaciones');
 
+  // Estado de la Guía Paso a Paso
+  const [showGuide, setShowGuide] = useState(false);
+  const [guideStep, setGuideStep] = useState(1);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setIsLocalMode(isLocalOperationMode());
     const m = getLocalSnapshotMeta();
     setMeta(m);
+
+    // Abrir la guía automáticamente la primera vez
+    if (!localStorage.getItem('seen_atfar_backup_guide')) {
+      setShowGuide(true);
+      setGuideStep(1);
+      localStorage.setItem('seen_atfar_backup_guide', 'true');
+    }
 
     // Cargar el snapshot local desde IndexedDB al iniciar
     loadLocalSnapshot().then((s) => {
@@ -198,7 +211,7 @@ export default function AdminBackupsPage() {
       {/* Top Banner de Control y Estado */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/80 pb-6">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
               Copias de Seguridad y Respaldo Local
             </h1>
@@ -206,6 +219,17 @@ export default function AdminBackupsPage() {
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
               Blindaje Local-First
             </span>
+            <button
+              onClick={() => {
+                setGuideStep(1);
+                setShowGuide(true);
+              }}
+              title="Abrir guía paso a paso explicativa"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-800 text-[11px] font-bold hover:bg-emerald-500/20 transition-all cursor-pointer shadow-2xs"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-emerald-700" />
+              <span>¿Cómo funciona esta pantalla? (Guía)</span>
+            </button>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
             Mantené una réplica física exacta de todas las farmacias, empleados y aportes en tu computadora para operar sin conexión ante cortes de red.
@@ -787,6 +811,16 @@ export default function AdminBackupsPage() {
           </div>
         </div>
       )}
+
+      {/* Modal de Guía Paso a Paso */}
+      <BackupGuideModal
+        isOpen={showGuide}
+        onClose={() => setShowGuide(false)}
+        step={guideStep}
+        onNext={() => setGuideStep((p) => Math.min(p + 1, 4))}
+        onPrev={() => setGuideStep((p) => Math.max(p - 1, 1))}
+        onFinish={() => setShowGuide(false)}
+      />
     </div>
   );
 }
@@ -807,3 +841,4 @@ function generateClientCsv(rows: Record<string, unknown>[], columns: { key: stri
   );
   return '\uFEFF' + [header, ...lines].join('\r\n');
 }
+

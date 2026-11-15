@@ -218,3 +218,4 @@ export function triggerBrowserFileDownload(content: string, filename: string, mi
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+
