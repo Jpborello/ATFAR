@@ -21,7 +21,8 @@ import {
   ChevronRight,
   Bell,
   Search,
-  Gift
+  Gift,
+  HardDriveDownload
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import SupportContact from '@/components/shared/SupportContact';
@@ -92,6 +93,7 @@ export default function AdminLayout({
     { label: 'Sorteo Día de la Madre', href: '/admin/sorteo', icon: Gift },
     { label: 'Novedades y Escalas', href: '/admin/escalas', icon: FileText },
     { label: 'Reportes y Cuentas', href: '/admin/reportes', icon: FileText }, // custom reports page
+    { label: 'Copias y Respaldo Local', href: '/admin/backups', icon: HardDriveDownload },
   ];
 
   if (loading) {
