@@ -17,7 +17,8 @@ import {
   X,
   FileText,
   AlertCircle,
-  Loader2
+  Loader2,
+  HardDriveDownload
 } from 'lucide-react';
 
 interface Activity {
@@ -337,17 +338,33 @@ export default function AdminDashboardPage() {
           </p>
         </div>
         
-        {/* Recaudación Mensual Card inside header */}
-        <div className="bg-card border border-border rounded-2xl px-5 py-3 shadow-premium flex items-center gap-3.5 glass">
-          <div className="p-2 bg-primary/5 text-primary border border-primary/10 rounded-xl">
-            <DollarSign className="w-5 h-5 text-secondary" />
-          </div>
-          <div>
-            <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Recaudación Mensual (Jun)</span>
-            <span className="text-xl font-black text-primary flex items-center gap-2">
-              ${monthlyRevenue.toLocaleString('es-AR')}
-              {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary/60" />}
-            </span>
+        <div className="flex flex-wrap items-center gap-3">
+          {/* Botón Acceso Rápido Respaldo Local */}
+          <Link
+            href="/admin/backups"
+            className="bg-card border border-border hover:border-emerald-500/50 rounded-2xl px-4 py-3 shadow-premium flex items-center gap-2.5 glass transition-all hover:scale-[1.02] text-xs font-bold text-slate-800"
+          >
+            <div className="p-2 bg-emerald-500/10 text-emerald-700 rounded-xl">
+              <HardDriveDownload className="w-5 h-5 text-emerald-600" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block leading-none">Respaldo Local</span>
+              <span className="text-xs font-black text-emerald-800 block mt-0.5">Base Blindada (1 Clic)</span>
+            </div>
+          </Link>
+
+          {/* Recaudación Mensual Card inside header */}
+          <div className="bg-card border border-border rounded-2xl px-5 py-3 shadow-premium flex items-center gap-3.5 glass">
+            <div className="p-2 bg-primary/5 text-primary border border-primary/10 rounded-xl">
+              <DollarSign className="w-5 h-5 text-secondary" />
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest block">Recaudación Mensual (Jun)</span>
+              <span className="text-xl font-black text-primary flex items-center gap-2">
+                ${monthlyRevenue.toLocaleString('es-AR')}
+                {loading && <Loader2 className="w-3.5 h-3.5 animate-spin text-primary/60" />}
+              </span>
+            </div>
           </div>
         </div>
       </div>
