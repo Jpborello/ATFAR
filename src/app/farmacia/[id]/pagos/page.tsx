@@ -131,10 +131,20 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
             setInvoices([]);
           }
 
-          // Verificar si retornó de una simulación exitosa de Plus Pagos
+          // Verificar si retornó de Plus Pagos (producción o simulación)
           if (typeof window !== 'undefined') {
             const searchParams = new URLSearchParams(window.location.search);
-            if (searchParams.get('simulated_success') === 'true') {
+            if (searchParams.get('plus_pagos_success') === 'true') {
+              toast.success('¡Operación recibida en Plus Pagos!', {
+                description: 'El comprobante fue emitido por el Banco Santa Fe. La acreditación se reflejará en instantes.',
+              });
+              window.history.replaceState({}, '', window.location.pathname);
+            } else if (searchParams.get('plus_pagos_cancel') === 'true') {
+              toast.info('Operación cancelada', {
+                description: 'Cancelaste el pago en el portal de Plus Pagos. La boleta continúa en estado impago.',
+              });
+              window.history.replaceState({}, '', window.location.pathname);
+            } else if (searchParams.get('simulated_success') === 'true') {
               const tx = searchParams.get('tx') || '';
               toast.success('¡Pago de Plus Pagos acreditado!', {
                 description: `Operación ${tx} validada y acreditada correctamente (Modo Sandbox).`,
