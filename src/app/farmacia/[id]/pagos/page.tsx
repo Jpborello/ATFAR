@@ -8,12 +8,12 @@ import { supabase } from '@/lib/supabase';
 import SupportContact from '@/components/shared/SupportContact';
 import { Pharmacy } from '@/types';
 import { formatDateAR } from '@/lib/dateUtils';
-import { 
-  CreditCard, 
-  ArrowLeft, 
-  CheckCircle2, 
-  XCircle, 
-  Download, 
+import {
+  CreditCard,
+  ArrowLeft,
+  CheckCircle2,
+  XCircle,
+  Download,
   Loader2,
   Upload,
   Copy,
@@ -65,12 +65,45 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
   const [pharmacy, setPharmacy] = useState<Pharmacy | null>(null);
   const [selectedDetailInvoice, setSelectedDetailInvoice] = useState<Invoice | null>(null);
 
+  // Al volver del banco, se confirma el pago con Plus Pagos en el momento (el
+  // portal nunca da un pago por hecho sin esa confirmación).
+  async function verifyOnlinePayment(paymentId: string) {
+    const toastId = toast.loading('Confirmando tu pago con el Banco Santa Fe...');
+    try {
+      const res = await fetch('/api/payments/plus-pagos/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paymentId }),
+      });
+      const data = await res.json();
+      if (data.outcome === 'paid' || data.outcome === 'already_paid') {
+        const today = formatDateAR(new Date().toISOString().slice(0, 10));
+        setInvoices((prev) => prev.map((inv) => (inv.id === paymentId
+          ? { ...inv, status: 'pagado', payDate: inv.payDate !== '---' ? inv.payDate : today, transactionCode: data.transactionCode || inv.transactionCode }
+          : inv)));
+        toast.success('¡Pago acreditado!', { id: toastId, description: 'El banco confirmó el pago y la boleta ya figura como pagada.' });
+      } else if (data.outcome === 'amount_mismatch') {
+        toast.error('El monto pagado no coincide con la boleta', { id: toastId, description: 'ATFAR lo va a revisar. Si tenés dudas, comunicate con el sindicato.' });
+      } else {
+        toast.info('Tu pago todavía se está procesando', {
+          id: toastId,
+          description: 'El banco aún no lo confirmó. Apenas se acredite, la boleta va a figurar como pagada sola (no hace falta volver a pagar).',
+        });
+      }
+    } catch {
+      toast.info('Tu pago todavía se está procesando', {
+        id: toastId,
+        description: 'No pudimos confirmarlo ahora. Apenas el banco lo acredite, la boleta va a figurar como pagada sola.',
+      });
+    }
+  }
+
   useEffect(() => {
     async function loadInvoices() {
       try {
         const { data: { session } } = await supabase.auth.getSession();
-        const isConfigured = 
-          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+        const isConfigured =
+          process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
           !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
         if (!isConfigured || !session) {
@@ -131,23 +164,16 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
             setInvoices([]);
           }
 
-          // Verificar si retornó de Plus Pagos (producción o simulación)
+          // Verificar si retornó de Plus Pagos
           if (typeof window !== 'undefined') {
             const searchParams = new URLSearchParams(window.location.search);
             if (searchParams.get('plus_pagos_success') === 'true') {
-              toast.success('¡Operación recibida en Plus Pagos!', {
-                description: 'El comprobante fue emitido por el Banco Santa Fe. La acreditación se reflejará en instantes.',
-              });
+              const returnedPaymentId = searchParams.get('payment_id');
               window.history.replaceState({}, '', window.location.pathname);
+              if (returnedPaymentId) verifyOnlinePayment(returnedPaymentId);
             } else if (searchParams.get('plus_pagos_cancel') === 'true') {
               toast.info('Operación cancelada', {
                 description: 'Cancelaste el pago en el portal de Plus Pagos. La boleta continúa en estado impago.',
-              });
-              window.history.replaceState({}, '', window.location.pathname);
-            } else if (searchParams.get('simulated_success') === 'true') {
-              const tx = searchParams.get('tx') || '';
-              toast.success('¡Pago de Plus Pagos acreditado!', {
-                description: `Operación ${tx} validada y acreditada correctamente (Modo Sandbox).`,
               });
               window.history.replaceState({}, '', window.location.pathname);
             }
@@ -257,8 +283,8 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
     setPaymentLoading(true);
 
     try {
-      const isConfigured = 
-        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' && 
+      const isConfigured =
+        process.env.NEXT_PUBLIC_SUPABASE_URL !== 'your_supabase_project_url_here' &&
         !!process.env.NEXT_PUBLIC_SUPABASE_URL;
 
       let publicUrl = '';
@@ -320,12 +346,12 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
       setInvoices((prev) =>
         prev.map((inv) =>
           inv.id === checkoutInvoice.id
-            ? { 
-                ...inv, 
-                status: 'en_revision', 
-                payDate: formatDateAR(transferDate),
-                transactionCode: transactionCode
-              }
+            ? {
+              ...inv,
+              status: 'en_revision',
+              payDate: formatDateAR(transferDate),
+              transactionCode: transactionCode
+            }
             : inv
         )
       );
@@ -527,7 +553,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
 
       {/* Main Container */}
       <main className="max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8">
-        
+
         {/* Account balance card */}
         <div className="bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-center gap-4">
@@ -541,11 +567,10 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           </div>
 
           <div className="flex items-center gap-2">
-            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${
-              totalUnpaid === 0 
-                ? 'bg-emerald-500/10 text-emerald-600' 
+            <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-sm ${totalUnpaid === 0
+                ? 'bg-emerald-500/10 text-emerald-600'
                 : 'bg-red-500/10 text-red-600'
-            }`}>
+              }`}>
               {totalUnpaid === 0 ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
               <span>{totalUnpaid === 0 ? 'Sin saldo pendiente' : 'Deuda pendiente'}</span>
             </span>
@@ -554,7 +579,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
 
         {/* Layout split */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          
+
           {/* Left: Invoices List */}
           <div className="lg:col-span-8 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
@@ -577,7 +602,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
 
                   <div className="flex items-center gap-6 justify-between sm:justify-end">
                     <span className="text-sm font-black text-foreground">${inv.amount.toLocaleString('es-AR')}</span>
-                    
+
                     {inv.status === 'pagado' ? (
                       <div className="flex items-center gap-2">
                         <span className="inline-flex items-center gap-0.5 px-2.5 py-1 bg-emerald-500/10 text-emerald-600 rounded-lg text-[9px] font-black uppercase">
@@ -650,9 +675,8 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
           {/* Right: Payment simulator form / Checkout */}
           <div className="lg:col-span-4">
             {checkoutInvoice ? (
-              <div className={`bg-card border-2 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden animate-fadeIn transition-colors ${
-                isPlusPagosEnabled && paymentMethod === 'online' ? 'border-primary' : 'border-emerald-500'
-              }`}>
+              <div className={`bg-card border-2 rounded-3xl p-6 shadow-xl space-y-5 relative overflow-hidden animate-fadeIn transition-colors ${isPlusPagosEnabled && paymentMethod === 'online' ? 'border-primary' : 'border-emerald-500'
+                }`}>
                 {/* Header with Switcher Tabs (solo visible si Plus Pagos está habilitado) */}
                 {isPlusPagosEnabled ? (
                   <div className="space-y-3">
@@ -660,22 +684,20 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('online')}
-                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
-                          paymentMethod === 'online'
+                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${paymentMethod === 'online'
                             ? 'bg-card text-primary shadow-sm'
                             : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                          }`}
                       >
                         Pago Online
                       </button>
                       <button
                         type="button"
                         onClick={() => setPaymentMethod('transfer')}
-                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${
-                          paymentMethod === 'transfer'
+                        className={`flex-1 text-[10px] font-bold uppercase tracking-wider py-2 rounded-lg transition-all cursor-pointer ${paymentMethod === 'transfer'
                             ? 'bg-emerald-600 text-white shadow-sm'
                             : 'text-muted-foreground hover:text-foreground'
-                        }`}
+                          }`}
                       >
                         Transferencia
                       </button>
@@ -690,9 +712,8 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
 
                 {paymentSuccess ? (
                   <div className="text-center py-6 space-y-4">
-                    <div className={`inline-flex p-3 rounded-full ${
-                      paymentMethod === 'online' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
-                    }`}>
+                    <div className={`inline-flex p-3 rounded-full ${paymentMethod === 'online' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-amber-500/10 text-amber-500'
+                      }`}>
                       {paymentMethod === 'online' ? <CheckCircle2 className="w-10 h-10" /> : <Clock className="w-10 h-10" />}
                     </div>
                     <div className="space-y-1">
@@ -709,9 +730,8 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                     </div>
                     <button
                       onClick={() => setCheckoutInvoice(null)}
-                      className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase text-white cursor-pointer ${
-                        paymentMethod === 'online' ? 'bg-primary hover:bg-primary/90' : 'bg-emerald-600 hover:bg-emerald-700'
-                      }`}
+                      className={`w-full py-2.5 rounded-xl font-bold text-xs uppercase text-white cursor-pointer ${paymentMethod === 'online' ? 'bg-primary hover:bg-primary/90' : 'bg-emerald-600 hover:bg-emerald-700'
+                        }`}
                     >
                       Volver
                     </button>
@@ -940,14 +960,14 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
       {selectedDetailInvoice && (
         <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fadeIn animate-duration-200">
           <div className="bg-card border border-border rounded-3xl max-w-lg w-full overflow-hidden shadow-2xl space-y-6 p-6 sm:p-8 animate-scaleUp animate-duration-200">
-            
+
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <h3 className="font-extrabold text-foreground text-base">Boleta de Aportes Detallada</h3>
                 <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">Convenio CCT 659/13</span>
               </div>
-              <button 
+              <button
                 onClick={() => setSelectedDetailInvoice(null)}
                 className="p-1 hover:bg-muted rounded-lg text-muted-foreground transition-colors cursor-pointer"
               >
@@ -957,7 +977,7 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
 
             {/* Modal Content */}
             <div className="space-y-5 text-xs">
-              
+
               {/* Union Header Logo/Text */}
               <div className="text-center bg-slate-50/50 border border-slate-100 rounded-2xl p-4 space-y-1">
                 <span className="text-sm font-black text-primary block tracking-wider">ATFAR</span>
@@ -1004,13 +1024,12 @@ export default function PagosPage({ params }: { params: Promise<{ id: string }> 
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Estado de la cuenta:</span>
-                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[9px] font-black uppercase ${
-                      selectedDetailInvoice.status === 'pagado'
+                    <span className={`inline-flex items-center gap-0.5 px-2 py-0.5 rounded text-[9px] font-black uppercase ${selectedDetailInvoice.status === 'pagado'
                         ? 'bg-emerald-500/10 text-emerald-600'
                         : selectedDetailInvoice.status === 'en_revision'
-                        ? 'bg-amber-500/10 text-amber-600'
-                        : 'bg-red-500/10 text-red-600'
-                    }`}>
+                          ? 'bg-amber-500/10 text-amber-600'
+                          : 'bg-red-500/10 text-red-600'
+                      }`}>
                       {selectedDetailInvoice.status === 'pagado' ? 'Pagado' : selectedDetailInvoice.status === 'en_revision' ? 'En Revisión' : 'Impago'}
                     </span>
                   </div>

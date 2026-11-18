@@ -1,41 +1,29 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
-import { createServerClient } from '@supabase/ssr';
+import { createUserServerClient } from '@/lib/supabaseServer';
+import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { plusPagos, PaymentProviderNotConfiguredError } from '@/lib/payments/plusPagos';
 
+// Inicia un intento de pago online: genera un TransaccionComercioId nuevo para
+// la boleta y devuelve la URL intermedia que arma el formulario hacia el banco.
 export async function POST(request: Request) {
   try {
     const { paymentId } = await request.json();
-
-    if (!paymentId) {
+    if (!paymentId || typeof paymentId !== 'string') {
       return NextResponse.json({ error: 'Falta paymentId.' }, { status: 400 });
     }
 
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-    if (!supabaseUrl || !supabaseAnonKey) {
-      console.error('Faltan NEXT_PUBLIC_SUPABASE_URL / NEXT_PUBLIC_SUPABASE_ANON_KEY.');
+    const supabase = await createUserServerClient();
+    if (!supabase) {
       return NextResponse.json({ error: 'El servidor no está configurado correctamente.' }, { status: 500 });
     }
-
-    const cookieStore = await cookies();
-    const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
-      cookies: {
-        getAll: () => cookieStore.getAll(),
-        setAll: (cookiesToSet) => {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options));
-        },
-      },
-    });
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) {
       return NextResponse.json({ error: 'No autenticado.' }, { status: 401 });
     }
 
-    // RLS ("Owners can view own payments") ya restringe esto a boletas de
-    // farmacias del usuario logueado (o a un admin) — no hace falta chequear
-    // la propiedad a mano acá.
+    // Se lee con la sesión del usuario: RLS solo deja ver boletas de sus
+    // farmacias (o todas si es admin).
     const { data: payment, error } = await supabase
       .from('payments')
       .select('id, amount, invoice_number, period, status')
@@ -45,9 +33,11 @@ export async function POST(request: Request) {
     if (error || !payment) {
       return NextResponse.json({ error: 'Boleta no encontrada.' }, { status: 404 });
     }
-
     if (payment.status !== 'impago') {
       return NextResponse.json({ error: 'Esta boleta ya no está impaga.' }, { status: 409 });
+    }
+    if (!(Number(payment.amount) > 0)) {
+      return NextResponse.json({ error: 'Esta boleta no tiene importe a pagar.' }, { status: 409 });
     }
 
     const { checkoutUrl, externalReference } = await plusPagos.createCheckout({
@@ -57,14 +47,18 @@ export async function POST(request: Request) {
       description: `ATFAR - Aportes ${payment.period} - Boleta ${payment.invoice_number}`,
     });
 
-    await supabase
+    // Se guarda el intento vigente con service role, solo después de haber
+    // comprobado arriba (con RLS) que la boleta es del usuario.
+    const { error: updErr } = await supabaseAdmin
       .from('payments')
       .update({
         payment_provider: 'plus_pagos',
         external_reference: externalReference,
         checkout_url: checkoutUrl,
       })
-      .eq('id', payment.id);
+      .eq('id', payment.id)
+      .eq('status', 'impago');
+    if (updErr) throw updErr;
 
     return NextResponse.json({ checkoutUrl });
   } catch (err) {

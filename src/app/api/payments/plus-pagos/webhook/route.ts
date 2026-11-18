@@ -1,102 +1,41 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
 import { plusPagos } from '@/lib/payments/plusPagos';
+import { findPaymentByTransactionId, verifyAndSettle } from '@/lib/payments/plusPagosSettlement';
 
-// Endpoint que Plus Pagos / ASJ Servicios llama server-to-server para notificar
-// la acreditación de una boleta. No hay sesión de usuario acá, por eso usa supabaseAdmin
-// (service role) para actualizar el estado del pago directamente.
+// URL de notificación registrada en Plus Pagos / ASJ Servicios (planilla de alta).
+//
+// El contenido del aviso NO decide nada: el GUID del comercio viaja visible en
+// el formulario de pago, así que cualquiera podría armar un aviso "aprobado".
+// Del aviso solo se toma el TransaccionComercioId y se consulta el estado real
+// a la API de Plus Pagos; la boleta se marca pagada únicamente si la API
+// confirma que está aprobada y el monto coincide.
 export async function POST(request: Request) {
   const rawBody = await request.text();
 
   if (!plusPagos.verifyWebhookSignature(request, rawBody)) {
-    console.warn('Webhook de Plus Pagos rechazado por validación de firma/comercio.');
-    return NextResponse.json({ error: 'Firma o autenticación de webhook inválida.' }, { status: 401 });
+    return NextResponse.json({ error: 'Aviso inválido.' }, { status: 400 });
   }
 
-  let event;
-  try {
-    event = plusPagos.parseWebhookEvent(rawBody);
-  } catch (err) {
-    console.error('Webhook de Plus Pagos: payload JSON inválido', err);
-    return NextResponse.json({ error: 'Payload JSON inválido.' }, { status: 400 });
-  }
-
-  // Si no está aprobado (ej: pending o rejected), respondemos 200 para confirmar recepción
-  if (event.status !== 'approved') {
-    return NextResponse.json({ ok: true, receivedStatus: event.status });
-  }
-
+  const event = plusPagos.parseWebhookEvent(rawBody);
   if (!event.externalReference) {
-    console.error('Webhook de Plus Pagos: payload sin externalReference / TransaccionComercioId');
-    return NextResponse.json({ error: 'Falta referencia de transacción.' }, { status: 400 });
+    console.warn('[Plus Pagos] Aviso sin TransaccionComercioId.');
+    return NextResponse.json({ error: 'Falta TransaccionComercioId.' }, { status: 400 });
   }
 
-  // Búsqueda resiliente de la boleta:
-  // 1. Por external_reference exacto
-  let { data: payment } = await supabaseAdmin
-    .from('payments')
-    .select('id, status, invoice_number')
-    .eq('external_reference', event.externalReference)
-    .maybeSingle();
-
-  // 2. Por número de boleta (invoice_number)
+  const payment = await findPaymentByTransactionId(event.externalReference);
   if (!payment) {
-    const res = await supabaseAdmin
-      .from('payments')
-      .select('id, status, invoice_number')
-      .eq('invoice_number', event.externalReference)
-      .maybeSingle();
-    payment = res.data;
+    console.error('[Plus Pagos] Aviso de una transacción sin boleta asociada:', event.externalReference);
+    // 200 para que el banco no reintente indefinidamente; queda en el log para revisión.
+    return NextResponse.json({ ok: false, reason: 'boleta_no_encontrada' });
   }
 
-  // 3. Por UUID de pago (id)
-  if (!payment && event.externalReference.length === 36) {
-    const res = await supabaseAdmin
-      .from('payments')
-      .select('id, status, invoice_number')
-      .eq('id', event.externalReference)
-      .maybeSingle();
-    payment = res.data;
+  const result = await verifyAndSettle(payment, 'aviso del banco', event.externalReference);
+
+  if (result.outcome === 'error') {
+    // La API no respondió: 503 para que el banco reintente. Igual el control
+    // diario y el regreso de la farmacia vuelven a verificarlo.
+    return NextResponse.json({ ok: false, reason: 'consulta_fallida' }, { status: 503 });
   }
 
-  // 4. Si la referencia contiene prefijo (ej: "BLT-202611-001-1731900000")
-  if (!payment && event.externalReference.includes('-')) {
-    const parts = event.externalReference.split('-');
-    // Si tenía formato BLT-YYYYMM-XXXX-TIMESTAMP
-    if (parts.length >= 4) {
-      const reconstructedInvoice = `${parts[0]}-${parts[1]}-${parts[2]}`;
-      const res = await supabaseAdmin
-        .from('payments')
-        .select('id, status, invoice_number')
-        .eq('invoice_number', reconstructedInvoice)
-        .maybeSingle();
-      payment = res.data;
-    }
-  }
-
-  if (!payment) {
-    console.error('Webhook de Plus Pagos: no se encontró la boleta para la referencia:', event.externalReference);
-    return NextResponse.json({ error: 'Boleta no encontrada.' }, { status: 404 });
-  }
-
-  if (payment.status === 'pagado') {
-    return NextResponse.json({ ok: true, alreadyPaid: true }); // Idempotencia: ya estaba procesado
-  }
-
-  const payDate = event.paidAt ? event.paidAt.slice(0, 10) : new Date().toISOString().slice(0, 10);
-  const transactionCode = event.transactionCode || event.externalReference;
-
-  await supabaseAdmin
-    .from('payments')
-    .update({
-      status: 'pagado',
-      pay_date: payDate,
-      transaction_code: transactionCode,
-      payment_provider: 'plus_pagos',
-    })
-    .eq('id', payment.id);
-
-  console.log(`[Plus Pagos] Boleta ${payment.invoice_number} (ID: ${payment.id}) marcada como PAGADA.`);
-
-  return NextResponse.json({ ok: true, invoiceNumber: payment.invoice_number });
+  return NextResponse.json({ ok: true, result: result.outcome });
 }

@@ -1,7 +1,20 @@
 import { NextResponse } from 'next/server';
-import { supabaseAdmin } from '@/lib/supabaseAdmin';
+import { createUserServerClient } from '@/lib/supabaseServer';
 import { plusPagos } from '@/lib/payments/plusPagos';
 
+/** Escapa texto para insertarlo en HTML (contenido o atributos). */
+function esc(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// Página intermedia: arma el formulario cifrado y lo envía solo al banco.
+// Requiere sesión (la navegación desde el portal manda las cookies) y RLS
+// limita la boleta a las farmacias del usuario.
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -11,10 +24,18 @@ export async function GET(request: Request) {
       return new NextResponse('Falta el identificador de pago (paymentId).', { status: 400 });
     }
 
-    // Obtener detalles de la boleta y farmacia asociada
-    const { data: payment, error } = await supabaseAdmin
+    const supabase = await createUserServerClient();
+    if (!supabase) {
+      return new NextResponse('El servidor no está configurado correctamente.', { status: 500 });
+    }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return new NextResponse('Tu sesión expiró. Volvé a ingresar al portal de ATFAR para pagar.', { status: 401 });
+    }
+
+    const { data: payment, error } = await supabase
       .from('payments')
-      .select('id, amount, invoice_number, period, status, pharmacy_id')
+      .select('id, amount, invoice_number, period, status, pharmacy_id, external_reference, payment_provider')
       .eq('id', paymentId)
       .single();
 
@@ -25,6 +46,12 @@ export async function GET(request: Request) {
 
     if (payment.status !== 'impago') {
       return new NextResponse('Esta boleta ya no se encuentra en estado impago.', { status: 409 });
+    }
+
+    // El intento (TransaccionComercioId) lo crea /create; sin él no se puede
+    // rastrear después el pago, así que no se manda nada al banco.
+    if (payment.payment_provider !== 'plus_pagos' || !payment.external_reference) {
+      return new NextResponse('Iniciá el pago desde el botón "Pagar online" del portal.', { status: 409 });
     }
 
     // Resolver URL base de la aplicación de forma dinámica y confiable
@@ -41,7 +68,7 @@ export async function GET(request: Request) {
     const callbackSuccess = `${appUrl}/farmacia/${payment.pharmacy_id}/pagos?plus_pagos_success=true&payment_id=${payment.id}`;
     const callbackCancel = `${appUrl}/farmacia/${payment.pharmacy_id}/pagos?plus_pagos_cancel=true&payment_id=${payment.id}`;
     const description = `ATFAR - Aportes ${payment.period} - Boleta ${payment.invoice_number}`;
-    const transactionId = payment.invoice_number;
+    const transactionId = payment.external_reference;
 
     // Generar la carga útil con encriptación AES-256-CBC y Hash SHA-256
     const formFields = plusPagos.buildFormPayload({
@@ -54,15 +81,6 @@ export async function GET(request: Request) {
     });
 
     const postUrl = plusPagos.getPostUrl();
-
-    // Actualizar la boleta con la referencia externa y el proveedor
-    await supabaseAdmin
-      .from('payments')
-      .update({
-        payment_provider: 'plus_pagos',
-        external_reference: transactionId,
-      })
-      .eq('id', payment.id);
 
     // Renderizar página de redirección automática segura con el formulario POST
     const html = `<!DOCTYPE html>
@@ -190,27 +208,27 @@ export async function GET(request: Request) {
     <div class="invoice-info">
       <div class="invoice-row">
         <span>Boleta:</span>
-        <strong>${payment.invoice_number}</strong>
+        <strong>${esc(payment.invoice_number)}</strong>
       </div>
       <div class="invoice-row">
         <span>Período:</span>
-        <strong>${payment.period}</strong>
+        <strong>${esc(payment.period)}</strong>
       </div>
       <div class="invoice-row">
         <span>Total a abonar:</span>
-        <strong style="color: #0284c7;">$${Number(payment.amount).toLocaleString('es-AR', { minimumFractionDigits: 2 })}</strong>
+        <strong style="color: #0284c7;">$${esc(Number(payment.amount).toLocaleString('es-AR', { minimumFractionDigits: 2 }))}</strong>
       </div>
     </div>
 
-    <form id="ppForm" action="${postUrl}" method="POST">
-      <input type="hidden" name="Comercio" value="${formFields.Comercio}" />
-      <input type="hidden" name="SucursalComercio" value="${formFields.SucursalComercio}" />
-      <input type="hidden" name="TransaccionComercioId" value="${formFields.TransaccionComercioId}" />
-      <input type="hidden" name="Monto" value="${formFields.Monto}" />
-      <input type="hidden" name="Hash" value="${formFields.Hash}" />
-      <input type="hidden" name="CallbackSuccess" value="${formFields.CallbackSuccess}" />
-      <input type="hidden" name="CallbackCancel" value="${formFields.CallbackCancel}" />
-      <input type="hidden" name="Producto[0]" value="${formFields['Producto[0]']}" />
+    <form id="ppForm" action="${esc(postUrl)}" method="POST">
+      <input type="hidden" name="COMERCIO" value="${esc(formFields.COMERCIO)}" />
+      <input type="hidden" name="SucursalComercio" value="${esc(formFields.SucursalComercio)}" />
+      <input type="hidden" name="TransaccionComercioId" value="${esc(formFields.TransaccionComercioId)}" />
+      <input type="hidden" name="Monto" value="${esc(formFields.Monto)}" />
+      <input type="hidden" name="Hash" value="${esc(formFields.Hash)}" />
+      <input type="hidden" name="CallbackSuccess" value="${esc(formFields.CallbackSuccess)}" />
+      <input type="hidden" name="CallbackCancel" value="${esc(formFields.CallbackCancel)}" />
+      <input type="hidden" name="Producto[0]" value="${esc(formFields['Producto[0]'])}" />
 
       <button type="submit" class="btn">Continuar al portal de pago si no redirige</button>
     </form>
