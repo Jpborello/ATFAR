@@ -113,65 +113,8 @@ export default function AdminDeclaracionesPendientesPage() {
 
       if (error) throw error;
 
-      // Auto-generar la boleta 'impago' del período siguiente (mismo comportamiento
-      // que la aprobación desde /admin, para que sea consistente sin importar
-      // desde qué pantalla se audite el pago).
-      try {
-        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-        const parts = item.period.split(' ');
-        if (parts.length === 2) {
-          const monthIndex = months.indexOf(parts[0]);
-          if (monthIndex !== -1) {
-            let nextPeriod = '';
-            let dueMonth = monthIndex + 2;
-            let dueYear = parseInt(parts[1]);
-
-            if (monthIndex === 11) {
-              nextPeriod = `${months[0]} ${parseInt(parts[1]) + 1}`;
-            } else {
-              nextPeriod = `${months[monthIndex + 1]} ${parts[1]}`;
-            }
-
-            if (dueMonth > 12) {
-              dueMonth = dueMonth - 12;
-              dueYear = dueYear + 1;
-            }
-            const nextDueDate = `${dueYear}-${dueMonth.toString().padStart(2, '0')}-10`;
-
-            const { data: pharm } = await supabase
-              .from('pharmacies')
-              .select('id')
-              .eq('cuit', item.cuit)
-              .single();
-
-            if (pharm) {
-              const { data: existingNextPayment } = await supabase
-                .from('payments')
-                .select('id')
-                .eq('pharmacy_id', pharm.id)
-                .eq('period', nextPeriod)
-                .maybeSingle();
-
-              if (!existingNextPayment) {
-                const shortId = Math.random().toString(36).substring(2, 6).toUpperCase();
-                const yearMonthCode = nextPeriod.includes('Junio') ? '202606' : nextPeriod.includes('Julio') ? '202607' : '202608';
-                await supabase
-                  .from('payments')
-                  .insert({
-                    pharmacy_id: pharm.id,
-                    invoice_number: `BLT-${yearMonthCode}-${shortId}`,
-                    period: nextPeriod,
-                    amount: item.amount,
-                    status: 'impago',
-                    due_date: nextDueDate,
-                  });
-              }
-            }
-          }
-        }
-      } catch (genErr) {
-        console.error('Error generating next payment:', genErr);
-      }
+      // La boleta del mes siguiente NO se crea acá: nace sola cuando la farmacia
+      // presenta su DDJJ (con el monto real y vencimiento el día 20).
 
       setItems((prev) => prev.filter((i) => i.dbId !== item.dbId));
       toast.success(`Pago de ${item.pharmacy} aprobado y validado.`);

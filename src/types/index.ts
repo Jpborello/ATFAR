@@ -84,6 +84,10 @@ export interface Payment {
   ddjj_url?: string | null;
   ddjj_detail?: DdjjDetail | null;
   ddjj_observations?: string | null;
+  /** Quién y cuándo dio el pago por bueno (lo completa un trigger). */
+  approved_at?: string | null;
+  approved_by?: string | null;
+  approved_by_name?: string | null;
   created_at?: string;
 }
 

@@ -9,7 +9,6 @@ import {
   ArrowLeft, 
   FileText, 
   CheckCircle2, 
-  XCircle, 
   Clock, 
   CreditCard,
   Download,
@@ -26,6 +25,15 @@ import { calculateSeniority, getCurrentCategory, formatDateAR, periodLabelToKey,
 import { Payment, DdjjDetail } from '@/types';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 import PaymentCalendar from '@/components/admin/PaymentCalendar';
+import {
+  SITUATION_STYLE,
+  SITUATION_TEXT,
+  approvalText,
+  formatMoney,
+  paymentMethodLabel,
+  paymentSituation,
+  type PaymentSituation,
+} from '@/lib/paymentInfo';
 
 interface PharmacyDetail {
   id: string;
@@ -73,7 +81,12 @@ interface PharmacyDetail {
     observations: string | null;
     status: 'validada' | 'en_revision' | 'pendiente';
   }[];
-  payments: { id: string; invoice: string; period: string; amount: number; status: 'pagado' | 'impago' | 'en_revision'; date: string; receiptUrl?: string | null }[];
+  payments: {
+    id: string; invoice: string; period: string; periodKey: string; amount: number;
+    status: 'pagado' | 'impago' | 'en_revision'; situation: PaymentSituation;
+    dueDate: string | null; payDate: string | null; method: string | null;
+    approval: string | null; transactionCode: string | null; receiptUrl?: string | null;
+  }[];
   documents: { name: string; type: string; size: string; url?: string | null }[];
 }
 
@@ -227,11 +240,17 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
               id: p.id,
               invoice: p.invoice_number || 'N/A',
               period: p.period || 'Periodo',
+              periodKey: periodLabelToKey(p.period || '') || '0000-00',
               amount: Number(p.amount || 0),
               status: (p.status || 'impago') as 'pagado' | 'impago' | 'en_revision',
-              date: p.pay_date ? new Date(p.pay_date).toLocaleDateString('es-AR') : p.due_date ? new Date(p.due_date).toLocaleDateString('es-AR') : 'Sin fecha',
+              situation: paymentSituation(p),
+              dueDate: p.due_date || null,
+              payDate: p.pay_date || null,
+              method: paymentMethodLabel(p),
+              approval: approvalText(p),
+              transactionCode: p.transaction_code || null,
               receiptUrl: p.receipt_url || null
-            }))
+            })).sort((a, b) => b.periodKey.localeCompare(a.periodKey))
           : [];
 
         // Cada boleta nace de una DDJJ presentada online por la farmacia
@@ -1206,86 +1225,109 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
               )}
             </div>
 
-            {/* Payments / Invoices List */}
-            <div className="lg:col-span-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-6">
-              <div className="border-b border-border pb-4">
-                <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            {/* Historial de boletas y pagos */}
+            <div className="lg:col-span-6 bg-card border border-border rounded-3xl p-6 sm:p-8 shadow-premium glass space-y-5">
+              <div className="border-b border-border pb-4 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
                   <CreditCard className="w-5 h-5 text-secondary" />
-                  Comprobantes y Aportes Gremiales
+                  Historial de Pagos
                 </h2>
+                <Link href="/admin/pagos" className="text-sm font-bold text-primary underline">
+                  Ver todas las farmacias
+                </Link>
               </div>
 
+              {pharmacy.payments.length > 0 && (() => {
+                const sum = (f: (x: PharmacyDetail['payments'][number]) => boolean) =>
+                  pharmacy.payments.filter(f).reduce((acc, x) => acc + x.amount, 0);
+                const paid = sum((x) => x.situation === 'pagado');
+                const review = sum((x) => x.situation === 'revisar');
+                const owed = sum((x) => x.situation === 'vencida');
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <div className={`rounded-2xl border-2 p-3 ${SITUATION_STYLE.pagado}`}>
+                      <span className="block text-sm font-bold">Pagado</span>
+                      <span className="block text-lg font-black">{formatMoney(paid)}</span>
+                    </div>
+                    <div className={`rounded-2xl border-2 p-3 ${SITUATION_STYLE.revisar}`}>
+                      <span className="block text-sm font-bold">Para revisar</span>
+                      <span className="block text-lg font-black">{formatMoney(review)}</span>
+                    </div>
+                    <div className={`rounded-2xl border-2 p-3 ${SITUATION_STYLE.vencida}`}>
+                      <span className="block text-sm font-bold">Debe (vencido)</span>
+                      <span className="block text-lg font-black">{formatMoney(owed)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
               {pharmacy.payments.length === 0 ? (
-                <div className="text-center py-10 px-4 space-y-3 bg-muted/20 rounded-2xl border border-dashed border-border/80">
-                  <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto">
-                    <CreditCard className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs font-bold text-foreground">
-                      Sin comprobantes web cargados
-                    </p>
-                    <p className="text-[11px] text-muted-foreground max-w-md mx-auto leading-relaxed">
-                      Los pagos registrados corresponden a auditorías manuales del Gremio en el Almanaque superior. Cuando la farmacia informe pagos o adjunte transferencias desde el portal, se visualizarán en este historial.
-                    </p>
-                  </div>
+                <div className="text-center py-10 px-4 space-y-2 bg-muted/20 rounded-2xl border border-dashed border-border/80">
+                  <p className="text-base font-bold text-foreground">Esta farmacia todavía no tiene boletas en el portal.</p>
+                  <p className="text-sm text-muted-foreground max-w-md mx-auto leading-relaxed">
+                    Las boletas aparecen cuando la farmacia presenta su declaración jurada. Los meses anteriores se ven en el almanaque de arriba.
+                  </p>
                 </div>
               ) : (
-                <div className="divide-y divide-border/60">
-                  {pharmacy.payments.map((pay, idx) => (
-                    <div key={idx} className="py-3.5 first:pt-0 last:pb-0 flex items-center justify-between gap-4 text-xs">
-                      <div className="space-y-0.5">
-                        <span className="font-bold text-foreground block">{pay.invoice}</span>
-                        <span className="text-[10px] text-muted-foreground block font-medium">Período: {pay.period}</span>
+                <ul className="space-y-3">
+                  {pharmacy.payments.map((pay) => (
+                    <li key={pay.id} className="border-2 border-border rounded-2xl p-4 space-y-2">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div>
+                          <p className="text-base font-extrabold text-foreground">{pay.period}</p>
+                          <p className="text-xs text-muted-foreground">Boleta {pay.invoice}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-lg font-black text-foreground">{formatMoney(pay.amount)}</p>
+                          <span className={`inline-block mt-1 px-3 py-1 rounded-full border-2 text-xs font-extrabold ${SITUATION_STYLE[pay.situation]}`}>
+                            {SITUATION_TEXT[pay.situation].label}
+                          </span>
+                        </div>
                       </div>
 
-                      <div className="flex items-center gap-4">
-                        <span className="font-bold text-foreground text-sm">${pay.amount.toLocaleString('es-AR')}</span>
-                        
+                      <div className="text-sm space-y-0.5 text-foreground">
+                        <p><span className="text-muted-foreground">Vence:</span> {formatDateAR(pay.dueDate)}</p>
+                        {pay.method ? (
+                          <>
+                            <p>
+                              <span className="text-muted-foreground">{pay.situation === 'pagado' ? 'Pagó con' : 'Informó'}:</span>{' '}
+                              <strong>{pay.method}</strong>
+                              {pay.payDate && <> el {formatDateAR(pay.payDate)}</>}
+                            </p>
+                            {pay.transactionCode && (
+                              <p><span className="text-muted-foreground">Nro. de operación:</span> <span className="font-mono">{pay.transactionCode}</span></p>
+                            )}
+                            {pay.approval && <p><span className="text-muted-foreground">Aprobó:</span> {pay.approval}</p>}
+                          </>
+                        ) : (
+                          <p className="text-muted-foreground">Todavía no hay pago.</p>
+                        )}
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2 pt-1">
                         {pay.receiptUrl && (
                           <a
                             href={pay.receiptUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1.5 rounded-lg border border-border text-primary hover:bg-primary/5 text-[10px] font-bold transition-all bg-white"
-                            title="Ver Comprobante"
+                            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-border text-sm font-bold text-primary hover:bg-primary/5 bg-white"
                           >
-                            <FileText className="w-3.5 h-3.5" />
+                            <FileText className="w-4 h-4" /> Ver comprobante
                           </a>
                         )}
-                        
-                        {pay.status === 'pagado' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-600 font-bold text-[9px] uppercase border border-emerald-500/20">
-                            <CheckCircle2 className="w-3 h-3" />
-                            <span>Pagado</span>
-                          </span>
-                        ) : pay.status === 'en_revision' ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-500/10 text-amber-600 font-bold text-[9px] uppercase border border-amber-500/20">
-                            <Clock className="w-3 h-3 animate-pulse" />
-                            <span>En Revisión</span>
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-500/10 text-red-600 font-bold text-[9px] uppercase border border-red-500/20">
-                            <XCircle className="w-3 h-3" />
-                            <span>Impago</span>
-                          </span>
-                        )}
-
                         <button
                           onClick={() => handleDeletePayment(pay.id, pay.invoice, pay.period)}
                           disabled={deletingPaymentId === pay.id}
-                          className="p-1.5 rounded-lg border border-red-200 text-red-500 hover:bg-red-50 text-[10px] font-bold transition-all bg-white hover:text-red-700 cursor-pointer disabled:opacity-50"
-                          title="Eliminar Boleta"
+                          className="ml-auto inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border-2 border-red-200 text-sm font-bold text-red-600 hover:bg-red-50 bg-white cursor-pointer disabled:opacity-50"
+                          title="Eliminar boleta"
                         >
-                          {deletingPaymentId === pay.id ? (
-                            <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                          ) : (
-                            <Trash2 className="w-3.5 h-3.5" />
-                          )}
+                          {deletingPaymentId === pay.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                          Eliminar
                         </button>
                       </div>
-                    </div>
+                    </li>
                   ))}
-                </div>
+                </ul>
               )}
             </div>
           </div>
