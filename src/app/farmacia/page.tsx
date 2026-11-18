@@ -273,7 +273,6 @@ function MisFarmaciasContent() {
         .update({
           owner_id: userId,
           registered: true,
-          has_debt: true,
           name: form.name,
           razon_social: form.razonSocial || form.name,
           cuit: form.cuit,
@@ -330,7 +329,6 @@ function MisFarmaciasContent() {
             .update({
               owner_id: userId,
               registered: true,
-              has_debt: true,
               name: form.name,
               razon_social: form.razonSocial || form.name,
               address: form.address,
@@ -372,7 +370,7 @@ function MisFarmaciasContent() {
           address: form.address,
           owner_id: userId,
           registered: true,
-          has_debt: true,
+          has_debt: false,
         })
         .select('id')
         .single();

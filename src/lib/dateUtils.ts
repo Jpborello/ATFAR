@@ -120,9 +120,11 @@ interface DebtStatusPayment {
 /**
  * `has_debt` en la base ya es la fuente de verdad (la calcula un trigger +
  * un job diario, con 7 días de gracia sobre boletas recién vencidas y
- * respetando la excepción manual del admin). Acá solo distinguimos, para
- * mostrar, si un false es "genuinamente al día" o "al día por gracia/
- * excepción" (En Proceso) — nunca reimplementa el cálculo de deuda.
+ * respetando la excepción manual del admin).
+ * 
+ * Si no tiene deuda:
+ * - 'al_dia': si no adeuda ninguna boleta ni tiene pagos vencidos.
+ * - 'en_proceso': si tiene pagos en revisión o boletas cubiertas por prórroga/gracia.
  */
 export function getPharmacyDebtStatus(
   pharmacy: DebtStatusPharmacy,
@@ -133,13 +135,21 @@ export function getPharmacyDebtStatus(
   }
 
   const todayStr = new Date().toISOString().split('T')[0];
-  const overrideActive = !!pharmacy.debt_override_until && pharmacy.debt_override_until >= todayStr;
-  const graceActive = payments.some((p) => {
+  const hasOverdueUnpaid = payments.some((p) => {
     if (p.status !== 'impago' && p.status !== 'unpaid') return false;
     return !!p.due_date && p.due_date < todayStr;
   });
 
-  if (overrideActive || graceActive) {
+  const hasInReview = payments.some((p) => p.status === 'en_revision');
+
+  // Si tiene boleta vencida pero está amparada por prórroga/excepción de administración
+  const overrideActive = !!pharmacy.debt_override_until && pharmacy.debt_override_until >= todayStr;
+
+  if (hasOverdueUnpaid && overrideActive) {
+    return { status: 'en_proceso', label: 'En Proceso' };
+  }
+
+  if (hasInReview) {
     return { status: 'en_proceso', label: 'En Proceso' };
   }
 

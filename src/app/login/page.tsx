@@ -467,7 +467,6 @@ function LoginContent() {
             .update({
               owner_id: authData.user.id,
               registered: true,
-              has_debt: true,
               cuit: pharmacyCuit,
               name: pharmacyName,
               razon_social: pharmacyRazonSocial,
@@ -500,7 +499,6 @@ function LoginContent() {
               .update({
                 owner_id: authData.user.id,
                 registered: true,
-                has_debt: true,
                 name: pharmacyName,
                 razon_social: pharmacyRazonSocial,
                 address: pharmacyAddress,
@@ -557,7 +555,7 @@ function LoginContent() {
                 longitude: longitude,
                 owner_id: authData.user.id,
                 registered: true,
-                has_debt: true
+                has_debt: false
               })
               .select('id')
               .single();
