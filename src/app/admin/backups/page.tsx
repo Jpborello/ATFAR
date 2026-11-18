@@ -5,7 +5,6 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import {
   Database,
   HardDriveDownload,
-  FolderCheck,
   CheckCircle2,
   AlertTriangle,
   Download,
@@ -17,11 +16,7 @@ import {
   Users,
   Building2,
   CreditCard,
-  Copy,
-  Check,
   Sparkles,
-  Wifi,
-  WifiOff,
   ExternalLink,
   ChevronRight,
   Eye,
@@ -36,8 +31,6 @@ import {
   saveLocalSnapshot,
   loadLocalSnapshot,
   getLocalSnapshotMeta,
-  isLocalOperationMode,
-  setLocalOperationMode,
   searchLocalPharmacies,
   getLocalPharmacyDetails,
   triggerBrowserFileDownload
@@ -47,8 +40,6 @@ export default function AdminBackupsPage() {
   const [loading, setLoading] = useState(false);
   const [snapshot, setSnapshot] = useState<LocalDbSnapshot | null>(null);
   const [meta, setMeta] = useState<ReturnType<typeof getLocalSnapshotMeta>>(null);
-  const [isLocalMode, setIsLocalMode] = useState(false);
-  const [copiedPath, setCopiedPath] = useState(false);
 
   // Filtros de búsqueda en visor de contingencia local
   const [searchQuery, setSearchQuery] = useState('');
@@ -62,7 +53,6 @@ export default function AdminBackupsPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setIsLocalMode(isLocalOperationMode());
     const m = getLocalSnapshotMeta();
     setMeta(m);
 
@@ -80,17 +70,12 @@ export default function AdminBackupsPage() {
       }
     });
 
-    const handleModeChange = (e: any) => {
-      setIsLocalMode(Boolean(e.detail?.isLocal));
-    };
-    window.addEventListener('atfar:mode-change', handleModeChange);
-    return () => window.removeEventListener('atfar:mode-change', handleModeChange);
   }, []);
 
   // Ejecuta la sincronización en 1 clic
   const handleSyncBackup = async () => {
     setLoading(true);
-    const toastId = toast.loading('Extrayendo base completa y volcando en disco local...');
+    const toastId = toast.loading('Armando el respaldo con todos los datos… puede tardar unos segundos.');
 
     try {
       const res = await fetch('/api/admin/backups/export', { method: 'POST' });
@@ -108,7 +93,6 @@ export default function AdminBackupsPage() {
       setMeta({
         exportedAt: receivedSnapshot.exportedAt,
         counts: receivedSnapshot.counts,
-        windowsPath: data.filePath || data.backupDir,
       });
 
       // 2. Disparar descarga en el navegador como doble respaldo
@@ -119,12 +103,10 @@ export default function AdminBackupsPage() {
         'application/json'
       );
 
-      toast.success('¡Base de datos blindada en local con éxito!', {
+      toast.success('¡Respaldo listo!', {
         id: toastId,
-        description: data.savedToDisk
-          ? `Guardado en: ${data.filePath || data.backupDir}`
-          : 'Descargado al navegador y sincronizado en la memoria local.',
-        duration: 5000,
+        description: 'El archivo quedó en la carpeta "Descargas" de esta computadora.',
+        duration: 8000,
       });
     } catch (err: any) {
       console.error('Error en respaldo:', err);
@@ -135,27 +117,6 @@ export default function AdminBackupsPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  // Conmuta modo online / local
-  const toggleOperationMode = () => {
-    const next = !isLocalMode;
-    setIsLocalMode(next);
-    setLocalOperationMode(next);
-    toast.info(
-      next
-        ? 'Modo Local (Contingencia) ACTIVADO. La app opera 100% sobre la base local.'
-        : 'Modo Online ACTIVADO. La app consulta directamente a la nube (Supabase).'
-    );
-  };
-
-  // Copia la ruta de Windows al portapapeles
-  const handleCopyPath = () => {
-    const pathText = meta?.windowsPath || snapshot?.windowsPath || 'C:\\Users\\<Usuario>\\Backups_ATFAR';
-    navigator.clipboard.writeText(pathText);
-    setCopiedPath(true);
-    toast.success('Ruta copiada al portapapeles');
-    setTimeout(() => setCopiedPath(false), 2000);
   };
 
   // Carga manual de un archivo JSON de respaldo
@@ -232,49 +193,11 @@ export default function AdminBackupsPage() {
             </button>
           </div>
           <p className="text-xs sm:text-sm text-slate-600 font-medium mt-1">
-            Mantené una réplica física exacta de todas las farmacias, empleados y aportes en tu computadora para operar sin conexión ante cortes de red.
+            Descargá una copia completa de todas las farmacias, empleados y pagos a esta computadora. Si algún día el sistema no responde, desde esta misma pantalla podés consultar la última copia guardada.
           </p>
         </div>
 
-        {/* Switch de Modo Online / Local */}
-        <div className="flex items-center gap-3 bg-white border border-slate-200/80 p-1.5 rounded-2xl shadow-xs">
-          <button
-            onClick={() => isLocalMode && toggleOperationMode()}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              !isLocalMode
-                ? 'bg-emerald-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Wifi className="w-3.5 h-3.5" />
-            <span>Nube Supabase</span>
-          </button>
-          <button
-            onClick={() => !isLocalMode && toggleOperationMode()}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              isLocalMode
-                ? 'bg-amber-600 text-white shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <WifiOff className="w-3.5 h-3.5" />
-            <span>Modo Local (Offline)</span>
-          </button>
-        </div>
       </div>
-
-      {/* Alerta de Modo Contingencia si está activo */}
-      {isLocalMode && (
-        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-200 rounded-2xl text-amber-950 text-xs">
-          <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div className="space-y-1">
-            <h4 className="font-bold text-amber-900 text-sm">Modo de Contingencia Local Activo</h4>
-            <p className="text-amber-800 leading-relaxed font-medium">
-              El sistema está trabajando exclusivamente con la base de datos guardada en tu equipo. Podés consultar nóminas, farmacias, escalas y deudas sin internet. Al restablecerse la conexión podés volver a cambiar al modo nube.
-            </p>
-          </div>
-        </div>
-      )}
 
       {/* Hero Bento Grid: Acción Principal y Métricas */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
@@ -286,31 +209,17 @@ export default function AdminBackupsPage() {
               <span>Respaldo Integral en 1 Clic</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight leading-tight">
-              Sincronizar y Blindar Base Local
+              Descargar copia de seguridad
             </h2>
             <p className="text-xs sm:text-sm text-slate-200/90 leading-relaxed font-medium">
-              Vuelca toda la información de la nube directamente a tu carpeta de Windows (en formatos <strong className="text-white">.JSON</strong> y <strong className="text-white">.CSV para Excel</strong>) y actualiza la memoria local del navegador para uso offline inmediato.
+              Con un clic se descarga un archivo con <strong className="text-white">todos los datos del sistema</strong> y además queda guardada una copia dentro de este navegador para poder consultarla desde esta pantalla.
             </p>
           </div>
 
-          {/* Carpeta detectada en Windows */}
-          <div className="bg-white/10 border border-white/15 rounded-2xl p-4 space-y-1 relative z-10">
-            <div className="flex items-center justify-between">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-300 flex items-center gap-1.5">
-                <FolderCheck className="w-3.5 h-3.5 text-emerald-400" />
-                Carpeta Local en Windows
-              </span>
-              <button
-                onClick={handleCopyPath}
-                className="inline-flex items-center gap-1 text-[11px] text-slate-300 hover:text-white transition-colors cursor-pointer"
-              >
-                {copiedPath ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copiedPath ? 'Copiado' : 'Copiar ruta'}</span>
-              </button>
-            </div>
-            <p className="font-mono text-xs text-white truncate">
-              {meta?.windowsPath || snapshot?.windowsPath || 'C:\\Users\\<TuUsuario>\\Backups_ATFAR'}
-            </p>
+          {/* Dónde queda el archivo */}
+          <div className="bg-white/10 border border-white/15 rounded-2xl p-4 space-y-1.5 relative z-10 text-sm text-slate-100 leading-relaxed">
+            <p><strong className="text-emerald-300">¿Dónde queda?</strong> En la carpeta <strong className="text-white">Descargas</strong> de esta computadora, con el nombre <span className="font-mono text-xs">backup_atfar_FECHA.json</span>.</p>
+            <p><strong className="text-emerald-300">Consejo:</strong> una vez por semana, copiá ese archivo a un pendrive o a Google Drive. Así la copia queda guardada aunque se rompa la computadora.</p>
           </div>
 
           {/* Botón de Ejecución */}
@@ -323,12 +232,12 @@ export default function AdminBackupsPage() {
               {loading ? (
                 <>
                   <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />
-                  <span>Sincronizando Base de Datos...</span>
+                  <span>Armando el respaldo...</span>
                 </>
               ) : (
                 <>
                   <HardDriveDownload className="w-5 h-5 text-slate-950" />
-                  <span>Sincronizar y Respaldar Ahora</span>
+                  <span>Descargar copia ahora</span>
                 </>
               )}
             </button>
@@ -658,9 +567,9 @@ export default function AdminBackupsPage() {
             <Upload className="w-8 h-8" />
           </div>
           <div className="space-y-2">
-            <h3 className="font-black text-xl text-slate-900">Cargar Respaldo JSON en esta PC</h3>
+            <h3 className="font-black text-xl text-slate-900">Abrir una copia guardada</h3>
             <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
-              Si estás en otra máquina o sin internet, seleccioná el archivo <strong className="text-slate-800">backup_atfar_...json</strong> generado previamente para levantar inmediatamente la base de datos completa.
+              Si estás en otra computadora, elegí un archivo <strong className="text-slate-800">backup_atfar_...json</strong> descargado antes para poder consultarlo desde esta pantalla. Esto <strong className="text-slate-800">no cambia</strong> los datos del sistema: solo sirve para mirar la copia.
             </p>
           </div>
 
@@ -689,7 +598,7 @@ export default function AdminBackupsPage() {
             <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
               <div>
                 <span className="text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-1 rounded-full">
-                  Ficha Local (Modo Contingencia)
+                  Datos de la copia guardada
                 </span>
                 <h3 className="text-xl font-black text-slate-900 mt-2">
                   {selectedPharmacyDetails.pharmacy.nombre_fantasia || selectedPharmacyDetails.pharmacy.name}

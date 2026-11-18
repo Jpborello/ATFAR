@@ -16,6 +16,12 @@ export interface LocalDbSnapshot {
     members: number;
     benefits: number;
     jobApplications: number;
+    // Desde la versión 2.0.0 (los respaldos viejos no las traen):
+    monthMarks?: number;
+    profiles?: number;
+    scaleDocs?: number;
+    announcements?: number;
+    sorteoEntries?: number;
   };
   data: {
     pharmacies: any[];
@@ -25,6 +31,11 @@ export interface LocalDbSnapshot {
     pharmacyMembers: any[];
     benefitRequests: any[];
     jobApplications: any[];
+    monthMarks?: any[];
+    profiles?: any[];
+    scaleDocs?: any[];
+    announcements?: any[];
+    sorteoEntries?: any[];
   };
 }
 

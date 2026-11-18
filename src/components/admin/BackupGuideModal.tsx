@@ -73,7 +73,7 @@ export default function BackupGuideModal({
                   Seguridad Total:
                 </p>
                 <p className="text-slate-600">
-                  Si alguna vez se corta internet o hay algún inconveniente en la nube, la información de ATFAR no se pierde porque tenés una copia física exacta guardada en tu equipo.
+                  Si alguna vez hay un problema con el sistema, la información de ATFAR no se pierde: tenés una copia completa guardada en tu computadora.
                 </p>
               </div>
             </div>
@@ -88,17 +88,17 @@ export default function BackupGuideModal({
                 El botón verde: Respaldo en 1 Clic
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                Para hacer una copia nueva, solo tenés que tocar el botón verde grande que dice <strong className="text-emerald-800">&quot;Sincronizar y Respaldar Ahora&quot;</strong>.
+                Para hacer una copia nueva, solo tenés que tocar el botón verde grande que dice <strong className="text-emerald-800">&quot;Descargar copia ahora&quot;</strong>.
               </p>
               <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 space-y-2 text-xs text-emerald-950 font-medium">
                 <p className="flex items-center gap-2 font-bold text-emerald-900">
                   <FolderCheck className="w-4 h-4 text-emerald-700" />
-                  El sistema hace todo solo:
+                  Qué pasa al tocarlo:
                 </p>
                 <ul className="space-y-1 list-disc list-inside text-emerald-900/90 text-[11px]">
-                  <li>Crea una carpeta llamada <code className="bg-white px-1.5 py-0.5 rounded font-mono font-bold">Backups_ATFAR</code> en tu Windows.</li>
-                  <li>Guarda ahí el archivo con la base completa y planillas para Excel.</li>
-                  <li>Además te descarga una copia directamente en tu navegador.</li>
+                  <li>Se descarga un archivo con todos los datos en la carpeta <strong>Descargas</strong> de la computadora.</li>
+                  <li>Se guarda además una copia dentro de este navegador, para consultarla desde esta pantalla.</li>
+                  <li>Consejo: una vez por semana copiá ese archivo a un pendrive o a Google Drive.</li>
                 </ul>
               </div>
             </div>
@@ -110,17 +110,17 @@ export default function BackupGuideModal({
                 <WifiOff className="w-7 h-7" />
               </div>
               <h3 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                ¿Se cortó internet? Usá el Modo Local
+                ¿El sistema no responde? Mirá la copia
               </h3>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">
-                Si un día no hay señal o se cae la conexión en la oficina, tocá el botón amarillo arriba a la derecha: <strong className="text-amber-800">&quot;Modo Local (Offline)&quot;</strong>.
+                Si un día el sistema no carga los datos, entrá a esta misma pantalla: abajo podés buscar en la <strong className="text-amber-800">última copia que descargaste</strong> en esta computadora.
               </p>
               <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-2 text-xs text-amber-950 font-medium">
                 <p className="font-bold text-amber-900">
-                  ¡Podés seguir atendiendo normalmente!
+                  Podés seguir respondiendo consultas
                 </p>
                 <p className="text-amber-900/90 leading-relaxed text-[11px]">
-                  Buscás cualquier farmacia por CUIT o nombre, mirás cuántos empleados tiene declarados, qué meses pagó y cuáles debe, sin necesidad de tener internet.
+                  Buscás cualquier farmacia por CUIT o nombre y ves sus empleados declarados, qué meses pagó y cuáles debe, según la fecha de la última copia. Si no hay internet en la oficina, abrí las planillas de Excel del paso siguiente.
                 </p>
               </div>
             </div>
