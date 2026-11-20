@@ -138,9 +138,7 @@ export default function AdminDeclaracionesPendientesPage() {
 
       if (error) throw error;
 
-      if (item.cuit && item.cuit !== '---') {
-        await supabase.from('pharmacies').update({ has_debt: true }).eq('cuit', item.cuit);
-      }
+      // La deuda la recalcula la base sola (regla única) al volver la boleta a impaga.
 
       setItems((prev) => prev.filter((i) => i.dbId !== item.dbId));
       toast.success(`Pago de ${item.pharmacy} rechazado.`);

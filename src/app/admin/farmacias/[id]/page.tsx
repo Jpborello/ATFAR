@@ -270,62 +270,11 @@ export default function FarmaciaPerfilAdminPage({ params }: { params: Promise<{ 
           status: (p.status === 'pagado' ? 'validada' : p.status === 'en_revision' ? 'en_revision' : 'pendiente') as 'validada' | 'en_revision' | 'pendiente'
         }));
 
-        // Fetch month marks (Almanaque de pagos auditado a mano por el Gremio)
-        const { data: marksList } = await supabase
-          .from('pharmacy_month_marks')
-          .select('period, paid')
-          .eq('pharmacy_id', id);
-
-        // Estado de pago: chequea boletas y marcas del almanaque.
-        // Si la farmacia tiene todos los meses transcurridos cubiertos en el Almanaque
-        // (por ejemplo Farmacia Castelli con pagos auditados a mano), se considera "Al Día".
-        const hasImpago = (payList || []).some((p: Payment) => p.status === 'impago');
+        // Estado de pago: lo decide la base con la regla única de deuda
+        // (boletas vencidas, meses sin DDJJ y marcas del almanaque).
         const hasEnRevision = (payList || []).some((p: Payment) => p.status === 'en_revision');
-
-        const now = new Date();
-        const curKey = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-        const paidMarksMap = new Map<string, boolean>();
-        (marksList || []).forEach((m: { period: string; paid: boolean }) => {
-          paidMarksMap.set(m.period.slice(0, 7), m.paid);
-        });
-
-        let allAlmanaqueMonthsPaid = !!(marksList && marksList.length > 0);
-        if (allAlmanaqueMonthsPaid) {
-          let cY = 2026;
-          let cM = 6; // Julio (0-indexed)
-          while (true) {
-            const k = `${cY}-${String(cM + 1).padStart(2, '0')}`;
-            if (k > curKey) break;
-            const hasPaidBill = (payList || []).some((p: Payment) => {
-              const pKey = periodLabelToKey(p.period);
-              return pKey === k && p.status === 'pagado';
-            });
-            const hasPaidMark = paidMarksMap.get(k) === true;
-            if (!hasPaidBill && !hasPaidMark) {
-              allAlmanaqueMonthsPaid = false;
-              break;
-            }
-            cM++;
-            if (cM > 11) {
-              cM = 0;
-              cY++;
-            }
-          }
-        }
-
         let realPaymentStatus: 'al_dia' | 'con_deuda' | 'pendiente' = 'al_dia';
-        if (hasImpago) {
-          realPaymentStatus = 'con_deuda';
-        } else if (allAlmanaqueMonthsPaid) {
-          realPaymentStatus = 'al_dia';
-          if (pharmData?.has_debt) {
-            supabase
-              .from('pharmacies')
-              .update({ has_debt: false, debt_override_until: `${now.getFullYear()}-12-31` })
-              .eq('id', id)
-              .then();
-          }
-        } else if (pharmData?.has_debt) {
+        if (pharmData?.has_debt) {
           realPaymentStatus = 'con_deuda';
         } else if (hasEnRevision) {
           realPaymentStatus = 'pendiente';

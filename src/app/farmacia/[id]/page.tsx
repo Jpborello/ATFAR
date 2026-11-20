@@ -24,6 +24,7 @@ import {
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase';
 import { getPharmacyDebtStatus, PharmacyDebtStatus, PHARMACIST_CATEGORY } from '@/lib/dateUtils';
+import { debtReasonText, type DebtMonth } from '@/lib/paymentInfo';
 import { getLatestPeriod } from '@/lib/constants/calendar';
 import { confirmDialog } from '@/components/shared/ConfirmDialog';
 import SupportContact from '@/components/shared/SupportContact';
@@ -43,6 +44,8 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
   const [pharmacyCuit, setPharmacyCuit] = useState('...');
   const [pharmacyAddress, setPharmacyAddress] = useState('...');
   const [debtStatus, setDebtStatus] = useState<{ status: PharmacyDebtStatus; label: string }>({ status: 'al_dia', label: 'Al Día' });
+  // Meses adeudados, para explicarle a la farmacia POR QUÉ figura con deuda.
+  const [debtMonths, setDebtMonths] = useState<DebtMonth[]>([]);
   const [lastDeclaredPeriod, setLastDeclaredPeriod] = useState<string | null>(null);
 
   // Tutorial states
@@ -181,6 +184,12 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
               .eq('pharmacy_id', pharmacy.id);
 
             setDebtStatus(getPharmacyDebtStatus(pharmacy, payments || []));
+            if (pharmacy.has_debt) {
+              const { data: months } = await supabase.rpc('pharmacy_debt_months', { p_pharmacy_id: pharmacy.id });
+              setDebtMonths((months as DebtMonth[] | null) || []);
+            } else {
+              setDebtMonths([]);
+            }
             setLastDeclaredPeriod(getLatestPeriod((payments || []).map((p) => p.period)));
           } catch (syncErr) {
             console.error("Error calculando estado de deuda:", syncErr);
@@ -747,6 +756,25 @@ export default function FarmaciaDashboard({ params }: { params: Promise<{ id: st
             )}
           </div>
         </div>
+
+        {/* Por qué figura con deuda */}
+        {debtStatus.status === 'con_deuda' && debtMonths.length > 0 && (
+          <div className="bg-red-50 border-2 border-red-200 rounded-3xl p-5 sm:p-6 space-y-3">
+            <h3 className="flex items-center gap-2 text-lg font-extrabold text-red-800">
+              <AlertTriangle className="w-6 h-6" />
+              ¿Por qué figura &quot;Con Deuda&quot;?
+            </h3>
+            <ul className="space-y-1.5 text-base text-red-900 list-disc pl-6">
+              {debtMonths.map((d) => (
+                <li key={`${d.month}-${d.reason}`}>{debtReasonText(d)}</li>
+              ))}
+            </ul>
+            <p className="text-sm text-red-800">
+              Para regularizar: presentá la declaración jurada en <strong>Liquidar y emitir boleta</strong> y pagala desde <strong>Pagos</strong>.
+              Si ya pagaste por otro medio, comunicate con ATFAR.
+            </p>
+          </div>
+        )}
 
         {/* Shortcut panel cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">

@@ -118,9 +118,11 @@ interface DebtStatusPayment {
 }
 
 /**
- * `has_debt` en la base ya es la fuente de verdad (la calcula un trigger +
- * un job diario, con 7 días de gracia sobre boletas recién vencidas y
- * respetando la excepción manual del admin).
+ * `has_debt` en la base es la fuente de verdad: la calcula la regla única
+ * (docs/sql/2026-11-20_regla_unica_deuda.sql) con un trigger + un job diario:
+ * boletas impagas vencidas, meses sin DDJJ posteriores a la primera (vencen el
+ * día 20 del mes siguiente) y meses marcados "Debe" en el almanaque, respetando
+ * la excepción manual del admin.
  * 
  * Si no tiene deuda:
  * - 'al_dia': si no adeuda ninguna boleta ni tiene pagos vencidos.

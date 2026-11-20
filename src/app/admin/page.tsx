@@ -207,12 +207,7 @@ export default function AdminDashboardPage() {
 
         if (error) throw error;
 
-        if (act.cuit) {
-          await supabase
-            .from('pharmacies')
-            .update({ has_debt: true })
-            .eq('cuit', act.cuit);
-        }
+      // La deuda la recalcula la base sola (regla única) al volver la boleta a impaga.
 
         // Recargar el estado local
         setActivities(prev => prev.map(a => a.id === activityId ? { ...a, status: 'impago', action: 'Pago rechazado por administración' } : a));

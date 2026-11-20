@@ -80,3 +80,24 @@ export function formatMoney(n: number | string | null | undefined): string {
 }
 
 export { formatDateAR };
+
+/** Un mes adeudado, tal como lo devuelve la función `pharmacy_debt_months` de la base. */
+export type DebtMonth = { month: string; reason: 'boleta_impaga' | 'sin_ddjj' | 'marcado_debe' | string; due: string | null };
+
+const MONTH_NAMES = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+
+/** "2026-10-01" -> "Octubre 2026" */
+export function monthLabel(isoMonth: string): string {
+  const [y, m] = isoMonth.split('-').map(Number);
+  return MONTH_NAMES[(m || 1) - 1] ? `${MONTH_NAMES[m - 1]} ${y}` : isoMonth;
+}
+
+/** Explicación en palabras simples de por qué un mes figura como deuda. */
+export function debtReasonText(d: DebtMonth): string {
+  const mes = monthLabel(d.month);
+  const vence = d.due ? ` (venció el ${formatDateAR(d.due)})` : '';
+  if (d.reason === 'boleta_impaga') return `La boleta de ${mes} no está pagada${vence}.`;
+  if (d.reason === 'sin_ddjj') return `Falta presentar la declaración jurada de ${mes}${vence}.`;
+  if (d.reason === 'marcado_debe') return `ATFAR registró que ${mes} está adeudado.`;
+  return `${mes} figura adeudado.`;
+}

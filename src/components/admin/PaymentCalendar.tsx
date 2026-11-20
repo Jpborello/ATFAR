@@ -11,7 +11,17 @@ import { formatDateAR, MONTHS_ES, periodLabelToKey } from '@/lib/dateUtils';
 const SYSTEM_START = { year: 2026, month: 6 }; // month 0-indexado
 const YEARS_SHOWN = 6; // 2026 a 2031
 
-type MonthState = 'pagado' | 'informado' | 'debe' | 'a_pagar' | 'sin_ddjj' | 'en_curso' | 'futuro' | 'antes';
+type MonthState = 'pagado' | 'informado' | 'debe' | 'falta_ddjj' | 'a_pagar' | 'en_plazo' | 'sin_ddjj' | 'en_curso' | 'futuro' | 'antes';
+
+// Cada mes vence el día 20 del mes siguiente (mismo criterio que las boletas).
+const DUE_DAY = 20;
+const monthDeadline = (key: string) => {
+  const [y, m] = key.split('-').map(Number);
+  const ny = m === 12 ? y + 1 : y;
+  const nm = m === 12 ? 1 : m + 1;
+  return `${ny}-${String(nm).padStart(2, '0')}-${DUE_DAY}`;
+};
+const formatDeadline = (key: string) => monthDeadline(key).split('-').reverse().join('/');
 
 interface CalendarPayment {
   id: string;
@@ -47,8 +57,10 @@ const STATE_STYLE: Record<MonthState, { label: string; card: string; badge: stri
   pagado: { label: 'PAGADO', card: 'bg-emerald-50 border-emerald-300 hover:border-emerald-500', badge: 'bg-emerald-600 text-white' },
   informado: { label: 'PAGO INFORMADO', card: 'bg-sky-50 border-sky-300 hover:border-sky-500', badge: 'bg-sky-600 text-white' },
   debe: { label: 'DEBE', card: 'bg-red-50 border-red-300 hover:border-red-500', badge: 'bg-red-600 text-white' },
+  falta_ddjj: { label: 'DEBE (SIN DDJJ)', card: 'bg-red-50 border-red-300 hover:border-red-500', badge: 'bg-red-600 text-white' },
+  en_plazo: { label: 'EN PLAZO', card: 'bg-white border-amber-200 hover:border-amber-400', badge: 'bg-amber-100 text-amber-800' },
   a_pagar: { label: 'A PAGAR', card: 'bg-amber-50 border-amber-300 hover:border-amber-500', badge: 'bg-amber-500 text-white' },
-  sin_ddjj: { label: 'SIN DDJJ', card: 'bg-slate-50 border-dashed border-slate-300 hover:border-slate-500', badge: 'bg-slate-500 text-white' },
+  sin_ddjj: { label: 'SIN DDJJ (NO CUENTA)', card: 'bg-slate-50 border-dashed border-slate-300 hover:border-slate-500', badge: 'bg-slate-500 text-white' },
   en_curso: { label: 'MES EN CURSO', card: 'bg-white border-slate-200 hover:border-slate-400', badge: 'bg-slate-200 text-slate-700' },
   futuro: { label: '', card: 'bg-white border-slate-100 hover:border-slate-300', badge: '' },
   antes: { label: 'Antes del sistema', card: 'bg-slate-50/50 border-slate-100', badge: '' },
@@ -58,8 +70,10 @@ const STATE_EXPLANATION: Record<MonthState, string> = {
   pagado: 'Este mes está pagado.',
   informado: 'La farmacia informó el pago y subió el comprobante. Falta que ATFAR lo revise.',
   debe: 'Este mes NO está pagado y ya venció.',
+  falta_ddjj: 'La farmacia no presentó la DDJJ de este mes y ya pasó el día 20 del mes siguiente. Cuenta como deuda.',
+  en_plazo: 'La farmacia todavía está en plazo para presentar la DDJJ de este mes (vence el día 20 del mes siguiente).',
   a_pagar: 'La farmacia presentó la DDJJ. La boleta todavía no venció.',
-  sin_ddjj: 'La farmacia no presentó la DDJJ de este mes en el sistema.',
+  sin_ddjj: 'No hay DDJJ de este mes en el portal, pero es anterior a la primera DDJJ de la farmacia, así que NO cuenta como deuda. Si ATFAR sabe que lo debe, marcalo como "Debe".',
   en_curso: 'Es el mes actual: la DDJJ se presenta el mes que viene.',
   futuro: 'Mes futuro.',
   antes: 'El sistema empezó a funcionar en Julio 2026.',
@@ -67,7 +81,7 @@ const STATE_EXPLANATION: Record<MonthState, string> = {
 
 function StateIcon({ state, className }: { state: MonthState; className?: string }) {
   if (state === 'pagado') return <CheckCircle2 className={className} />;
-  if (state === 'debe') return <XCircle className={className} />;
+  if (state === 'debe' || state === 'falta_ddjj') return <XCircle className={className} />;
   if (state === 'informado' || state === 'a_pagar') return <Clock className={className} />;
   if (state === 'sin_ddjj') return <AlertTriangle className={className} />;
   return <Minus className={className} />;
@@ -124,6 +138,12 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
     return map;
   }, [payments]);
 
+  // Mes de la primera DDJJ presentada: desde ahí, un mes sin DDJJ vencido es deuda.
+  const firstDdjjKey = useMemo(() => {
+    const keys = Array.from(paymentByKey.keys()).sort();
+    return keys[0] || null;
+  }, [paymentByKey]);
+
   const markByKey = useMemo(() => {
     const map = new Map<string, MonthMark>();
     marks.forEach((m) => map.set(m.period.slice(0, 7), m));
@@ -145,25 +165,31 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
       else state = payment.due_date && payment.due_date < todayStr ? 'debe' : 'a_pagar';
     } else if (mark) {
       state = mark.paid ? 'pagado' : 'debe';
-    } else if (key < currentKey) state = 'sin_ddjj';
+    } else if (key < currentKey) {
+      if (firstDdjjKey && key > firstDdjjKey) {
+        state = monthDeadline(key) < todayStr ? 'falta_ddjj' : 'en_plazo';
+      } else {
+        state = 'sin_ddjj';
+      }
+    }
     else if (key === currentKey) state = 'en_curso';
     else state = 'futuro';
 
     return { year: y, month: m, key, state, payment, mark };
-  }, [paymentByKey, markByKey, currentKey, todayStr]);
+  }, [paymentByKey, markByKey, currentKey, todayStr, firstDdjjKey]);
 
   const yearMonths = useMemo(() => Array.from({ length: 12 }, (_, m) => buildMonth(year, m)), [buildMonth, year]);
 
   const yearHasDebt = (y: number) =>
-    Array.from({ length: 12 }, (_, m) => buildMonth(y, m)).some((mi) => mi.state === 'debe' || mi.state === 'sin_ddjj');
+    Array.from({ length: 12 }, (_, m) => buildMonth(y, m)).some((mi) => mi.state === 'debe' || mi.state === 'falta_ddjj');
 
   const counts = useMemo(() => {
     const c = { pagado: 0, debe: 0, sin_ddjj: 0, pendiente: 0 };
     yearMonths.forEach((mi) => {
       if (mi.state === 'pagado') c.pagado++;
-      else if (mi.state === 'debe') c.debe++;
+      else if (mi.state === 'debe' || mi.state === 'falta_ddjj') c.debe++;
       else if (mi.state === 'sin_ddjj') c.sin_ddjj++;
-      else if (mi.state === 'informado' || mi.state === 'a_pagar') c.pendiente++;
+      else if (mi.state === 'informado' || mi.state === 'a_pagar' || mi.state === 'en_plazo') c.pendiente++;
     });
     return c;
   }, [yearMonths]);
@@ -175,87 +201,12 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
   };
 
   /**
-   * Recalcula si la farmacia tiene deuda considerando boletas y marcas manuales
-   * en todos los meses transcurridos desde Julio 2026 hasta la fecha actual.
+   * La deuda la calcula la base de datos (regla única). Acá solo le pedimos que
+   * la recalcule después de un cambio, en vez de escribir has_debt a mano.
    */
-  const syncPharmacyDebtStatus = async (
-    targetPharmacyId: string,
-    currentPays: CalendarPayment[],
-    currentMarks: MonthMark[]
-  ) => {
-    try {
-      const nowInstance = new Date();
-      const cKey = monthKey(nowInstance.getFullYear(), nowInstance.getMonth());
-      const tStr = `${nowInstance.getFullYear()}-${String(nowInstance.getMonth() + 1).padStart(2, '0')}-${String(nowInstance.getDate()).padStart(2, '0')}`;
-
-      const payMap = new Map<string, CalendarPayment>();
-      currentPays.forEach((p) => {
-        const k = periodLabelToKey(p.period);
-        if (k) payMap.set(k, p);
-      });
-
-      const markMap = new Map<string, MonthMark>();
-      currentMarks.forEach((m) => {
-        markMap.set(m.period.slice(0, 7), m);
-      });
-
-      let hasDebt = false;
-      let curY = SYSTEM_START.year;
-      let curM = SYSTEM_START.month;
-
-      while (true) {
-        const k = monthKey(curY, curM);
-        if (k > cKey) break;
-
-        const p = payMap.get(k);
-        const m = markMap.get(k);
-
-        let state: MonthState;
-        if (p) {
-          if (p.status === 'pagado') state = 'pagado';
-          else if (p.status === 'en_revision') state = 'informado';
-          else state = p.due_date && p.due_date < tStr ? 'debe' : 'a_pagar';
-        } else if (m) {
-          state = m.paid ? 'pagado' : 'debe';
-        } else if (k < cKey) {
-          state = 'sin_ddjj';
-        } else {
-          state = 'en_curso';
-        }
-
-        if (state === 'debe' || state === 'sin_ddjj') {
-          hasDebt = true;
-          break;
-        }
-
-        curM++;
-        if (curM > 11) {
-          curM = 0;
-          curY++;
-        }
-      }
-
-      if (!hasDebt) {
-        for (const p of currentPays) {
-          if ((p.status === 'impago' || p.status === 'unpaid') && p.due_date && p.due_date < tStr) {
-            hasDebt = true;
-            break;
-          }
-        }
-      }
-
-      const untilDate = `${nowInstance.getFullYear()}-12-31`;
-      await supabase
-        .from('pharmacies')
-        .update(
-          hasDebt
-            ? { has_debt: true, debt_override_until: null }
-            : { has_debt: false, debt_override_until: untilDate }
-        )
-        .eq('id', targetPharmacyId);
-    } catch (err) {
-      console.error('Error syncing pharmacy debt status:', err);
-    }
+  const syncPharmacyDebtStatus = async (targetPharmacyId: string) => {
+    const { error } = await supabase.rpc('recompute_pharmacy_debt', { p_pharmacy_id: targetPharmacyId });
+    if (error) console.error('Error recalculando la deuda de la farmacia:', error);
   };
 
   const setPaid = async (mi: MonthInfo, paid: boolean) => {
@@ -279,15 +230,6 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
       }
 
       // La marca guarda quién, cuándo y la nota, para la auditoría.
-      const newMark: MonthMark = {
-        id: mi.mark?.id,
-        period: `${mi.key}-01`,
-        paid,
-        note: note.trim() || null,
-        marked_by_name: adminName,
-        marked_at: new Date().toISOString(),
-      };
-
       const { error: markErr } = await supabase
         .from('pharmacy_month_marks')
         .upsert(
@@ -304,12 +246,8 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
         );
       if (markErr) throw markErr;
 
-      // Actualizar cálculo de deuda en la base para que sincronice farmacias y dashboards
-      const updatedPayments = mi.payment
-        ? payments.map((p) => (p.id === mi.payment!.id ? { ...p, status: paid ? 'pagado' : 'impago', pay_date: paid ? (p.pay_date || todayStr) : null } : p))
-        : payments;
-      const updatedMarks = marks.filter((m) => m.period.slice(0, 7) !== mi.key).concat([newMark]);
-      await syncPharmacyDebtStatus(pharmacyId, updatedPayments, updatedMarks);
+      // La base recalcula la deuda de la farmacia con el cambio.
+      await syncPharmacyDebtStatus(pharmacyId);
 
       toast.success(`${MONTHS_ES[mi.month]} ${mi.year} marcado como ${paid ? 'PAGADO' : 'NO PAGADO'}.`);
       setSelected(null);
@@ -387,14 +325,8 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
         }
       }
 
-      // Marcar la farmacia al día en la base
-      await supabase
-        .from('pharmacies')
-        .update({
-          has_debt: false,
-          debt_override_until: `${now.getFullYear()}-12-31`,
-        })
-        .eq('id', pharmacyId);
+      // La base recalcula la deuda con los meses ya marcados.
+      await syncPharmacyDebtStatus(pharmacyId);
 
       toast.success('Todos los meses transcurridos fueron marcados como PAGADOS y la farmacia quedó Al Día.');
       await load();
@@ -460,7 +392,7 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
           <div className="flex flex-wrap gap-3 text-sm font-bold">
             <span className="px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 border border-emerald-200">{counts.pagado} pagado{counts.pagado === 1 ? '' : 's'}</span>
             <span className="px-3 py-1.5 rounded-xl bg-red-50 text-red-800 border border-red-200">{counts.debe} adeudado{counts.debe === 1 ? '' : 's'}</span>
-            <span className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-700 border border-slate-200">{counts.sin_ddjj} sin DDJJ</span>
+            <span className="px-3 py-1.5 rounded-xl bg-slate-50 text-slate-700 border border-slate-200">{counts.sin_ddjj} sin DDJJ (no cuentan como deuda)</span>
             {counts.pendiente > 0 && (
               <span className="px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200">{counts.pendiente} pendiente{counts.pendiente === 1 ? '' : 's'} de revisión o vencimiento</span>
             )}
@@ -531,7 +463,11 @@ export default function PaymentCalendar({ pharmacyId, onChanged }: { pharmacyId:
                   {STATE_STYLE[selected.state].label}
                 </span>
               )}
-              <p className="text-base text-slate-700 font-medium">{STATE_EXPLANATION[selected.state]}</p>
+              <p className="text-base text-slate-700 font-medium">{STATE_EXPLANATION[selected.state]}
+                {(selected.state === 'falta_ddjj' || selected.state === 'en_plazo') && (
+                  <> {selected.state === 'falta_ddjj' ? 'Venció el' : 'Vence el'} {formatDeadline(selected.key)}.</>
+                )}
+              </p>
             </div>
 
             {selected.payment && (
